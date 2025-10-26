@@ -212,14 +212,14 @@ function App() {
           <div className="flex gap-5 justify-center mb-8 flex-wrap">
             <button
               onClick={() => startMatch(30)}
-              className="btn !py-4 !bg-[#445f8b] !text-white px-3"
+              className="btn !py-3 !bg-[#445f8b] !text-white !px-6"
             >
               <Play size={24} weight="fill" />
               0:30 Timer (Auto)
             </button>
             <button
               onClick={() => startMatch(120)}
-              className="btn !py-4 !bg-[#445f8b] !text-white px-3"
+              className="btn !py-3 !bg-[#445f8b] !text-white !px-6"
             >
               <Play size={24} weight="fill" />
               2:00 Timer (TeleOp)
@@ -384,13 +384,13 @@ function App() {
             <div className="flex gap-4 justify-end">
               <button
                 onClick={confirmCycle}
-                className="px-6 py-3 text-base border-2 border-[#4CAF50] bg-[#4CAF50] text-white hover:bg-white hover:text-[#2d3e5c] transition-colors font-semibold"
+                className="btn !px-6"
               >
                 Confirm
               </button>
               <button
                 onClick={() => setShowCycleModal(false)}
-                className="px-6 py-3 text-base border-2 border-[#f44336] bg-[#f44336] text-white hover:bg-white hover:text-[#2d3e5c] transition-colors font-semibold"
+                className="error-btn !px-4 !py-2"
               >
                 Cancel
               </button>
