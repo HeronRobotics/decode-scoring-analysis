@@ -15,6 +15,13 @@ function App() {
   const [textInput, setTextInput] = useState('')
   const intervalRef = useRef(null)
 
+  // Keyboard entry state
+  const [keyEntry, setKeyEntry] = useState({ total: null, scored: null })
+  const [keyEntryVisible, setKeyEntryVisible] = useState(false)
+  const [keyEntryExpiresAt, setKeyEntryExpiresAt] = useState(null)
+  const [cooldownUntil, setCooldownUntil] = useState(null)
+  const expireTimeoutRef = useRef(null)
+
   useEffect(() => {
     if (isRecording) {
       intervalRef.current = setInterval(() => {
@@ -38,6 +45,91 @@ function App() {
       }
     }
   }, [isRecording, matchStartTime, timerDuration])
+
+  // Auto-cancel pending key entry on timeout
+  useEffect(() => {
+    if (expireTimeoutRef.current) {
+      clearTimeout(expireTimeoutRef.current)
+      expireTimeoutRef.current = null
+    }
+    if (keyEntryVisible && keyEntryExpiresAt) {
+      const ms = Math.max(0, keyEntryExpiresAt - Date.now())
+      expireTimeoutRef.current = setTimeout(() => {
+        setKeyEntry({ total: null, scored: null })
+        setKeyEntryVisible(false)
+        setKeyEntryExpiresAt(null)
+        setCooldownUntil(Date.now() + 5000)
+      }, ms)
+    }
+    return () => {
+      if (expireTimeoutRef.current) {
+        clearTimeout(expireTimeoutRef.current)
+        expireTimeoutRef.current = null
+      }
+    }
+  }, [keyEntryVisible, keyEntryExpiresAt])
+
+  // Keyboard controls: type total (1-3), type made (0-total), press Enter to confirm. Esc to cancel.
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (!isRecording) return
+      if (showCycleModal || showTextImport) return
+      const ae = document.activeElement
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.getAttribute('contenteditable') === 'true')) return
+
+      const now = Date.now()
+      if (!keyEntryVisible) {
+        if (cooldownUntil && now < cooldownUntil) return
+        if (e.key >= '1' && e.key <= '3') {
+          setKeyEntry({ total: parseInt(e.key, 10), scored: null })
+          setKeyEntryVisible(true)
+          setKeyEntryExpiresAt(now + 5000)
+          e.preventDefault()
+        }
+        return
+      }
+
+      // When visible
+      if (e.key === 'Escape') {
+        setKeyEntry({ total: null, scored: null })
+        setKeyEntryVisible(false)
+        setKeyEntryExpiresAt(null)
+        setCooldownUntil(Date.now() + 5000)
+        e.preventDefault()
+        return
+      }
+
+      if (e.key === 'Enter') {
+        if (keyEntry.total != null && keyEntry.scored != null) {
+          const event = {
+            type: 'cycle',
+            timestamp: elapsedTime,
+            total: keyEntry.total,
+            scored: keyEntry.scored
+          }
+          setEvents((prev) => [...prev, event])
+          setKeyEntry({ total: null, scored: null })
+          setKeyEntryVisible(false)
+          setKeyEntryExpiresAt(null)
+        }
+        e.preventDefault()
+        return
+      }
+
+      if (e.key >= '0' && e.key <= '9') {
+        if (keyEntry.total != null) {
+          const val = parseInt(e.key, 10)
+          if (val <= keyEntry.total) {
+            setKeyEntry((prev) => ({ ...prev, scored: val }))
+            setKeyEntryExpiresAt(Date.now() + 5000)
+          }
+          e.preventDefault()
+        }
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isRecording, showCycleModal, showTextImport, keyEntryVisible, keyEntry, elapsedTime, cooldownUntil])
 
   const formatTime = (ms) => {
     const totalSeconds = Math.floor(ms / 1000)
@@ -337,6 +429,24 @@ function App() {
             </div>
           )}
         </>
+      )}
+
+      {/* Keyboard entry popup */}
+      {keyEntryVisible && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-white border-2 border-[#445f8b] shadow p-4 min-w-64">
+            <div className="text-sm text-[#666] mb-1">Quick Entry</div>
+            <div className="text-lg font-semibold mb-2">
+              Shot {keyEntry.total} balls; how many made?
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[#666] text-sm">Made:</span>
+              <span className="text-2xl font-mono">{keyEntry.scored ?? '_'}</span>
+              <span className="text-sm text-[#999]">(0-{keyEntry.total})</span>
+            </div>
+            <div className="text-xs text-[#666]">Type a number, then press Enter. Esc to cancel.</div>
+          </div>
+        </div>
       )}
 
       {showCycleModal && (
