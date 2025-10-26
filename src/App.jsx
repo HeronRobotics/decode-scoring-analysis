@@ -79,6 +79,13 @@ function App() {
 
       const now = Date.now()
       if (!keyEntryVisible) {
+        // Quick gate record with 'G'
+        if (e.key && e.key.toLowerCase() === 'g') {
+          const event = { type: 'gate', timestamp: elapsedTime }
+          setEvents((prev) => [...prev, event])
+          e.preventDefault()
+          return
+        }
         if (cooldownUntil && now < cooldownUntil) return
         if (e.key >= '1' && e.key <= '3') {
           setKeyEntry({ total: parseInt(e.key, 10), scored: null })
@@ -475,19 +482,29 @@ function App() {
               <label className="flex flex-col gap-3 font-semibold">
                 Balls Scored:
                 <div className="flex gap-3">
-                  {[...Array(cycleData.total + 1)].map((_, i) => (
-                    <button
-                      key={i}
-                      className={`flex-1 p-4 text-lg border-2 font-semibold transition-colors ${
-                        cycleData.scored === i 
-                          ? 'border-[#445f8b] bg-[#445f8b] text-white'
-                          : 'border-[#ddd] bg-white hover:border-[#445f8b]'
-                      }`}
-                      onClick={() => setCycleData({ ...cycleData, scored: i })}
-                    >
-                      {i}
-                    </button>
-                  ))}
+                  {[0, 1, 2, 3].map((i) => {
+                    const disabled = i > cycleData.total
+                    const selected = cycleData.scored === i
+                    const base = 'flex-1 p-4 text-lg border-2 font-semibold transition-colors'
+                    const cls = selected
+                      ? 'border-[#445f8b] bg-[#445f8b] text-white'
+                      : disabled
+                        ? 'border-[#eee] bg-[#f8f8f8] text-[#aaa] cursor-not-allowed opacity-60'
+                        : 'border-[#ddd] bg-white hover:border-[#445f8b]'
+                    return (
+                      <button
+                        key={i}
+                        disabled={disabled}
+                        className={`${base} ${cls}`}
+                        onClick={() => {
+                          if (disabled) return
+                          setCycleData({ ...cycleData, scored: i })
+                        }}
+                      >
+                        {i}
+                      </button>
+                    )
+                  })}
                 </div>
               </label>
             </div>
