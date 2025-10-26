@@ -1,0 +1,164 @@
+{
+  "startTime": 1729900000000,
+  "duration": 150,
+  "events": [
+    {
+      "type": "cycle",
+      "timestamp": 10000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 20000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 30000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 37000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 49000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 67000,
+      "total": 2,
+      "scored": 2
+    },
+    {
+      "type": "cycle",
+      "timestamp": 86000,
+      "total": 3,
+      "scored": 2
+    },
+    {
+      "type": "cycle",
+      "timestamp": 97000,
+      "total": 2,
+      "scored": 0
+    },
+    {
+      "type": "cycle",
+      "timestamp": 102000,
+      "total": 2,
+      "scored": 2
+    },
+    {
+      "type": "cycle",
+      "timestamp": 114000,
+      "total": 3,
+      "scored": 3
+    },
+    {
+      "type": "cycle",
+      "timestamp": 132000,
+      "total": 3,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 143000,
+      "total": 3,
+      "scored": 2
+    },
+    {
+      "type": "cycle",
+      "timestamp": 158000,
+      "total": 3,
+      "scored": 2
+    },
+    {
+      "type": "cycle",
+      "timestamp": 172000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 182000,
+      "total": 2,
+      "scored": 0
+    },
+    {
+      "type": "gate",
+      "timestamp": 190000
+    },
+    {
+      "type": "cycle",
+      "timestamp": 202000,
+      "total": 2,
+      "scored": 2
+    },
+    {
+      "type": "cycle",
+      "timestamp": 213000,
+      "total": 1,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 219000,
+      "total": 1,
+      "scored": 0
+    },
+    {
+      "type": "cycle",
+      "timestamp": 228000,
+      "total": 1,
+      "scored": 1
+    },
+    {
+      "type": "gate",
+      "timestamp": 240000
+    },
+    {
+      "type": "cycle",
+      "timestamp": 251000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 269000,
+      "total": 1,
+      "scored": 0
+    },
+    {
+      "type": "cycle",
+      "timestamp": 288000,
+      "total": 2,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 296000,
+      "total": 1,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 303000,
+      "total": 1,
+      "scored": 1
+    },
+    {
+      "type": "cycle",
+      "timestamp": 310000,
+      "total": 1,
+      "scored": 1
+    }
+  ]
+}
