@@ -154,10 +154,6 @@ function LifetimePage({ onBack }) {
         <>
           {/* Career Summary */}
           <div className="mb-8">
-            <h2 className="text-3xl mb-5 flex items-center gap-3">
-              <ChartLine weight="bold" size={32} />
-              Career Summary
-            </h2>
             <Statistics matches={allMatches} />
           </div>
 
@@ -295,7 +291,7 @@ function LifetimePage({ onBack }) {
                           e.stopPropagation()
                           removeTournament(index)
                         }}
-                        className="error-btn"
+                        className="btn error-btn !py-1 !px-3 !text-sm"
                       >
                         <Trash weight="bold" size={16} />
                       </button>

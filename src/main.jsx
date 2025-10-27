@@ -11,7 +11,7 @@ createRoot(document.getElementById('root')).render(
         className="inline-block w-6 h-6 mx-2 mb-1"
       /> Heron Robotics, FTC 27621.
 
-      &copy; 2025. All rights reserved.
+      &copy; 2025. All rights reserved.<br />Made with late nights and free time — <a className='underline' href="https://github.com/HeronRobotics/decode-scoring-analysis" target="_blank" rel="noopener noreferrer">Contribute on GitHub</a>!
     </footer>
   </StrictMode>,
 )

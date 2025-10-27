@@ -235,25 +235,25 @@ function TournamentPage({ onBack }) {
   
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto">
-      <div className="my-8 flex items-center justify-between">
+      <div className="my-8 flex flex-row flex-wrap space-y-3 items-center justify-between">
         <div>
           <h1 className="text-5xl font-bold">{tournament.name}</h1>
           <p className="text-lg text-[#666] mt-2">{new Date(tournament.date).toLocaleDateString()}</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={saveTournament} className="btn">
-            <FloppyDisk size={20} weight="bold" />
-            Save Tournament
-          </button>
           <button onClick={onBack} className="btn">
             <ArrowLeft size={20} weight="bold" />
             Back
+          </button>
+          <button onClick={saveTournament} className="btn">
+            <FloppyDisk size={20} weight="bold" />
+            Save Tournament
           </button>
         </div>
       </div>
 
       {/* Tournament-wide Statistics */}
-      <div className="mb-64">
+      <div className="mb-18">
         <h2 className="text-3xl mb-5">Tournament Summary</h2>
         <TournamentGraphs matches={tournament.matches} />
       </div>

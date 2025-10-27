@@ -310,14 +310,8 @@ function App() {
       </header>
 
       {!isRecording && matchStartTime === null && (
-        <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center md:py-8 md:px-8">
-          <p className='mb-4'>
-            H.MAD is a scouting app designed for intensive data analysis. First and foremost, it's easy to use — just press one of the buttons below to start recording a match.
-            <br /><br />
-            Matches are stored as JSON, and you can compose groups of Matches into Tournaments for analysis on your consistency using the "Tournament Analysis" page. Matches and Tournaments can
-            both be imported on the "Lifetime Stats" page to explore your performance over the course of the season.
-          </p>
-          <h2 className="text-3xl mb-4">Start recording a Match with H.MAD!</h2>
+        <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center md:py-8 md:px-8 pb-4">
+          <h2 className="text-3xl mt-2 mb-6 px-2">Start recording!</h2>
           <button
             onClick={() => startMatch(null)}
             className="btn mb-4 !py-3 !bg-[#445f8b] !text-white !px-6"
@@ -341,7 +335,6 @@ function App() {
               2:00 Timer (TeleOp)
             </button>
           </div>
-          {/* "-- or --" text but replace "--" with a line */}
           <div className="flex gap-4 items-center mb-12">
             <hr className="w-12 grow border-t border-gray-300" />
             <span className="mx-2 text-gray-500">or</span>
@@ -366,6 +359,12 @@ function App() {
               </span>
             </button>
           </div>
+          <p className='mt-8 p-2'>
+            H.MAD is a scouting app designed for intensive data analysis. First and foremost, it's easy to use — just press one of the buttons above to start recording a match. (Or import one.)
+            <br /><br />
+            Matches are stored as JSON and easily shareable! Save your Matches and you'll be able to compose groups of them into Tournaments for analysis on your consistency using the "Tournament Analysis" page. Matches and Tournaments can
+            both be imported on the "Lifetime Stats" page to explore your performance over the course of the season and generate cool graphs! We love graphs at Heron Robotics :)
+          </p>
         </div>
       )}
 
@@ -377,11 +376,11 @@ function App() {
               Scored&nbsp;
               <span className='font-bold'>
                 {totalScored}/{totalBalls}
-              </span>
+              </span>. Scroll down for instructions.
             </div>
           </div>
 
-          <div className="flex gap-4 justify-center mb-8 flex-wrap">
+          <div className="flex gap-4 justify-center flex-wrap">
             {isRecording ? (
               <>
                 <button 
@@ -422,6 +421,20 @@ function App() {
           </div>
 
           <Timeline events={events} currentTime={elapsedTime} />
+
+          <div className="w-full">
+            <p>
+              {/* Instructions for using the app */}
+              <strong>Instructions:</strong> 
+              <br />
+              - To record a shooting cycle, press the "Record Cycle" button and select how many balls were shot and how many were successfully scored.<br />
+              &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Keyboard Users:</strong> Type the total number of balls (1-3) attempted, followed by the number scored (0-total), then press Enter. Esc to cancel.<br />
+              - Record gate openings by pressing the "Gate Open" button.<br />
+              - Events will appear on the timeline above as they are recorded.<br />
+              - Export the Match and save it somewhere! The "Lifetime Stats" and "Tournament Analysis" pages can import your saved Matches and give you a lot more insight into your performance over time.<br />
+              &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Text export:</strong> You can export matches in a readable text format if you just want to share a match with your friends. Use JSON for advanced H.MAD analysis!
+            </p>
+          </div>
           
           {events.length > 0 && <Statistics events={events} />}
 

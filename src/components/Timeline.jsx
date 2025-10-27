@@ -11,7 +11,7 @@ function Timeline({ events, currentTime }) {
   const maxTime = Math.max(currentTime, ...events.map(e => e.timestamp), 1)
 
   return (
-    <div className="mb-8 w-full">
+    <div className="w-full">
       <h3 className="text-2xl mb-5">Timeline</h3>
       <div className="bg-white p-10 border-2 border-[#445f8b]">
         <div className="relative h-32 bg-white border-b-2 border-[#ddd] mb-3">
