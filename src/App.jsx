@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { Play, Record, DoorOpen, Stop, ArrowClockwise, DownloadSimple, UploadSimple, CricketIcon, ClipboardTextIcon } from '@phosphor-icons/react'
+import { Play, Record, DoorOpen, Stop, ArrowClockwise, DownloadSimple, UploadSimple, CricketIcon, ClipboardTextIcon, Calendar, ChartLine } from '@phosphor-icons/react'
 import Timeline from './components/Timeline'
 import Statistics from './components/Statistics'
+import TournamentPage from './pages/TournamentPage'
+import LifetimePage from './pages/LifetimePage'
 
 function App() {
   const [matchStartTime, setMatchStartTime] = useState(null)
@@ -15,7 +17,6 @@ function App() {
   const [textInput, setTextInput] = useState('')
   const intervalRef = useRef(null)
 
-  // Keyboard entry state
   const [keyEntry, setKeyEntry] = useState({ total: null, scored: null })
   const [keyEntryVisible, setKeyEntryVisible] = useState(false)
   const [keyEntryExpiresAt, setKeyEntryExpiresAt] = useState(null)
@@ -563,4 +564,52 @@ function App() {
   )
 }
 
-export default App
+function MainApp() {
+  const [currentPage, setCurrentPage] = useState('home')
+
+  if (currentPage === 'tournament') {
+    return <TournamentPage onBack={() => setCurrentPage('home')} />
+  }
+
+  if (currentPage === 'lifetime') {
+    return <LifetimePage onBack={() => setCurrentPage('home')} />
+  }
+
+  return (
+    <>
+      {/* Navigation Bar */}
+      <div className="bg-white border-b-2 border-[#445f8b]">
+        <div className="max-w-7xl mx-auto px-5 py-4 flex gap-4">
+          <button
+            onClick={() => setCurrentPage('home')}
+            className={`px-6 py-2 font-semibold transition-colors ${
+              currentPage === 'home'
+                ? 'bg-[#445f8b] text-white'
+                : 'bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]'
+            }`}
+          >
+            Match Tracker
+          </button>
+          <button
+            onClick={() => setCurrentPage('tournament')}
+            className="px-6 py-2 font-semibold bg-transparent text-[#445f8b] hover:bg-[#f0f5ff] transition-colors flex items-center gap-2"
+          >
+            <Calendar weight="bold" size={20} />
+            Tournament
+          </button>
+          <button
+            onClick={() => setCurrentPage('lifetime')}
+            className="px-6 py-2 font-semibold bg-transparent text-[#445f8b] hover:bg-[#f0f5ff] transition-colors flex items-center gap-2"
+          >
+            <ChartLine weight="bold" size={20} />
+            Lifetime
+          </button>
+        </div>
+      </div>
+      
+      <App />
+    </>
+  )
+}
+
+export default MainApp

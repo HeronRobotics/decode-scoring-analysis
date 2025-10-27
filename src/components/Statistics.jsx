@@ -52,7 +52,7 @@ function Statistics({ events }) {
       <div className="bg-[#445f8b] border-2 border-[#445f8b] p-8 mb-5">
         <div className="flex items-center gap-3 mb-6 ml-[-1rem] mt-[-1rem]">
           <ChartLine size={32} className="text-white" />
-          <h4 className="text-2xl !text-white">Match Summary</h4>
+          <h4 className="text-2xl !text-white">Summary</h4>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">

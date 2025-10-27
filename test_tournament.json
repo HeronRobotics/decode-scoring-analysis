@@ -1,0 +1,42 @@
+{
+  "name": "Qualifier October 10th",
+  "date": "2024-10-10",
+  "matches": [
+    {
+      "startTime": 1734542400000,
+      "duration": 150,
+      "events": [
+        { "type": "cycle", "timestamp": 10, "total": 2, "scored": 1 },
+        { "type": "cycle", "timestamp": 20, "total": 2, "scored": 2 },
+        { "type": "gate", "timestamp": 30 },
+        { "type": "cycle", "timestamp": 45, "total": 3, "scored": 2 },
+        { "type": "cycle", "timestamp": 60, "total": 2, "scored": 2 },
+        { "type": "cycle", "timestamp": 75, "total": 3, "scored": 3 }
+      ]
+    },
+    {
+      "startTime": 1734546000000,
+      "duration": 150,
+      "events": [
+        { "type": "cycle", "timestamp": 12, "total": 2, "scored": 2 },
+        { "type": "cycle", "timestamp": 25, "total": 2, "scored": 1 },
+        { "type": "gate", "timestamp": 35 },
+        { "type": "cycle", "timestamp": 50, "total": 3, "scored": 3 },
+        { "type": "cycle", "timestamp": 70, "total": 2, "scored": 2 }
+      ]
+    },
+    {
+      "startTime": 1734549600000,
+      "duration": 150,
+      "events": [
+        { "type": "cycle", "timestamp": 8, "total": 2, "scored": 2 },
+        { "type": "cycle", "timestamp": 18, "total": 2, "scored": 2 },
+        { "type": "gate", "timestamp": 28 },
+        { "type": "cycle", "timestamp": 40, "total": 3, "scored": 2 },
+        { "type": "cycle", "timestamp": 55, "total": 2, "scored": 1 },
+        { "type": "cycle", "timestamp": 70, "total": 3, "scored": 3 },
+        { "type": "cycle", "timestamp": 85, "total": 2, "scored": 2 }
+      ]
+    }
+  ]
+}
