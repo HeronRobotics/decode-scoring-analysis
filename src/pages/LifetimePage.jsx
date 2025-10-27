@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ArrowLeft, UploadSimple, Plus, Trash, ChartLine, TrendUp, Calendar } from '@phosphor-icons/react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import Statistics from '../components/Statistics'
 
 function LifetimePage({ onBack }) {
@@ -49,6 +50,47 @@ function LifetimePage({ onBack }) {
 
   const allMatches = tournaments.flatMap(t => t.matches)
   
+  // Extract individual matches for graphing
+  const matchStats = tournaments.flatMap(tournament => 
+    tournament.matches.map((match, matchIndex) => {
+      const cycleEvents = match.events.filter(e => e.type === 'cycle')
+      const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0)
+      const total = cycleEvents.reduce((sum, e) => sum + e.total, 0)
+      
+      // Calculate cycle times for this match
+      const cycleTimes = []
+      let lastEventTime = 0
+      match.events.forEach(event => {
+        if (event.type === 'cycle') {
+          const timeDiff = event.timestamp - lastEventTime
+          if (timeDiff > 0) {
+            cycleTimes.push(timeDiff / 1000)
+          }
+        }
+        lastEventTime = event.timestamp
+      })
+      
+      const avgCycleTime = cycleTimes.length > 0 
+        ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length
+        : 0
+      
+      const matchDate = new Date(match.startTime)
+      
+      return {
+        name: tournament.matches.length > 1 
+          ? `${tournament.name} - Match ${matchIndex + 1}`
+          : tournament.name,
+        tournamentName: tournament.name,
+        date: matchDate.toISOString(),
+        scored,
+        total,
+        accuracy: total > 0 ? (scored / total * 100) : 0,
+        avgCycleTime
+      }
+    })
+  ).sort((a, b) => new Date(a.date) - new Date(b.date))
+  
+  // Also keep tournament-level stats for the list view
   const tournamentStats = tournaments.map(tournament => {
     const tEvents = tournament.matches.flatMap(m => m.events).filter(e => e.type === 'cycle')
     const scored = tEvents.reduce((sum, e) => sum + e.scored, 0)
@@ -88,29 +130,25 @@ function LifetimePage({ onBack }) {
     <div className="min-h-screen p-5 max-w-7xl mx-auto">
       <div className="my-8 flex items-center justify-between">
         <h1 className="text-5xl font-bold">Lifetime Statistics</h1>
-        <button onClick={onBack} className="btn">
-          <ArrowLeft size={20} weight="bold" />
-          Back to Home
-        </button>
       </div>
 
       {/* Upload Section */}
       <div className="bg-white border-2 border-[#445f8b] p-6 mb-8">
-        <h2 className="text-3xl mb-4">Add Tournament</h2>
+        <h2 className="text-3xl mb-4">Upload</h2>
         <label className="btn">
           <Plus weight="bold" size={20} />
           Upload Tournament or Match
           <input type="file" accept=".json" onChange={importTournament} className="hidden" />
         </label>
         <p className="text-sm text-[#666] mt-3">
-          Upload tournament JSON files or individual match JSON files to track your career progress
+          Upload all of your tournament and match JSON files here to see your lifetime statistics!
         </p>
       </div>
 
       {tournaments.length === 0 ? (
         <div className="bg-white border-2 border-[#445f8b] p-16 text-center">
           <UploadSimple size={64} weight="light" className="mx-auto mb-4 text-[#445f8b]" />
-          <p className="text-xl">No tournaments yet. Upload your first tournament to start tracking!</p>
+          <p className="text-xl">No uploads yet. Upload your first tournament or match and it'll show up here 👀</p>
         </div>
       ) : (
         <>
@@ -129,144 +167,95 @@ function LifetimePage({ onBack }) {
               <TrendUp weight="bold" size={32} />
               Progression
             </h2>
-            
+
             <div className="mb-6">
               <h3 className="text-xl font-semibold mb-3">Accuracy Over Time</h3>
-              <div className="relative h-64 border-2 border-[#ddd] p-4">
-                <svg className="w-full h-full">
-                  {/* Y-axis labels */}
-                  {[0, 25, 50, 75, 100].map(val => (
-                    <g key={val}>
-                      <line 
-                        x1="0" 
-                        y1={`${100 - val}%`} 
-                        x2="100%" 
-                        y2={`${100 - val}%`} 
-                        stroke="#ddd" 
-                        strokeWidth="1"
-                      />
-                      <text 
-                        x="-5" 
-                        y={`${100 - val}%`} 
-                        textAnchor="end" 
-                        dominantBaseline="middle"
-                        className="text-xs fill-[#666]"
-                      >
-                        {val}%
-                      </text>
-                    </g>
-                  ))}
-                  
-                  {/* Line chart */}
-                  {tournamentStats.length > 1 && (
-                    <polyline
-                      points={tournamentStats.map((stat, i) => {
-                        const x = (i / (tournamentStats.length - 1)) * 100
-                        const y = 100 - stat.accuracy
-                        return `${x}%,${y}%`
-                      }).join(' ')}
-                      fill="none"
-                      stroke="#445f8b"
-                      strokeWidth="3"
+              <div className="h-80 border-2 border-[#ddd] bg-white">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={matchStats.map((stat, i) => ({
+                      ...stat,
+                      index: i,
+                      dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    }))}
+                    margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
+                  >
+                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+                    <XAxis 
+                      dataKey="dateLabel" 
+                      stroke="#666"
+                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
                     />
-                  )}
-                  
-                  {/* Data points */}
-                  {tournamentStats.map((stat, i) => {
-                    const x = tournamentStats.length > 1 
-                      ? (i / (tournamentStats.length - 1)) * 100 
-                      : 50
-                    const y = 100 - stat.accuracy
-                    return (
-                      <circle
-                        key={i}
-                        cx={`${x}%`}
-                        cy={`${y}%`}
-                        r="5"
-                        fill="#445f8b"
-                        className="cursor-pointer hover:fill-[#2d3e5c]"
-                        onClick={() => setSelectedTournament(i)}
-                      >
-                        <title>{stat.name}: {stat.accuracy.toFixed(1)}%</title>
-                      </circle>
-                    )
-                  })}
-                </svg>
+                    <YAxis 
+                      domain={[0, 100]}
+                      stroke="#666"
+                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      tickFormatter={(val) => `${val}%`}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '2px solid #445f8b',
+                        fontFamily: 'League Spartan'
+                      }}
+                      formatter={(value) => [`${value.toFixed(1)}%`, 'Accuracy']}
+                      labelFormatter={(label, payload) => payload[0]?.payload.name}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="accuracy" 
+                      stroke="#445f8b" 
+                      strokeWidth={2}
+                      dot={{ fill: '#445f8b', r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
             <div>
               <h3 className="text-xl font-semibold mb-3">Average Cycle Time Over Time</h3>
-              <div className="relative h-64 border-2 border-[#ddd] p-4">
-                <svg className="w-full h-full">
-                  {/* Y-axis */}
-                  {(() => {
-                    const maxTime = Math.max(...tournamentStats.map(s => s.avgCycleTime), 30)
-                    const step = Math.ceil(maxTime / 4)
-                    return [0, step, step * 2, step * 3, step * 4].map(val => (
-                      <g key={val}>
-                        <line 
-                          x1="0" 
-                          y1={`${100 - (val / maxTime * 100)}%`} 
-                          x2="100%" 
-                          y2={`${100 - (val / maxTime * 100)}%`} 
-                          stroke="#ddd" 
-                          strokeWidth="1"
-                        />
-                        <text 
-                          x="-5" 
-                          y={`${100 - (val / maxTime * 100)}%`} 
-                          textAnchor="end" 
-                          dominantBaseline="middle"
-                          className="text-xs fill-[#666]"
-                        >
-                          {val}s
-                        </text>
-                      </g>
-                    ))
-                  })()}
-                  
-                  {/* Line chart */}
-                  {tournamentStats.length > 1 && (() => {
-                    const maxTime = Math.max(...tournamentStats.map(s => s.avgCycleTime), 30)
-                    return (
-                      <polyline
-                        points={tournamentStats.map((stat, i) => {
-                          const x = (i / (tournamentStats.length - 1)) * 100
-                          const y = 100 - (stat.avgCycleTime / maxTime * 100)
-                          return `${x}%,${y}%`
-                        }).join(' ')}
-                        fill="none"
-                        stroke="#445f8b"
-                        strokeWidth="3"
-                      />
-                    )
-                  })()}
-                  
-                  {/* Data points */}
-                  {(() => {
-                    const maxTime = Math.max(...tournamentStats.map(s => s.avgCycleTime), 30)
-                    return tournamentStats.map((stat, i) => {
-                      const x = tournamentStats.length > 1 
-                        ? (i / (tournamentStats.length - 1)) * 100 
-                        : 50
-                      const y = 100 - (stat.avgCycleTime / maxTime * 100)
-                      return (
-                        <circle
-                          key={i}
-                          cx={`${x}%`}
-                          cy={`${y}%`}
-                          r="5"
-                          fill="#445f8b"
-                          className="cursor-pointer hover:fill-[#2d3e5c]"
-                          onClick={() => setSelectedTournament(i)}
-                        >
-                          <title>{stat.name}: {stat.avgCycleTime.toFixed(1)}s</title>
-                        </circle>
-                      )
-                    })
-                  })()}
-                </svg>
+              <div className="h-80 border-2 border-[#ddd] bg-white">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={matchStats.map((stat, i) => ({
+                      ...stat,
+                      index: i,
+                      dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    }))}
+                    margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
+                  >
+                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+                    <XAxis 
+                      dataKey="dateLabel" 
+                      stroke="#666"
+                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                    />
+                    <YAxis 
+                      stroke="#666"
+                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      tickFormatter={(val) => `${val}s`}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '2px solid #445f8b',
+                        fontFamily: 'League Spartan'
+                      }}
+                      formatter={(value) => [`${value.toFixed(1)}s`, 'Avg Cycle Time']}
+                      labelFormatter={(label, payload) => payload[0]?.payload.name}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="avgCycleTime" 
+                      stroke="#445f8b" 
+                      strokeWidth={2}
+                      dot={{ fill: '#445f8b', r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
@@ -275,7 +264,7 @@ function LifetimePage({ onBack }) {
           <div className="bg-white border-2 border-[#445f8b] p-6">
             <h2 className="text-3xl mb-5 flex items-center gap-3">
               <Calendar weight="bold" size={32} />
-              Tournaments ({tournaments.length})
+              Uploads ({tournaments.length})
             </h2>
             <div className="space-y-4">
               {tournaments.map((tournament, index) => {

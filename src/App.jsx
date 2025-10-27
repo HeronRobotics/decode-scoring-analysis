@@ -302,36 +302,45 @@ function App() {
 
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
-      <header className="text-center my-8">
+      <header className="text-center mt-8">
         <h1 className="text-5xl font-bold">H.MAD</h1>
+        <p className='text-lg '>
+          Heron's Match Analysis for DECODE
+        </p>
       </header>
 
       {!isRecording && matchStartTime === null && (
-        <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center p-16">
-          <h2 className="text-3xl mb-8 text-center">Start a New Match</h2>
-          <div className="flex gap-5 justify-center mb-8 flex-wrap">
+        <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center md:py-8 md:px-8">
+          <p className='mb-4'>
+            H.MAD is a scouting app designed for intensive data analysis. First and foremost, it's easy to use — just press one of the buttons below to start recording a match.
+            <br /><br />
+            Matches are stored as JSON, and you can compose groups of Matches into Tournaments for analysis on your consistency using the "Tournament Analysis" page. Matches and Tournaments can
+            both be imported on the "Lifetime Stats" page to explore your performance over the course of the season.
+          </p>
+          <h2 className="text-3xl mb-4">Start recording a Match with H.MAD!</h2>
+          <button
+            onClick={() => startMatch(null)}
+            className="btn mb-4 !py-3 !bg-[#445f8b] !text-white !px-6"
+          >
+            <Play size={24} weight="fill" />
+            No Timer (Stop when you want)
+          </button>
+          <div className="flex flex-row gap-5 justify-center mb-8 flex-wrap">
             <button
               onClick={() => startMatch(30)}
-              className="btn !py-3 !bg-[#445f8b] !text-white !px-6"
+              className="btn "
             >
               <Play size={24} weight="fill" />
               0:30 Timer (Auto)
             </button>
             <button
               onClick={() => startMatch(120)}
-              className="btn !py-3 !bg-[#445f8b] !text-white !px-6"
+              className="btn"
             >
               <Play size={24} weight="fill" />
               2:00 Timer (TeleOp)
             </button>
           </div>
-          <button
-            onClick={() => startMatch(null)}
-            className="btn mb-12"
-          >
-            <Play size={24} weight="fill" />
-            No Timer (Practice)
-          </button>
           {/* "-- or --" text but replace "--" with a line */}
           <div className="flex gap-4 items-center mb-12">
             <hr className="w-12 grow border-t border-gray-300" />
@@ -343,7 +352,7 @@ function App() {
             <label className="btn">
               <span className="flex items-center gap-2">
                 <UploadSimple weight="bold" />
-                Import JSON
+                Import Match from JSON
               </span>
               <input type="file" accept=".json" onChange={importMatch} className="hidden" />
             </label>
@@ -419,8 +428,13 @@ function App() {
           {!isRecording && events.length > 0 && (
             <div className="bg-white p-8 mt-8 border-2 border-[#445f8b] flex flex-col justif-center items-center gap-6">
               <div>
-                <h3 className="text-xl mb-3">Match Data:</h3>
-                <p className="bg-[#f5f5f5] p-4 max-w-full font-mono text-sm leading-relaxed border-2 border-[#ddd]">{formatMatchData()}</p>
+                <h3 className="text-xl mb-2">Match Data:</h3>
+                <p className='mb-2'>
+                  Export this Match as JSON so you can analyze it with H.MAD later!
+                </p>
+                <p className="bg-[#f5f5f5] p-4 max-w-full font-mono text-sm leading-relaxed border-2 border-[#ddd]">
+                  {formatMatchData()}
+                </p>
               </div>
               <div className='w-full flex justify-center items-center gap-6'>
                 <p>
@@ -564,50 +578,61 @@ function App() {
   )
 }
 
-function MainApp() {
-  const [currentPage, setCurrentPage] = useState('home')
-
-  if (currentPage === 'tournament') {
-    return <TournamentPage onBack={() => setCurrentPage('home')} />
-  }
-
-  if (currentPage === 'lifetime') {
-    return <LifetimePage onBack={() => setCurrentPage('home')} />
-  }
-
+function NavigationBar({ currentPage, setCurrentPage }) {
   return (
-    <>
-      {/* Navigation Bar */}
-      <div className="bg-white border-b-2 border-[#445f8b]">
-        <div className="max-w-7xl mx-auto px-5 py-4 flex gap-4">
-          <button
-            onClick={() => setCurrentPage('home')}
-            className={`px-6 py-2 font-semibold transition-colors ${
+    <div className="bg-white border-b-2 border-[#445f8b] z-20 flex flex-row items-between px-4">
+      <div className="max-w-7xl px-5 py-4 flex gap-4">
+        <button
+          onClick={() => setCurrentPage('home')}
+          className={`btn ${
               currentPage === 'home'
-                ? 'bg-[#445f8b] text-white'
+                ? '!bg-[#445f8b] !text-white'
                 : 'bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]'
             }`}
           >
-            Match Tracker
+            Home
           </button>
           <button
             onClick={() => setCurrentPage('tournament')}
-            className="px-6 py-2 font-semibold bg-transparent text-[#445f8b] hover:bg-[#f0f5ff] transition-colors flex items-center gap-2"
+            className={`btn ${
+              currentPage === 'tournament'
+                ? '!bg-[#445f8b] !text-white'
+                : 'bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]'
+            }`}
           >
             <Calendar weight="bold" size={20} />
-            Tournament
+            Tournament Analysis
           </button>
           <button
             onClick={() => setCurrentPage('lifetime')}
-            className="px-6 py-2 font-semibold bg-transparent text-[#445f8b] hover:bg-[#f0f5ff] transition-colors flex items-center gap-2"
+            className={`btn ${
+              currentPage === 'lifetime'
+                ? '!bg-[#445f8b] !text-white'
+                : 'bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]'
+            }`}
           >
             <ChartLine weight="bold" size={20} />
-            Lifetime
+            Lifetime Stats
           </button>
         </div>
+        <div className='hidden md:flex ml-auto items-center'>
+          <h2 className='text-lg font-bold'>
+            H.MAD
+          </h2>
+        </div>
       </div>
-      
-      <App />
+  )
+}
+
+function MainApp() {
+  const [currentPage, setCurrentPage] = useState('home')
+
+  return (
+    <>
+      <NavigationBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      {currentPage === 'home' && <App />}
+      {currentPage === 'tournament' && <TournamentPage />}
+      {currentPage === 'lifetime' && <LifetimePage />}
     </>
   )
 }
