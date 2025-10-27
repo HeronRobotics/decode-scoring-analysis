@@ -3,6 +3,7 @@ import { ArrowLeft, UploadSimple, Calendar, FloppyDisk } from '@phosphor-icons/r
 import Statistics from '../components/Statistics'
 import Timeline from '../components/Timeline'
 import TournamentGraphs from '../components/TournamentGraphs'
+import { logEvent } from 'firebase/analytics'
 
 function TournamentPage({ onBack }) {
   const [tournament, setTournament] = useState(null)
@@ -80,6 +81,10 @@ function TournamentPage({ onBack }) {
     setTournament(newTournament)
     setSelectedMatch(0)
     setIsCreating(false)
+    logEvent('create_tournament', {
+        tournamentName: tournamentName,
+        numMatches: uploadedMatches.length
+    });
   }
 
   const saveTournament = () => {

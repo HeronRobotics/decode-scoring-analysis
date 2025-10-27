@@ -4,6 +4,8 @@ import Timeline from './components/Timeline'
 import Statistics from './components/Statistics'
 import TournamentPage from './pages/TournamentPage'
 import LifetimePage from './pages/LifetimePage'
+import { logEvent } from 'firebase/analytics'
+import { analytics } from './firebase'
 
 function App() {
   const [matchStartTime, setMatchStartTime] = useState(null)
@@ -190,14 +192,19 @@ function App() {
       startTime: matchStartTime,
       duration: timerDuration,
       events: events
-    }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `match-${new Date().toISOString()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `match-${new Date().toISOString()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    logEvent(analytics, 'export_match_json', {
+      numEvents: events.length,
+      totalScored: events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.scored, 0),
+      totalBalls: events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.total, 0)
+    });
   }
 
   const parseTextFormat = (text) => {
@@ -250,31 +257,41 @@ function App() {
         setTimerDuration(data.duration)
         setEvents(data.events)
         setElapsedTime(data.events.length > 0 ? data.events[data.events.length - 1].timestamp : 0)
-        setIsRecording(false)
+        setIsRecording(false);
+
+        logEvent(analytics, 'import_match_json', {
+          numEvents: data.events.length,
+          totalScored: data.events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.scored, 0),
+          totalBalls: data.events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.total, 0)
+        });
       } catch {
         alert('Error loading match file. Please ensure it is a valid JSON file.')
       }
     }
-    reader.readAsText(file)
+
+    logEvent(analytics, 'import_match_json');
+    reader.readAsText(file);
   }
 
   const importFromText = () => {
     try {
       const parsedEvents = parseTextFormat(textInput)
       if (parsedEvents.length === 0) {
-        alert('No valid match data found. Please check the format.')
-        return
+        alert('No valid match data found. Please check the format.');
+        return;
       }
       
-      setMatchStartTime(Date.now())
-      setTimerDuration(null)
-      setEvents(parsedEvents)
-      setElapsedTime(parsedEvents[parsedEvents.length - 1].timestamp)
-      setIsRecording(false)
-      setShowTextImport(false)
-      setTextInput('')
+      setMatchStartTime(Date.now());
+      setTimerDuration(null);
+      setEvents(parsedEvents);
+      setElapsedTime(parsedEvents[parsedEvents.length - 1].timestamp);
+      setIsRecording(false);
+      setShowTextImport(false);
+      setTextInput('');
+
+      logEvent(analytics, 'import_match_text');
     } catch {
-      alert('Error parsing match data. Please check the format.')
+      alert('Error parsing match data. Please check the format.');
     }
   }
 
@@ -313,7 +330,10 @@ function App() {
         <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center md:py-8 md:px-8 pb-4">
           <h2 className="text-3xl mt-2 mb-6 px-2">Start recording!</h2>
           <button
-            onClick={() => startMatch(null)}
+            onClick={() => {
+              startMatch(null);
+              logEvent(analytics, 'start_no_timer');
+            }}
             className="btn mb-4 !py-3 !bg-[#445f8b] !text-white !px-6"
           >
             <Play size={24} weight="fill" />
@@ -321,14 +341,20 @@ function App() {
           </button>
           <div className="flex flex-row gap-5 justify-center mb-8 flex-wrap">
             <button
-              onClick={() => startMatch(30)}
+              onClick={() => {
+                startMatch(30);
+                logEvent(analytics, 'start_30sec_timer');
+              }}
               className="btn "
             >
               <Play size={24} weight="fill" />
               0:30 Timer (Auto)
             </button>
             <button
-              onClick={() => startMatch(120)}
+              onClick={() => {
+                startMatch(120);
+                logEvent(analytics, 'start_2min_timer');
+              }}
               className="btn"
             >
               <Play size={24} weight="fill" />
@@ -596,7 +622,10 @@ function NavigationBar({ currentPage, setCurrentPage }) {
     <div className="bg-white border-b-2 border-[#445f8b] z-20 flex flex-row items-between px-4">
       <div className="max-w-7xl px-5 py-4 flex gap-4">
         <button
-          onClick={() => setCurrentPage('home')}
+          onClick={() => {
+            setCurrentPage('home');
+            logEvent(analytics, 'navigate_home');
+          }}
           className={`btn ${
               currentPage === 'home'
                 ? '!bg-[#445f8b] !text-white'
@@ -606,7 +635,10 @@ function NavigationBar({ currentPage, setCurrentPage }) {
             Home
           </button>
           <button
-            onClick={() => setCurrentPage('tournament')}
+            onClick={() => {
+              setCurrentPage('tournament');
+              logEvent(analytics, 'navigate_tournament');
+            }}
             className={`btn ${
               currentPage === 'tournament'
                 ? '!bg-[#445f8b] !text-white'
@@ -617,7 +649,10 @@ function NavigationBar({ currentPage, setCurrentPage }) {
             Tournament Analysis
           </button>
           <button
-            onClick={() => setCurrentPage('lifetime')}
+            onClick={() => {
+              setCurrentPage('lifetime');
+              logEvent(analytics, 'navigate_lifetime');
+            }}
             className={`btn ${
               currentPage === 'lifetime'
                 ? '!bg-[#445f8b] !text-white'
