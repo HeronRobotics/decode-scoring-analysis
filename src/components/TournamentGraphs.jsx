@@ -1,7 +1,10 @@
 import { ChartLine, Target, Clock } from '@phosphor-icons/react'
 
-function TournamentGraphs({ events, numMatches }) {
-  const cycleEvents = events.filter(e => e.type === 'cycle')
+function TournamentGraphs({ events, matches, numMatches }) {
+  // If matches are provided, extract events from them
+  // Otherwise, use the events prop directly
+  const allEvents = matches ? matches.flatMap(m => m.events) : events
+  const cycleEvents = allEvents.filter(e => e.type === 'cycle')
   
   if (cycleEvents.length === 0) {
     return (
@@ -15,18 +18,43 @@ function TournamentGraphs({ events, numMatches }) {
   const totalBalls = cycleEvents.reduce((sum, e) => sum + e.total, 0)
   const overallAccuracy = totalBalls > 0 ? (totalScored / totalBalls * 100) : 0
 
+  // Calculate cycle times correctly, respecting match boundaries
   const cycleTimes = []
-  for (let i = 1; i < cycleEvents.length; i++) {
-    const timeDiff = cycleEvents[i].timestamp - cycleEvents[i - 1].timestamp
-    if (timeDiff > 0) {
-      cycleTimes.push(timeDiff / 1000)
-    }
+  
+  if (matches) {
+    // Process each match separately to avoid times spanning across matches
+    matches.forEach(match => {
+      let lastEventTime = 0
+      match.events.forEach(event => {
+        if (event.type === 'cycle') {
+          const timeDiff = event.timestamp - lastEventTime
+          if (timeDiff > 0) {
+            cycleTimes.push(timeDiff / 1000)
+          }
+        }
+        lastEventTime = event.timestamp
+      })
+    })
+  } else {
+    // Single match or continuous event list
+    let lastEventTime = 0
+    allEvents.forEach((event) => {
+      if (event.type === 'cycle') {
+        const timeDiff = event.timestamp - lastEventTime
+        if (timeDiff > 0) {
+          cycleTimes.push(timeDiff / 1000)
+        }
+      }
+      lastEventTime = event.timestamp
+    })
   }
+
   const avgCycleTime = cycleTimes.length > 0 
     ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length 
-    : 0;
+    : 0
 
-  const avgBallsPerMatch = totalBalls / numMatches;
+  const matchCount = matches ? matches.length : numMatches
+  const avgBallsPerMatch = totalBalls / matchCount
 
   return (
     <div className="space-y-8">

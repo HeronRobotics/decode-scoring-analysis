@@ -1,25 +1,46 @@
 import { ChartLine, Target, Clock, ListNumbers, ArrowsDownUp, Crosshair } from '@phosphor-icons/react'
 
-function Statistics({ events }) {
-  const cycleEvents = events.filter(e => e.type === 'cycle')
+function Statistics({ events, matches }) {
+  // If matches are provided, extract events from them
+  // Otherwise, use the events prop directly
+  const allEvents = matches ? matches.flatMap(m => m.events) : events
+  const cycleEvents = allEvents.filter(e => e.type === 'cycle')
   
   if (cycleEvents.length === 0) {
     return null
   }
 
-  // Calculate cycle times
+  // Calculate cycle times correctly, respecting match boundaries
   const cycleTimes = []
-  let lastEventTime = 0
   
-  events.forEach((event) => {
-    if (event.type === 'cycle') {
-      const cycleTime = (event.timestamp - lastEventTime) / 1000 // in seconds
-      cycleTimes.push(cycleTime)
-    }
-    lastEventTime = event.timestamp
-  })
+  if (matches) {
+    // Process each match separately to avoid times spanning across matches
+    matches.forEach(match => {
+      let lastEventTime = 0
+      match.events.forEach(event => {
+        if (event.type === 'cycle') {
+          const cycleTime = (event.timestamp - lastEventTime) / 1000
+          if (cycleTime > 0) {
+            cycleTimes.push(cycleTime)
+          }
+        }
+        lastEventTime = event.timestamp
+      })
+    })
+  } else {
+    // Single match or continuous event list
+    let lastEventTime = 0
+    allEvents.forEach((event) => {
+      if (event.type === 'cycle') {
+        const cycleTime = (event.timestamp - lastEventTime) / 1000
+        if (cycleTime > 0) {
+          cycleTimes.push(cycleTime)
+        }
+      }
+      lastEventTime = event.timestamp
+    })
+  }
 
-  // Calculate statistics
   const calcStats = (arr) => {
     if (arr.length === 0) return { avg: 0, std: 0, min: 0, max: 0 }
     
@@ -63,17 +84,17 @@ function Statistics({ events }) {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-white">{totalBalls.reduce((a, b) => a + b, 0)}</div>
-            <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
-              <Target size={16} />
-              Total Balls
-            </div>
-          </div>
-          <div className="text-center">
             <div className="text-4xl font-bold text-white">{scoredBalls.reduce((a, b) => a + b, 0)}</div>
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
               <Crosshair size={16} />
               Total Scored
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-white">{totalBalls.reduce((a, b) => a + b, 0)}</div>
+            <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
+              <Target size={16} />
+              Total Balls
             </div>
           </div>
           <div className="text-center">

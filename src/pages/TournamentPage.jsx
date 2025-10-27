@@ -227,7 +227,6 @@ function TournamentPage({ onBack }) {
   }
 
   const currentMatch = tournament.matches[selectedMatch]
-  const allEvents = tournament.matches.flatMap(m => m.events)
   
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto">
@@ -251,7 +250,7 @@ function TournamentPage({ onBack }) {
       {/* Tournament-wide Statistics */}
       <div className="mb-64">
         <h2 className="text-3xl mb-5">Tournament Summary</h2>
-        <TournamentGraphs events={allEvents} numMatches={tournament.matches.length} />
+        <TournamentGraphs matches={tournament.matches} />
       </div>
 
 

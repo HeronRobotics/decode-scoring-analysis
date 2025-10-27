@@ -47,23 +47,30 @@ function LifetimePage({ onBack }) {
     }
   }
 
-  const allEvents = tournaments.flatMap(t => t.matches.flatMap(m => m.events))
+  const allMatches = tournaments.flatMap(t => t.matches)
   
   const tournamentStats = tournaments.map(tournament => {
     const tEvents = tournament.matches.flatMap(m => m.events).filter(e => e.type === 'cycle')
     const scored = tEvents.reduce((sum, e) => sum + e.scored, 0)
     const total = tEvents.reduce((sum, e) => sum + e.total, 0)
-    const cycleTimes = []
     
+    // Calculate cycle times correctly across all matches in tournament
+    const cycleTimes = []
     tournament.matches.forEach(match => {
-      const cycles = match.events.filter(e => e.type === 'cycle')
-      for (let i = 1; i < cycles.length; i++) {
-        cycleTimes.push(cycles[i].timestamp - cycles[i - 1].timestamp)
-      }
+      let lastEventTime = 0
+      match.events.forEach(event => {
+        if (event.type === 'cycle') {
+          const timeDiff = event.timestamp - lastEventTime;
+          if (timeDiff > 0) {
+            cycleTimes.push(timeDiff / 1000);
+          }
+        }
+        lastEventTime = event.timestamp;
+      })
     })
     
     const avgCycleTime = cycleTimes.length > 0 
-      ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length 
+      ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length
       : 0
     
     return {
@@ -113,7 +120,7 @@ function LifetimePage({ onBack }) {
               <ChartLine weight="bold" size={32} />
               Career Summary
             </h2>
-            <Statistics events={allEvents} />
+            <Statistics matches={allMatches} />
           </div>
 
           {/* Progression Chart */}
@@ -288,7 +295,7 @@ function LifetimePage({ onBack }) {
                         <h3 className="text-2xl font-bold">{tournament.name}</h3>
                         <p className="text-[#666] mb-3">{new Date(tournament.date).toLocaleDateString()}</p>
                         <div className="flex gap-6 text-sm">
-                          <span><strong>{stat.matchCount}</strong> matches</span>
+                          <span><strong>{stat.matchCount}</strong> match{stat.matchCount !== 1 ? 'es' : ''}</span>
                           <span><strong>{stat.scored}/{stat.total}</strong> scored</span>
                           <span><strong>{stat.accuracy.toFixed(1)}%</strong> accuracy</span>
                           <span><strong>{stat.avgCycleTime.toFixed(1)}s</strong> avg cycle</span>
@@ -308,7 +315,7 @@ function LifetimePage({ onBack }) {
                     {selectedTournament === index && (
                       <div className="mt-6 pt-6 border-t-2 border-[#ddd]">
                         <h4 className="text-xl font-semibold mb-4">Tournament Details</h4>
-                        <Statistics events={tournament.matches.flatMap(m => m.events)} />
+                        <Statistics matches={tournament.matches} />
                       </div>
                     )}
                   </div>
