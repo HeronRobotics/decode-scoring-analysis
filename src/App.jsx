@@ -217,6 +217,7 @@ function App() {
     const data = {
       startTime: matchStartTime,
       duration: timerDuration,
+      teamNumber: teamNumber,
       events: events,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -241,7 +242,22 @@ function App() {
 
   const parseTextFormat = (text) => {
     // Parse text format like: 0:00; 1/2 at 0:10; gate at 1:00; ...
-    const events = [];
+    let events = [];
+
+    const tprefix = text.split(";;")[0].trim();
+
+    // the rest
+    text = text.split(";;")[1].trim();
+    if (!tprefix.startsWith("hmadv1")) {
+      setTeamNumber(tprefix.split("/")[1] || "");
+      events.push({
+        type: "info",
+        version: "text_v1",
+        teamNumber: teamNumber,
+        timestamp: 0,
+      });
+    }
+
     const parts = text
       .split(";")
       .map((s) => s.trim())
@@ -298,6 +314,8 @@ function App() {
         );
         setIsRecording(false);
 
+        setTeamNumber(data.teamNumber || "");
+
         logEvent(analytics, "import_match_json", {
           numEvents: data.events.length,
           totalScored: data.events
@@ -320,11 +338,32 @@ function App() {
 
   const importFromText = () => {
     try {
-      const parsedEvents = parseTextFormat(textInput);
+      let parsedEvents = parseTextFormat(textInput);
       if (parsedEvents.length === 0) {
         alert("No valid match data found. Please check the format.");
         return;
       }
+
+      // Extract team number from the text input directly
+      const tprefix = textInput.split(";;")[0].trim();
+      let extractedTeamNumber = "";
+
+      if (tprefix.startsWith("hmadv1")) {
+        // Extract team number from hmadv1 format
+        const parts = tprefix.split("/");
+        if (parts.length > 1) {
+          extractedTeamNumber = parts[1];
+        }
+      } else {
+        // Extract team number from legacy format
+        const parts = tprefix.split("/");
+        if (parts.length > 1) {
+          extractedTeamNumber = parts[1];
+        }
+      }
+
+      let otherEvents = parsedEvents.filter((e) => e.type !== "info");
+      parsedEvents = otherEvents;
 
       setMatchStartTime(Date.now());
       setTimerDuration(null);
@@ -334,16 +373,25 @@ function App() {
       setShowTextImport(false);
       setTextInput("");
 
+      // Set the extracted team number
+      setTeamNumber(extractedTeamNumber);
+
       logEvent(analytics, "import_match_text");
-    } catch {
-      alert("Error parsing match data. Please check the format.");
+    } catch (e) {
+      alert("Error parsing match data. Please check the format." + e.message);
     }
   };
 
   const formatMatchData = () => {
     if (events.length === 0) return "No events recorded";
 
-    let output = formatTime(0) + ";";
+    let prefix = "hmadv1";
+    if (teamNumber) {
+      prefix += `/${teamNumber}`;
+    }
+    prefix += ";; ";
+
+    let output = prefix + formatTime(0) + ";";
     events.forEach((event) => {
       if (event.type === "cycle") {
         output += ` ${event.scored}/${event.total} at ${formatTime(
@@ -363,6 +411,8 @@ function App() {
   const totalBalls = events
     .filter((e) => e.type === "cycle")
     .reduce((sum, e) => sum + e.total, 0);
+
+  const [teamNumber, setTeamNumber] = useState("");
 
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
@@ -458,6 +508,23 @@ function App() {
                 {totalScored}/{totalBalls}
               </span>
               . Scroll down for instructions.
+            </div>
+          </div>
+
+          <div className="bg-white p-6 border-2 border-[#445f8b] w-full">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <label className="flex items-center gap-2 text-lg font-semibold">
+                Team Number:
+                <input
+                  type="number"
+                  value={teamNumber}
+                  onChange={(e) => setTeamNumber(e.target.value)}
+                  placeholder="1234"
+                  className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-24 text-center font-mono"
+                  min="1"
+                  max="99999"
+                />
+              </label>
             </div>
           </div>
 
