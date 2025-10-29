@@ -3,7 +3,7 @@ import { ArrowLeft, UploadSimple, Plus, Trash, ChartLine, TrendUp, Calendar } fr
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import Statistics from '../components/Statistics'
 
-function LifetimePage({ onBack }) {
+function LifetimePage() {
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
 

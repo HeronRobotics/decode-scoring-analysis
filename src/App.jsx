@@ -591,7 +591,9 @@ function App() {
             </p>
           </div>
 
-          {events.length > 0 && <Statistics events={events} />}
+          {events.length > 0 && (
+            <Statistics events={events} teamNumber={teamNumber} />
+          )}
 
           {!isRecording && events.length > 0 && (
             <div className="bg-white p-8 mt-8 border-2 border-[#445f8b] flex flex-col justif-center items-center gap-6">

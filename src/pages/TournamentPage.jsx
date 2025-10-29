@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ArrowLeft, UploadSimple, Calendar, FloppyDisk } from '@phosphor-icons/react'
 import Statistics from '../components/Statistics'
 import Timeline from '../components/Timeline'
@@ -12,6 +12,23 @@ function TournamentPage({ onBack }) {
   const [tournamentName, setTournamentName] = useState('')
   const [tournamentDate, setTournamentDate] = useState('')
   const [uploadedMatches, setUploadedMatches] = useState([])
+  const [selectedTeam, setSelectedTeam] = useState('')
+
+  const teams = useMemo(() => {
+    if (!tournament?.matches) return []
+    const uniq = Array.from(new Set(
+      tournament.matches
+        .map(m => (m.teamNumber || '').toString().trim())
+        .filter(Boolean)
+    ))
+    return uniq
+  }, [tournament])
+
+  const filteredMatches = useMemo(() => {
+    if (!tournament?.matches) return []
+    if (!selectedTeam) return tournament.matches
+    return tournament.matches.filter(m => (m.teamNumber || '').toString().trim() === selectedTeam)
+  }, [tournament, selectedTeam])
 
   const importTournament = (e) => {
     const file = e.target.files[0]
@@ -23,6 +40,7 @@ function TournamentPage({ onBack }) {
         const data = JSON.parse(event.target.result)
         setTournament(data)
         setSelectedMatch(0)
+        setSelectedTeam('')
         setIsCreating(false)
       } catch {
         alert('Error loading tournament file. Please ensure it is a valid JSON file.')
@@ -80,6 +98,7 @@ function TournamentPage({ onBack }) {
 
     setTournament(newTournament)
     setSelectedMatch(0)
+    setSelectedTeam('')
     setIsCreating(false)
     logEvent('create_tournament', {
         tournamentName: tournamentName,
@@ -236,7 +255,7 @@ function TournamentPage({ onBack }) {
     )
   }
 
-  const currentMatch = tournament.matches[selectedMatch]
+  const currentMatch = filteredMatches[selectedMatch]
   
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto">
@@ -259,8 +278,30 @@ function TournamentPage({ onBack }) {
 
       {/* Tournament-wide Statistics */}
       <div className="mb-18">
-        <h2 className="text-3xl mb-5">Tournament Summary</h2>
-        <TournamentGraphs matches={tournament.matches} />
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <h2 className="text-3xl">Tournament Summary</h2>
+          {teams.length > 0 && (
+            <div className="flex items-center gap-3">
+              <label className="font-semibold">Team:</label>
+              <select
+                value={selectedTeam}
+                onChange={(e) => {
+                  setSelectedTeam(e.target.value)
+                  setSelectedMatch(0)
+                }}
+                className="p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none min-w-40"
+              >
+                <option value="">All Teams</option>
+                {teams.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="mt-5">
+          <TournamentGraphs matches={filteredMatches} />
+        </div>
       </div>
 
 
@@ -269,9 +310,9 @@ function TournamentPage({ onBack }) {
             <span className="text-3xl mb-5">Match Details</span>
         </h2>
         <div className="w-full bg-white border-2 border-[#445f8b] p-6 mb-8">
-            <h3 className="text-2xl mb-4">Select Match ({tournament.matches.length} total)</h3>
+            <h3 className="text-2xl mb-4">Select Match ({filteredMatches.length} total)</h3>
             <div className="flex gap-3 flex-wrap">
-            {tournament.matches.map((_, index) => (
+            {filteredMatches.map((_, index) => (
                 <button
                 key={index}
                 onClick={() => setSelectedMatch(index)}
@@ -289,11 +330,17 @@ function TournamentPage({ onBack }) {
 
         {/* Individual Match View */}
         <div className="w-full mb-8">
-            <Statistics events={currentMatch.events} />
-            <Timeline
-                events={currentMatch.events} 
-                currentTime={currentMatch.events[currentMatch.events.length - 1]?.timestamp || 0} 
-            />
+            {currentMatch ? (
+              <>
+                <Statistics events={currentMatch.events} teamNumber={(currentMatch.teamNumber || '').toString().trim() || undefined} />
+                <Timeline
+                    events={currentMatch.events} 
+                    currentTime={currentMatch.events[currentMatch.events.length - 1]?.timestamp || 0} 
+                />
+              </>
+            ) : (
+              <div className="bg-white border-2 border-[#445f8b] p-6 text-center text-[#666]">No matches for selected team.</div>
+            )}
         </div>
         </div>
     </div>
