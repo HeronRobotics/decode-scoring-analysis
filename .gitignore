@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 
 src/firebase.js
+.firebase/hosting.ZGlzdA.cache
