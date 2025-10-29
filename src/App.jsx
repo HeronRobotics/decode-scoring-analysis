@@ -1,329 +1,374 @@
-import { useState, useEffect, useRef } from 'react'
-import { Play, Record, DoorOpen, Stop, ArrowClockwise, DownloadSimple, UploadSimple, CricketIcon, ClipboardTextIcon, Calendar, ChartLine } from '@phosphor-icons/react'
-import Timeline from './components/Timeline'
-import Statistics from './components/Statistics'
-import TournamentPage from './pages/TournamentPage'
-import LifetimePage from './pages/LifetimePage'
-import { logEvent } from 'firebase/analytics'
-import { analytics } from './firebase'
+import { useState, useEffect, useRef } from "react";
+import {
+  Play,
+  Record,
+  DoorOpen,
+  Stop,
+  ArrowClockwise,
+  DownloadSimple,
+  UploadSimple,
+  CricketIcon,
+  ClipboardTextIcon,
+  Calendar,
+  ChartLine,
+} from "@phosphor-icons/react";
+import Timeline from "./components/Timeline";
+import Statistics from "./components/Statistics";
+import TournamentPage from "./pages/TournamentPage";
+import LifetimePage from "./pages/LifetimePage";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "./firebase";
 
 function App() {
-  const [matchStartTime, setMatchStartTime] = useState(null)
-  const [timerDuration, setTimerDuration] = useState(null) // in seconds
-  const [elapsedTime, setElapsedTime] = useState(0)
-  const [events, setEvents] = useState([])
-  const [isRecording, setIsRecording] = useState(false)
-  const [showCycleModal, setShowCycleModal] = useState(false)
-  const [cycleData, setCycleData] = useState({ total: 1, scored: 0 })
-  const [showTextImport, setShowTextImport] = useState(false)
-  const [textInput, setTextInput] = useState('')
-  const intervalRef = useRef(null)
+  const [matchStartTime, setMatchStartTime] = useState(null);
+  const [timerDuration, setTimerDuration] = useState(null); // in seconds
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [events, setEvents] = useState([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [showCycleModal, setShowCycleModal] = useState(false);
+  const [cycleData, setCycleData] = useState({ total: 1, scored: 0 });
+  const [showTextImport, setShowTextImport] = useState(false);
+  const [textInput, setTextInput] = useState("");
+  const intervalRef = useRef(null);
 
-  const [keyEntry, setKeyEntry] = useState({ total: null, scored: null })
-  const [keyEntryVisible, setKeyEntryVisible] = useState(false)
-  const [keyEntryExpiresAt, setKeyEntryExpiresAt] = useState(null)
-  const [cooldownUntil, setCooldownUntil] = useState(null)
-  const expireTimeoutRef = useRef(null)
+  const [keyEntry, setKeyEntry] = useState({ total: null, scored: null });
+  const [keyEntryVisible, setKeyEntryVisible] = useState(false);
+  const [keyEntryExpiresAt, setKeyEntryExpiresAt] = useState(null);
+  const [cooldownUntil, setCooldownUntil] = useState(null);
+  const expireTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (isRecording) {
       intervalRef.current = setInterval(() => {
-        const elapsed = Date.now() - matchStartTime
-        setElapsedTime(elapsed)
-        
+        const elapsed = Date.now() - matchStartTime;
+        setElapsedTime(elapsed);
+
         // Auto-stop when timer expires
         if (timerDuration && elapsed >= timerDuration * 1000) {
-          setIsRecording(false)
-          setElapsedTime(timerDuration * 1000)
+          setIsRecording(false);
+          setElapsedTime(timerDuration * 1000);
         }
-      }, 100)
+      }, 100);
     } else {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+        clearInterval(intervalRef.current);
       }
     }
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+        clearInterval(intervalRef.current);
       }
-    }
-  }, [isRecording, matchStartTime, timerDuration])
+    };
+  }, [isRecording, matchStartTime, timerDuration]);
 
   // Auto-cancel pending key entry on timeout
   useEffect(() => {
     if (expireTimeoutRef.current) {
-      clearTimeout(expireTimeoutRef.current)
-      expireTimeoutRef.current = null
+      clearTimeout(expireTimeoutRef.current);
+      expireTimeoutRef.current = null;
     }
     if (keyEntryVisible && keyEntryExpiresAt) {
-      const ms = Math.max(0, keyEntryExpiresAt - Date.now())
+      const ms = Math.max(0, keyEntryExpiresAt - Date.now());
       expireTimeoutRef.current = setTimeout(() => {
-        setKeyEntry({ total: null, scored: null })
-        setKeyEntryVisible(false)
-        setKeyEntryExpiresAt(null)
-        setCooldownUntil(Date.now() + 5000)
-      }, ms)
+        setKeyEntry({ total: null, scored: null });
+        setKeyEntryVisible(false);
+        setKeyEntryExpiresAt(null);
+        setCooldownUntil(Date.now() + 5000);
+      }, ms);
     }
     return () => {
       if (expireTimeoutRef.current) {
-        clearTimeout(expireTimeoutRef.current)
-        expireTimeoutRef.current = null
+        clearTimeout(expireTimeoutRef.current);
+        expireTimeoutRef.current = null;
       }
-    }
-  }, [keyEntryVisible, keyEntryExpiresAt])
+    };
+  }, [keyEntryVisible, keyEntryExpiresAt]);
 
   // Keyboard controls: type total (1-3), type made (0-total), press Enter to confirm. Esc to cancel.
   useEffect(() => {
     const onKeyDown = (e) => {
-      if (!isRecording) return
-      if (showCycleModal || showTextImport) return
-      const ae = document.activeElement
-      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.getAttribute('contenteditable') === 'true')) return
+      if (!isRecording) return;
+      if (showCycleModal || showTextImport) return;
+      const ae = document.activeElement;
+      if (
+        ae &&
+        (ae.tagName === "INPUT" ||
+          ae.tagName === "TEXTAREA" ||
+          ae.getAttribute("contenteditable") === "true")
+      )
+        return;
 
-      const now = Date.now()
+      const now = Date.now();
       if (!keyEntryVisible) {
         // Quick gate record with 'G'
-        if (e.key && e.key.toLowerCase() === 'g') {
-          const event = { type: 'gate', timestamp: elapsedTime }
-          setEvents((prev) => [...prev, event])
-          e.preventDefault()
-          return
+        if (e.key && e.key.toLowerCase() === "g") {
+          const event = { type: "gate", timestamp: elapsedTime };
+          setEvents((prev) => [...prev, event]);
+          e.preventDefault();
+          return;
         }
-        if (cooldownUntil && now < cooldownUntil) return
-        if (e.key >= '1' && e.key <= '3') {
-          setKeyEntry({ total: parseInt(e.key, 10), scored: null })
-          setKeyEntryVisible(true)
-          setKeyEntryExpiresAt(now + 5000)
-          e.preventDefault()
+        if (cooldownUntil && now < cooldownUntil) return;
+        if (e.key >= "1" && e.key <= "3") {
+          setKeyEntry({ total: parseInt(e.key, 10), scored: null });
+          setKeyEntryVisible(true);
+          setKeyEntryExpiresAt(now + 5000);
+          e.preventDefault();
         }
-        return
+        return;
       }
 
       // When visible
-      if (e.key === 'Escape') {
-        setKeyEntry({ total: null, scored: null })
-        setKeyEntryVisible(false)
-        setKeyEntryExpiresAt(null)
-        setCooldownUntil(Date.now() + 5000)
-        e.preventDefault()
-        return
+      if (e.key === "Escape") {
+        setKeyEntry({ total: null, scored: null });
+        setKeyEntryVisible(false);
+        setKeyEntryExpiresAt(null);
+        setCooldownUntil(Date.now() + 5000);
+        e.preventDefault();
+        return;
       }
 
-      if (e.key === 'Enter') {
+      if (e.key === "Enter") {
         if (keyEntry.total != null && keyEntry.scored != null) {
           const event = {
-            type: 'cycle',
+            type: "cycle",
             timestamp: elapsedTime,
             total: keyEntry.total,
-            scored: keyEntry.scored
-          }
-          setEvents((prev) => [...prev, event])
-          setKeyEntry({ total: null, scored: null })
-          setKeyEntryVisible(false)
-          setKeyEntryExpiresAt(null)
+            scored: keyEntry.scored,
+          };
+          setEvents((prev) => [...prev, event]);
+          setKeyEntry({ total: null, scored: null });
+          setKeyEntryVisible(false);
+          setKeyEntryExpiresAt(null);
         }
-        e.preventDefault()
-        return
+        e.preventDefault();
+        return;
       }
 
-      if (e.key >= '0' && e.key <= '9') {
+      if (e.key >= "0" && e.key <= "9") {
         if (keyEntry.total != null) {
-          const val = parseInt(e.key, 10)
+          const val = parseInt(e.key, 10);
           if (val <= keyEntry.total) {
-            setKeyEntry((prev) => ({ ...prev, scored: val }))
-            setKeyEntryExpiresAt(Date.now() + 5000)
+            setKeyEntry((prev) => ({ ...prev, scored: val }));
+            setKeyEntryExpiresAt(Date.now() + 5000);
           }
-          e.preventDefault()
+          e.preventDefault();
         }
       }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isRecording, showCycleModal, showTextImport, keyEntryVisible, keyEntry, elapsedTime, cooldownUntil])
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    isRecording,
+    showCycleModal,
+    showTextImport,
+    keyEntryVisible,
+    keyEntry,
+    elapsedTime,
+    cooldownUntil,
+  ]);
 
   const formatTime = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(totalSeconds / 60)
-    const seconds = totalSeconds % 60
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
 
   const startMatch = (duration) => {
-    const now = Date.now()
-    setMatchStartTime(now)
-    setTimerDuration(duration)
-    setElapsedTime(0)
-    setEvents([])
-    setIsRecording(true)
-  }
+    const now = Date.now();
+    setMatchStartTime(now);
+    setTimerDuration(duration);
+    setElapsedTime(0);
+    setEvents([]);
+    setIsRecording(true);
+  };
 
   const stopMatch = () => {
-    setIsRecording(false)
-  }
+    setIsRecording(false);
+  };
 
   const recordCycle = () => {
-    if (!isRecording) return
-    setShowCycleModal(true)
-  }
+    if (!isRecording) return;
+    setShowCycleModal(true);
+  };
 
   const confirmCycle = () => {
     const event = {
-      type: 'cycle',
+      type: "cycle",
       timestamp: elapsedTime,
       total: cycleData.total,
-      scored: cycleData.scored
-    }
-    setEvents([...events, event])
-    setShowCycleModal(false)
-    setCycleData({ total: 1, scored: 0 })
-  }
+      scored: cycleData.scored,
+    };
+    setEvents([...events, event]);
+    setShowCycleModal(false);
+    setCycleData({ total: 1, scored: 0 });
+  };
 
   const recordGate = () => {
-    if (!isRecording) return
+    if (!isRecording) return;
     const event = {
-      type: 'gate',
-      timestamp: elapsedTime
-    }
-    setEvents([...events, event])
-  }
+      type: "gate",
+      timestamp: elapsedTime,
+    };
+    setEvents([...events, event]);
+  };
 
   const exportMatch = () => {
     const data = {
       startTime: matchStartTime,
       duration: timerDuration,
-      events: events
+      events: events,
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `match-${new Date().toISOString()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    logEvent(analytics, 'export_match_json', {
+    logEvent(analytics, "export_match_json", {
       numEvents: events.length,
-      totalScored: events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.scored, 0),
-      totalBalls: events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.total, 0)
+      totalScored: events
+        .filter((e) => e.type === "cycle")
+        .reduce((sum, e) => sum + e.scored, 0),
+      totalBalls: events
+        .filter((e) => e.type === "cycle")
+        .reduce((sum, e) => sum + e.total, 0),
     });
-  }
+  };
 
   const parseTextFormat = (text) => {
     // Parse text format like: 0:00; 1/2 at 0:10; gate at 1:00; ...
-    const events = []
-    const parts = text.split(';').map(s => s.trim()).filter(s => s)
-    
+    const events = [];
+    const parts = text
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s);
+
     for (const part of parts) {
-      if (part === '0:00') continue // Skip the initial timestamp
-      
-      if (part.includes('gate at')) {
-        const timeMatch = part.match(/(\d+):(\d+)/)
+      if (part === "0:00") continue; // Skip the initial timestamp
+
+      if (part.includes("gate at")) {
+        const timeMatch = part.match(/(\d+):(\d+)/);
         if (timeMatch) {
-          const minutes = parseInt(timeMatch[1])
-          const seconds = parseInt(timeMatch[2])
+          const minutes = parseInt(timeMatch[1]);
+          const seconds = parseInt(timeMatch[2]);
           events.push({
-            type: 'gate',
-            timestamp: (minutes * 60 + seconds) * 1000
-          })
+            type: "gate",
+            timestamp: (minutes * 60 + seconds) * 1000,
+          });
         }
       } else {
-        const cycleMatch = part.match(/(\d+)\/(\d+)\s+at\s+(\d+):(\d+)/)
+        const cycleMatch = part.match(/(\d+)\/(\d+)\s+at\s+(\d+):(\d+)/);
         if (cycleMatch) {
-          const scored = parseInt(cycleMatch[1])
-          const total = parseInt(cycleMatch[2])
-          const minutes = parseInt(cycleMatch[3])
-          const seconds = parseInt(cycleMatch[4])
+          const scored = parseInt(cycleMatch[1]);
+          const total = parseInt(cycleMatch[2]);
+          const minutes = parseInt(cycleMatch[3]);
+          const seconds = parseInt(cycleMatch[4]);
           events.push({
-            type: 'cycle',
+            type: "cycle",
             timestamp: (minutes * 60 + seconds) * 1000,
             total: total,
-            scored: scored
-          })
+            scored: scored,
+          });
         }
       }
     }
-    
-    return events
-  }
+
+    return events;
+  };
 
   const importMatch = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    
-    const reader = new FileReader()
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const data = JSON.parse(event.target.result)
-        setMatchStartTime(data.startTime)
-        setTimerDuration(data.duration)
-        setEvents(data.events)
-        setElapsedTime(data.events.length > 0 ? data.events[data.events.length - 1].timestamp : 0)
+        const data = JSON.parse(event.target.result);
+        setMatchStartTime(data.startTime);
+        setTimerDuration(data.duration);
+        setEvents(data.events);
+        setElapsedTime(
+          data.events.length > 0
+            ? data.events[data.events.length - 1].timestamp
+            : 0
+        );
         setIsRecording(false);
 
-        logEvent(analytics, 'import_match_json', {
+        logEvent(analytics, "import_match_json", {
           numEvents: data.events.length,
-          totalScored: data.events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.scored, 0),
-          totalBalls: data.events.filter(e => e.type === 'cycle').reduce((sum, e) => sum + e.total, 0)
+          totalScored: data.events
+            .filter((e) => e.type === "cycle")
+            .reduce((sum, e) => sum + e.scored, 0),
+          totalBalls: data.events
+            .filter((e) => e.type === "cycle")
+            .reduce((sum, e) => sum + e.total, 0),
         });
       } catch {
-        alert('Error loading match file. Please ensure it is a valid JSON file.')
+        alert(
+          "Error loading match file. Please ensure it is a valid JSON file."
+        );
       }
-    }
+    };
 
-    logEvent(analytics, 'import_match_json');
+    logEvent(analytics, "import_match_json");
     reader.readAsText(file);
-  }
+  };
 
   const importFromText = () => {
     try {
-      const parsedEvents = parseTextFormat(textInput)
+      const parsedEvents = parseTextFormat(textInput);
       if (parsedEvents.length === 0) {
-        alert('No valid match data found. Please check the format.');
+        alert("No valid match data found. Please check the format.");
         return;
       }
-      
+
       setMatchStartTime(Date.now());
       setTimerDuration(null);
       setEvents(parsedEvents);
       setElapsedTime(parsedEvents[parsedEvents.length - 1].timestamp);
       setIsRecording(false);
       setShowTextImport(false);
-      setTextInput('');
+      setTextInput("");
 
-      logEvent(analytics, 'import_match_text');
+      logEvent(analytics, "import_match_text");
     } catch {
-      alert('Error parsing match data. Please check the format.');
+      alert("Error parsing match data. Please check the format.");
     }
-  }
+  };
 
   const formatMatchData = () => {
-    if (events.length === 0) return 'No events recorded'
-    
-    let output = formatTime(0) + ';'
-    events.forEach(event => {
-      if (event.type === 'cycle') {
-        output += ` ${event.scored}/${event.total} at ${formatTime(event.timestamp)};`
-      } else if (event.type === 'gate') {
-        output += ` gate at ${formatTime(event.timestamp)};`
+    if (events.length === 0) return "No events recorded";
+
+    let output = formatTime(0) + ";";
+    events.forEach((event) => {
+      if (event.type === "cycle") {
+        output += ` ${event.scored}/${event.total} at ${formatTime(
+          event.timestamp
+        )};`;
+      } else if (event.type === "gate") {
+        output += ` gate at ${formatTime(event.timestamp)};`;
       }
-    })
-    return output
-  }
+    });
+    return output;
+  };
 
   const totalScored = events
-    .filter(e => e.type === 'cycle')
-    .reduce((sum, e) => sum + e.scored, 0)
-    
+    .filter((e) => e.type === "cycle")
+    .reduce((sum, e) => sum + e.scored, 0);
+
   const totalBalls = events
-    .filter(e => e.type === 'cycle')
-    .reduce((sum, e) => sum + e.total, 0)
+    .filter((e) => e.type === "cycle")
+    .reduce((sum, e) => sum + e.total, 0);
 
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
       <header className="text-center mt-8">
         <h1 className="text-5xl font-bold">H.MAD</h1>
-        <p className='text-lg '>
-          Heron's Match Analysis for DECODE
-        </p>
+        <p className="text-lg ">Heron's Match Analysis for DECODE</p>
       </header>
 
       {!isRecording && matchStartTime === null && (
@@ -332,7 +377,7 @@ function App() {
           <button
             onClick={() => {
               startMatch(null);
-              logEvent(analytics, 'start_no_timer');
+              logEvent(analytics, "start_no_timer");
             }}
             className="btn mb-4 !py-3 !bg-[#445f8b] !text-white !px-6"
           >
@@ -343,7 +388,7 @@ function App() {
             <button
               onClick={() => {
                 startMatch(30);
-                logEvent(analytics, 'start_30sec_timer');
+                logEvent(analytics, "start_30sec_timer");
               }}
               className="btn "
             >
@@ -353,7 +398,7 @@ function App() {
             <button
               onClick={() => {
                 startMatch(120);
-                logEvent(analytics, 'start_2min_timer');
+                logEvent(analytics, "start_2min_timer");
               }}
               className="btn"
             >
@@ -373,23 +418,32 @@ function App() {
                 <UploadSimple weight="bold" />
                 Import Match from JSON
               </span>
-              <input type="file" accept=".json" onChange={importMatch} className="hidden" />
+              <input
+                type="file"
+                accept=".json"
+                onChange={importMatch}
+                className="hidden"
+              />
             </label>
-            <button 
-              onClick={() => setShowTextImport(true)}
-              className="btn"
-            >
+            <button onClick={() => setShowTextImport(true)} className="btn">
               <span className="flex items-center gap-2">
                 <ClipboardTextIcon weight="bold" />
                 From Text
               </span>
             </button>
           </div>
-          <p className='mt-8 p-2'>
-            H.MAD is a scouting app designed for intensive data analysis. First and foremost, it's easy to use — just press one of the buttons above to start recording a match. (Or import one.)
-            <br /><br />
-            Matches are stored as JSON and easily shareable! Save your Matches and you'll be able to compose groups of them into Tournaments for analysis on your consistency using the "Tournament Analysis" page. Matches and Tournaments can
-            both be imported on the "Lifetime Stats" page to explore your performance over the course of the season and generate cool graphs! We love graphs at Heron Robotics :)
+          <p className="mt-8 p-2">
+            H.MAD is a scouting app designed for intensive data analysis. First
+            and foremost, it's easy to use — just press one of the buttons above
+            to start recording a match. (Or import one.)
+            <br />
+            <br />
+            Matches are stored as JSON and easily shareable! Save your Matches
+            and you'll be able to compose groups of them into Tournaments for
+            analysis on your consistency using the "Tournament Analysis" page.
+            Matches and Tournaments can both be imported on the "Lifetime Stats"
+            page to explore your performance over the course of the season and
+            generate cool graphs! We love graphs at Heron Robotics :)
           </p>
         </div>
       )}
@@ -400,33 +454,28 @@ function App() {
             <h2 className="text-6xl font-mono">{formatTime(elapsedTime)}</h2>
             <div>
               Scored&nbsp;
-              <span className='font-bold'>
+              <span className="font-bold">
                 {totalScored}/{totalBalls}
-              </span>. Scroll down for instructions.
+              </span>
+              . Scroll down for instructions.
             </div>
           </div>
 
           <div className="flex gap-4 justify-center flex-wrap">
             {isRecording ? (
               <>
-                <button 
+                <button
                   onClick={recordCycle}
                   className="px-8 py-4 text-lg border-2 border-[#445f8b] bg-[#445f8b] text-white hover:bg-white hover:text-[#2d3e5c] transition-colors font-semibold flex items-center gap-2"
                 >
                   <Record size={24} weight="fill" />
                   Record Cycle
                 </button>
-                <button 
-                  onClick={recordGate}
-                  className="btn"
-                >
+                <button onClick={recordGate} className="btn">
                   <CricketIcon size={24} weight="bold" />
                   Gate Open
                 </button>
-                <button 
-                  onClick={stopMatch}
-                  className="error-btn"
-                >
+                <button onClick={stopMatch} className="error-btn">
                   <Stop size={24} weight="fill" />
                   Stop Match
                 </button>
@@ -434,9 +483,9 @@ function App() {
             ) : (
               <button
                 onClick={() => {
-                  setMatchStartTime(null)
-                  setEvents([])
-                  setElapsedTime(0)
+                  setMatchStartTime(null);
+                  setEvents([]);
+                  setElapsedTime(0);
                 }}
                 className="btn !px-6 !py-3"
               >
@@ -451,38 +500,50 @@ function App() {
           <div className="w-full">
             <p>
               {/* Instructions for using the app */}
-              <strong>Instructions:</strong> 
+              <strong>Instructions:</strong>
               <br />
-              - To record a shooting cycle, press the "Record Cycle" button and select how many balls were shot and how many were successfully scored.<br />
-              &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Keyboard Users:</strong> Type the total number of balls (1-3) attempted, followed by the number scored (0-total), then press Enter. Esc to cancel.<br />
-              - Record gate openings by pressing the "Gate Open" button.<br />
-              - Events will appear on the timeline above as they are recorded.<br />
-              - Export the Match and save it somewhere! The "Lifetime Stats" and "Tournament Analysis" pages can import your saved Matches and give you a lot more insight into your performance over time.<br />
-              &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Text export:</strong> You can export matches in a readable text format if you just want to share a match with your friends. Use JSON for advanced H.MAD analysis!
+              - To record a shooting cycle, press the "Record Cycle" button and
+              select how many balls were shot and how many were successfully
+              scored.
+              <br />
+              &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Keyboard Users:</strong> Type
+              the total number of balls (1-3) attempted, followed by the number
+              scored (0-total), then press Enter. Esc to cancel.
+              <br />
+              - Record gate openings by pressing the "Gate Open" button.
+              <br />
+              - Events will appear on the timeline above as they are recorded.
+              <br />
+              - Export the Match and save it somewhere! The "Lifetime Stats" and
+              "Tournament Analysis" pages can import your saved Matches and give
+              you a lot more insight into your performance over time.
+              <br />
+              &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Text export:</strong> You can
+              export matches in a readable text format if you just want to share
+              a match with your friends. Use JSON for advanced H.MAD analysis!
             </p>
           </div>
-          
+
           {events.length > 0 && <Statistics events={events} />}
 
           {!isRecording && events.length > 0 && (
             <div className="bg-white p-8 mt-8 border-2 border-[#445f8b] flex flex-col justif-center items-center gap-6">
               <div>
                 <h3 className="text-xl mb-2">Match Data:</h3>
-                <p className='mb-2'>
-                  Export this Match as JSON so you can analyze it with H.MAD later!
+                <p className="mb-2">
+                  Export this Match as JSON so you can analyze it with H.MAD
+                  later!
                 </p>
                 <p className="bg-[#f5f5f5] p-4 max-w-full font-mono text-sm leading-relaxed border-2 border-[#ddd]">
                   {formatMatchData()}
                 </p>
               </div>
-              <div className='w-full flex justify-center items-center gap-6'>
+              <div className="w-full flex justify-center items-center gap-6">
                 <p>
-                  Send the above text to your friends or export to JSON for easier processing!
+                  Send the above text to your friends or export to JSON for
+                  easier processing!
                 </p>
-                <button
-                  onClick={exportMatch}
-                  className='btn'
-                >
+                <button onClick={exportMatch} className="btn">
                   <DownloadSimple size={20} weight="bold" />
                   Save JSON
                 </button>
@@ -502,31 +563,47 @@ function App() {
             </div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[#666] text-sm">Made:</span>
-              <span className="text-2xl font-mono">{keyEntry.scored ?? '_'}</span>
+              <span className="text-2xl font-mono">
+                {keyEntry.scored ?? "_"}
+              </span>
               <span className="text-sm text-[#999]">(0-{keyEntry.total})</span>
             </div>
-            <div className="text-xs text-[#666]">Type a number, then press Enter. Esc to cancel.</div>
+            <div className="text-xs text-[#666]">
+              Type a number, then press Enter. Esc to cancel.
+            </div>
           </div>
         </div>
       )}
 
       {showCycleModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowCycleModal(false)}>
-          <div className="bg-white p-8 max-w-lg w-11/12 border-2 border-[#445f8b]" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={() => setShowCycleModal(false)}
+        >
+          <div
+            className="bg-white p-8 max-w-lg w-11/12 border-2 border-[#445f8b]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-2xl mb-5">Record Cycle</h3>
             <div className="flex flex-col gap-5 mb-6">
               <label className="flex flex-col gap-3 font-semibold">
                 Total Balls:
                 <div className="flex gap-3">
-                  {[1, 2, 3].map(num => (
+                  {[1, 2, 3].map((num) => (
                     <button
                       key={num}
                       className={`flex-1 p-4 text-lg border-2 font-semibold transition-colors ${
-                        cycleData.total === num 
-                          ? 'border-[#445f8b] bg-[#445f8b] text-white' 
-                          : 'border-[#ddd] bg-white hover:border-[#445f8b]'
+                        cycleData.total === num
+                          ? "border-[#445f8b] bg-[#445f8b] text-white"
+                          : "border-[#ddd] bg-white hover:border-[#445f8b]"
                       }`}
-                      onClick={() => setCycleData({ ...cycleData, total: num, scored: Math.min(cycleData.scored, num) })}
+                      onClick={() =>
+                        setCycleData({
+                          ...cycleData,
+                          total: num,
+                          scored: Math.min(cycleData.scored, num),
+                        })
+                      }
                     >
                       {num}
                     </button>
@@ -537,36 +614,34 @@ function App() {
                 Balls Scored:
                 <div className="flex gap-3">
                   {[0, 1, 2, 3].map((i) => {
-                    const disabled = i > cycleData.total
-                    const selected = cycleData.scored === i
-                    const base = 'flex-1 p-4 text-lg border-2 font-semibold transition-colors'
+                    const disabled = i > cycleData.total;
+                    const selected = cycleData.scored === i;
+                    const base =
+                      "flex-1 p-4 text-lg border-2 font-semibold transition-colors";
                     const cls = selected
-                      ? 'border-[#445f8b] bg-[#445f8b] text-white'
+                      ? "border-[#445f8b] bg-[#445f8b] text-white"
                       : disabled
-                        ? 'border-[#eee] bg-[#f8f8f8] text-[#aaa] cursor-not-allowed opacity-60'
-                        : 'border-[#ddd] bg-white hover:border-[#445f8b]'
+                      ? "border-[#eee] bg-[#f8f8f8] text-[#aaa] cursor-not-allowed opacity-60"
+                      : "border-[#ddd] bg-white hover:border-[#445f8b]";
                     return (
                       <button
                         key={i}
                         disabled={disabled}
                         className={`${base} ${cls}`}
                         onClick={() => {
-                          if (disabled) return
-                          setCycleData({ ...cycleData, scored: i })
+                          if (disabled) return;
+                          setCycleData({ ...cycleData, scored: i });
                         }}
                       >
                         {i}
                       </button>
-                    )
+                    );
                   })}
                 </div>
               </label>
             </div>
             <div className="flex gap-4 justify-end">
-              <button
-                onClick={confirmCycle}
-                className="btn !px-6"
-              >
+              <button onClick={confirmCycle} className="btn !px-6">
                 Confirm
               </button>
               <button
@@ -581,11 +656,18 @@ function App() {
       )}
 
       {showTextImport && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowTextImport(false)}>
-          <div className="bg-white p-8 max-w-2xl w-11/12 border-2 border-[#445f8b]" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={() => setShowTextImport(false)}
+        >
+          <div
+            className="bg-white p-8 max-w-2xl w-11/12 border-2 border-[#445f8b]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-2xl mb-5">Paste Match Text</h3>
             <p className="text-sm mb-4 text-[#666]">
-              Paste match data below in the format: 0:00; 1/2 at 0:10; 1/2 at 0:20; gate at 1:30; ...
+              Paste match data below in the format: 0:00; 1/2 at 0:10; 1/2 at
+              0:20; gate at 1:30; ...
             </p>
             <textarea
               value={textInput}
@@ -594,16 +676,13 @@ function App() {
               className="w-full h-32 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
             />
             <div className="flex gap-4 justify-end mt-6">
-              <button
-                onClick={importFromText}
-                className="btn"
-              >
+              <button onClick={importFromText} className="btn">
                 Import
               </button>
               <button
                 onClick={() => {
-                  setShowTextImport(false)
-                  setTextInput('')
+                  setShowTextImport(false);
+                  setTextInput("");
                 }}
                 className="btn"
               >
@@ -614,7 +693,7 @@ function App() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function NavigationBar({ currentPage, setCurrentPage }) {
@@ -623,66 +702,67 @@ function NavigationBar({ currentPage, setCurrentPage }) {
       <div className="max-w-7xl px-5 py-4 flex gap-4">
         <button
           onClick={() => {
-            setCurrentPage('home');
-            logEvent(analytics, 'navigate_home');
+            setCurrentPage("home");
+            logEvent(analytics, "navigate_home");
           }}
           className={`btn ${
-              currentPage === 'home'
-                ? '!bg-[#445f8b] !text-white'
-                : 'bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]'
-            }`}
-          >
-            Home
-          </button>
-          <button
-            onClick={() => {
-              setCurrentPage('tournament');
-              logEvent(analytics, 'navigate_tournament');
-            }}
-            className={`btn ${
-              currentPage === 'tournament'
-                ? '!bg-[#445f8b] !text-white'
-                : 'bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]'
-            }`}
-          >
-            <Calendar weight="bold" size={20} />
-            Tournament Analysis
-          </button>
-          <button
-            onClick={() => {
-              setCurrentPage('lifetime');
-              logEvent(analytics, 'navigate_lifetime');
-            }}
-            className={`btn ${
-              currentPage === 'lifetime'
-                ? '!bg-[#445f8b] !text-white'
-                : 'bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]'
-            }`}
-          >
-            <ChartLine weight="bold" size={20} />
-            Lifetime Stats
-          </button>
-        </div>
-        <div className='hidden md:flex ml-auto items-center'>
-          <h2 className='text-lg font-bold'>
-            H.MAD
-          </h2>
-        </div>
+            currentPage === "home"
+              ? "!bg-[#445f8b] !text-white"
+              : "bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]"
+          }`}
+        >
+          Home
+        </button>
+        <button
+          onClick={() => {
+            setCurrentPage("tournament");
+            logEvent(analytics, "navigate_tournament");
+          }}
+          className={`btn ${
+            currentPage === "tournament"
+              ? "!bg-[#445f8b] !text-white"
+              : "bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]"
+          }`}
+        >
+          <Calendar weight="bold" size={20} />
+          Tournament Analysis
+        </button>
+        <button
+          onClick={() => {
+            setCurrentPage("lifetime");
+            logEvent(analytics, "navigate_lifetime");
+          }}
+          className={`btn ${
+            currentPage === "lifetime"
+              ? "!bg-[#445f8b] !text-white"
+              : "bg-transparent text-[#445f8b] hover:bg-[#f0f5ff]"
+          }`}
+        >
+          <ChartLine weight="bold" size={20} />
+          Lifetime Stats
+        </button>
       </div>
-  )
+      <div className="hidden md:flex ml-auto items-center">
+        <h2 className="text-lg font-bold">H.MAD</h2>
+      </div>
+    </div>
+  );
 }
 
 function MainApp() {
-  const [currentPage, setCurrentPage] = useState('home')
+  const [currentPage, setCurrentPage] = useState("home");
 
   return (
     <>
-      <NavigationBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      {currentPage === 'home' && <App />}
-      {currentPage === 'tournament' && <TournamentPage />}
-      {currentPage === 'lifetime' && <LifetimePage />}
+      <NavigationBar
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
+      {currentPage === "home" && <App />}
+      {currentPage === "tournament" && <TournamentPage />}
+      {currentPage === "lifetime" && <LifetimePage />}
     </>
-  )
+  );
 }
 
-export default MainApp
+export default MainApp;
