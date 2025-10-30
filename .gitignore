@@ -25,3 +25,5 @@ dist-ssr
 
 src/firebase.js
 .firebase/hosting.ZGlzdA.cache
+
+.firebase/

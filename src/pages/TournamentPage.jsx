@@ -178,7 +178,7 @@ function TournamentPage({ onBack }) {
                     return (
                       <div key={index} className="border-2 border-[#ddd] p-3 flex justify-between items-center">
                         <div>
-                          <span className="font-semibold">Match {index + 1}</span>
+                          <span className="font-semibold">Match {index + 1} ({match.teamNumber || 'No Team'})</span>
                           <span className="text-sm text-[#666] ml-4">
                             {scored}/{total} balls scored
                           </span>
@@ -322,7 +322,7 @@ function TournamentPage({ onBack }) {
                     : 'border-[#ddd] bg-white hover:border-[#445f8b]'
                 }`}
                 >
-                Match {index + 1}
+                Match {index + 1} ({filteredMatches[index].teamNumber || 'No Team'})
                 </button>
             ))}
             </div>

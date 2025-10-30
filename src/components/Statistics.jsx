@@ -6,6 +6,8 @@ import {
   ArrowsDownUp,
   Crosshair,
 } from "@phosphor-icons/react";
+import { formatStat } from "../utils/format";
+import { BoxPlot } from "./BoxPlot";
 
 function Statistics({ events, matches, teamNumber }) {
   // If matches are provided, extract events from them
@@ -62,18 +64,20 @@ function Statistics({ events, matches, teamNumber }) {
   };
 
   const timeStats = calcStats(cycleTimes);
+  // Prepare boxplot stats for cycle times (quartiles)
+  const sortedTimes = [...cycleTimes].sort((a, b) => a - b);
+
   const totalBalls = cycleEvents.map((e) => e.total);
   const scoredBalls = cycleEvents.map((e) => e.scored);
   const accuracy = cycleEvents.map((e) =>
     e.total > 0 ? (e.scored / e.total) * 100 : 0
   );
+  const boxplotCycles = [...totalBalls].sort((a, b) => a - b);
+  const boxplotAccuracy = [...accuracy].sort((a, b) => a - b);
 
   const ballStats = calcStats(scoredBalls);
   const accuracyStats = calcStats(accuracy);
 
-  const formatStat = (val, decimals = 2) => {
-    return isNaN(val) ? "0.00" : val.toFixed(decimals);
-  };
 
   return (
     <div className="mb-8 w-full">
@@ -83,9 +87,9 @@ function Statistics({ events, matches, teamNumber }) {
 
       {/* Summary Section - Most Important */}
       <div className="bg-[#445f8b] border-2 border-[#445f8b] p-8 mb-5">
-        <div className="flex items-center gap-3 mb-6 ml-[-1rem] mt-[-1rem]">
+                    <div className="flex items-center gap-3 mb-6 -ml-4 -mt-4">
           <ChartLine size={32} className="text-white" />
-          <h4 className="text-2xl !text-white">Summary</h4>
+          <h4 className="text-2xl text-white">Summary</h4>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
@@ -146,24 +150,12 @@ function Statistics({ events, matches, teamNumber }) {
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
               {formatStat(timeStats.avg)}s
-            </div>
-          </div>
-
-          {/* Standard Deviation */}
-          <div className="mb-3 pb-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#666] flex items-center gap-1">
-                <ArrowsDownUp size={14} />
-                Std Dev:
-              </span>
-              <span className="font-semibold">
-                {formatStat(timeStats.std)}s
-              </span>
+              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">± {formatStat(timeStats.std)}s (std. dev)</span>
             </div>
           </div>
 
           {/* Min/Max - Related */}
-          <div className="flex gap-3 pt-2 border-t border-[#f0f0f0]">
+          <div className="flex gap-3 pt-2">
             <div className="flex-1 text-center">
               <div className="text-xs text-[#666] mb-1">MIN</div>
               <div className="text-lg font-bold text-[#2d3e5c]">
@@ -184,7 +176,7 @@ function Statistics({ events, matches, teamNumber }) {
         <div className="bg-white border-2 border-[#445f8b] p-5">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b-2 border-[#445f8b]">
             <Target size={20} weight="bold" className="text-[#445f8b]" />
-            <h4 className="text-lg font-bold">Balls per Cycle</h4>
+            <h4 className="text-lg font-bold">Balls Scored per Cycle</h4>
           </div>
 
           {/* Average - Most Important */}
@@ -192,22 +184,12 @@ function Statistics({ events, matches, teamNumber }) {
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
               {formatStat(ballStats.avg)}
-            </div>
-          </div>
-
-          {/* Standard Deviation */}
-          <div className="mb-3 pb-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#666] flex items-center gap-1">
-                <ArrowsDownUp size={14} />
-                Std Dev:
-              </span>
-              <span className="font-semibold">{formatStat(ballStats.std)}</span>
+              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">± {formatStat(ballStats.std)} (std. dev)</span>
             </div>
           </div>
 
           {/* Min/Max - Related */}
-          <div className="flex gap-3 pt-2 border-t border-[#f0f0f0]">
+          <div className="flex gap-3 pt-2 ">
             <div className="flex-1 text-center">
               <div className="text-xs text-[#666] mb-1">MIN</div>
               <div className="text-lg font-bold text-[#2d3e5c]">
@@ -236,24 +218,12 @@ function Statistics({ events, matches, teamNumber }) {
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
               {formatStat(accuracyStats.avg)}%
-            </div>
-          </div>
-
-          {/* Standard Deviation */}
-          <div className="mb-3 pb-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#666] flex items-center gap-1">
-                <ArrowsDownUp size={14} />
-                Std Dev:
-              </span>
-              <span className="font-semibold">
-                {formatStat(accuracyStats.std)}%
-              </span>
+              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">± {formatStat(accuracyStats.std)}% (std. dev)</span>
             </div>
           </div>
 
           {/* Min/Max - Related */}
-          <div className="flex gap-3 pt-2 border-t border-[#f0f0f0]">
+          <div className="flex gap-3 pt-2">
             <div className="flex-1 text-center">
               <div className="text-xs text-[#666] mb-1">MIN</div>
               <div className="text-lg font-bold text-[#2d3e5c]">
@@ -270,6 +240,29 @@ function Statistics({ events, matches, teamNumber }) {
           </div>
         </div>
       </div>
+      <div className="bg-white mt-8 border-2 border-[#445f8b] p-5 justify-around space-x-4 flex flex-row flex-wrap items-center">
+          <BoxPlot
+            data={sortedTimes}
+            width={400}
+            height={200}
+            unit="s"
+            title="Cycle Time Distribution"
+          />
+          {/* <BoxPlot
+            data={boxplotCycles}
+            width={400}
+            height={200}
+            unit=" balls"
+            title="Balls Attempted per cycle"
+          /> */}
+          <BoxPlot
+            data={boxplotAccuracy}
+            width={400}
+            height={200}
+            unit="%"
+            title="Accuracy per cycle"
+          />
+        </div>
     </div>
   );
 }

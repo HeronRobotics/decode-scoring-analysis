@@ -96,7 +96,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
         </h3>
 
             <div className="mb-8">
-              <h4 className="text-xl font-semibold mb-4">Balls Scored Per Cycle</h4>
+              <h4 className="text-xl font-semibold mb-8">Balls Scored Per Cycle</h4>
               <div className="flex items-end gap-2 h-48">
                 {[0, 1, 2, 3].map(count => {
                   const cyclesWithCount = cycleEvents.filter(e => e.scored === count).length
@@ -143,7 +143,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
 
 
                 <div>
-                  <h4 className="text-xl font-semibold mb-4">Cycle Time Distribution</h4>
+                  <h4 className="text-xl font-semibold mb-8">Cycle Time Distribution</h4>
                   <div className="flex items-end gap-2 h-48">
                 {['0-10s', '10-20s', '20-30s', '30s+'].map((range, idx) => {
                   // compute count by bucket
