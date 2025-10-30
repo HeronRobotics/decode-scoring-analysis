@@ -417,7 +417,7 @@ function App() {
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
       <header className="text-center mt-8">
-        <h1 className="text-5xl font-bold">H.MAD</h1>
+        <h1 className="text-5xl font-bold">Heron Scout</h1>
         <p className="text-lg ">Heron's Match Analysis for DECODE</p>
       </header>
 
@@ -483,24 +483,23 @@ function App() {
             </button>
           </div>
           <p className="mt-8 p-2">
-            H.MAD is a scouting app designed for intensive data analysis. First
+            Heron Scout is a scouting app designed for intensive data analysis. First
             and foremost, it's easy to use — just press one of the buttons above
             to start recording a match. (Or import one.)
             <br />
             <br />
-            Matches are stored as JSON and easily shareable! Save your Matches
-            and you'll be able to compose groups of them into Tournaments for
-            analysis on your consistency using the "Tournament Analysis" page.
+            Matches are stored as JSON and easily shareable! Scout matches with Heron Scout and you'll be able to compare teams
+            at tournaments using the Tournament Analysis page.
             Matches and Tournaments can both be imported on the "Lifetime Stats"
             page to explore your performance over the course of the season and
-            generate cool graphs! We love graphs at Heron Robotics :)
+            generate cool graphs!<br /><br />We love graphs at Heron Robotics, so we made this for you :)
           </p>
         </div>
       )}
 
       {(isRecording || matchStartTime !== null) && (
         <>
-          <div className="bg-white p-8 text-center mb-8 border-2 border-[#445f8b] flex flex-col items-center justify-center w-full gap-2">
+          <div className="bg-white p-8 text-center border-2 border-[#445f8b] flex flex-col items-center justify-center w-full gap-2">
             <h2 className="text-6xl font-mono">{formatTime(elapsedTime)}</h2>
             <div>
               Scored&nbsp;
@@ -512,7 +511,7 @@ function App() {
           </div>
 
           <div className="bg-white p-6 border-2 border-[#445f8b] w-full">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between flex-wrap">
               <label className="flex items-center gap-2 text-lg font-semibold">
                 Team Number:
                 <input
@@ -520,12 +519,18 @@ function App() {
                   value={teamNumber}
                   onChange={(e) => setTeamNumber(e.target.value)}
                   placeholder="1234"
-                  className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-24 text-center font-mono"
+                  className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-48 text-center font-mono"
                   min="1"
                   max="99999"
                 />
               </label>
+              <div className="text-sm text-[#666]">
+                <strong>PRO TIP:</strong> Use your keyboard to record cycles! See instructions below.
+              </div>
             </div>
+            <p className="mt-4">
+              Set the team number for this match. Put together all of your scouting on the Tournament Analysis page later to compare teams!
+            </p>
           </div>
 
           <div className="flex gap-4 justify-center flex-wrap">
@@ -587,7 +592,7 @@ function App() {
               <br />
               &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Text export:</strong> You can
               export matches in a readable text format if you just want to share
-              a match with your friends. Use JSON for advanced H.MAD analysis!
+              a match with your friends. Use JSON for advanced Heron Scout analysis!
             </p>
           </div>
 
@@ -600,17 +605,16 @@ function App() {
               <div>
                 <h3 className="text-xl mb-2">Match Data:</h3>
                 <p className="mb-2">
-                  Export this Match as JSON so you can analyze it with H.MAD
+                  Export this Match as JSON so you can analyze it with Heron Scout
                   later!
                 </p>
                 <p className="bg-[#f5f5f5] p-4 max-w-full font-mono text-sm leading-relaxed border-2 border-[#ddd]">
                   {formatMatchData()}
                 </p>
               </div>
-              <div className="w-full flex justify-center items-center gap-6">
+              <div className="w-full flex flex-wrap justify-center items-center gap-6">
                 <p>
-                  Send the above text to your friends or export to JSON for
-                  easier processing!
+                  Send the above text to your friends, or export as JSON to analyze it with Heron Scout later!
                 </p>
                 <button onClick={exportMatch} className="btn">
                   <DownloadSimple size={20} weight="bold" />
@@ -628,10 +632,10 @@ function App() {
           <div className="bg-white border-2 border-[#445f8b] shadow p-4 min-w-64">
             <div className="text-sm text-[#666] mb-1">Quick Entry</div>
             <div className="text-lg font-semibold mb-2">
-              Shot {keyEntry.total} balls; how many made?
+              Shot {keyEntry.total} balls; how many scored?
             </div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[#666] text-sm">Made:</span>
+              <span className="text-[#666] text-sm">Scored:</span>
               <span className="text-2xl font-mono">
                 {keyEntry.scored ?? "_"}
               </span>
@@ -812,7 +816,7 @@ function NavigationBar({ currentPage, setCurrentPage }) {
         </button>
       </div>
       <div className="hidden md:flex ml-auto items-center">
-        <h2 className="text-lg font-bold">H.MAD</h2>
+        <h2 className="text-lg font-bold">Heron Scout</h2>
       </div>
     </div>
   );

@@ -219,9 +219,9 @@ function TournamentPage({ onBack }) {
         <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center p-16 gap-6">
           <h2 className="text-3xl text-center">Load or Create Tournament</h2>
           <p className='mb-4 text-center'>
-            When you've finished participating in a tournament (or other multi-match event like a scrimmage), you can analyze your performance here by loading your match data files.
-            This will give you a better overview of how well you did across all matches, especially with regard to scoring and consistency.<br /><br />
-            Creating "Tournament" JSON files will also make it very easy for you to keep track of your performance over time on the Lifetime Stats page!
+            Scout teams at tournaments (or other multi-match events like scrimmages) and import them here!
+            This will give you deeper insight into how well each team did across all matches, especially with regard to scoring and consistency.<br /><br />
+            Creating "Tournament" JSON files will also make it very easy for you to keep track of your performance over time on the Lifetime Stats page! (Yes, we recommend scouting yourselves!)
           </p>
           
           <button

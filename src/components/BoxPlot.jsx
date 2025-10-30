@@ -96,10 +96,11 @@ export function BoxPlot({
                 const boxH = Math.min(80, height * 0.3);
                 const capH = Math.min(24, boxH);
 
-                const drawWidth = typeof width === "number" ? width : 400;
+                let drawWidth = typeof width === "number" ? width : 400;
+                drawWidth -= 20;
 
                 const scale = (val) =>
-                  ((val - rangeMin) / (rangeMax - rangeMin)) * drawWidth; // base width for drawing
+                  ((val - rangeMin) / (rangeMax - rangeMin)) * drawWidth + 10; // base width for drawing
 
                 const xMin = scale(boxMin);
                 const xMax = scale(boxMax);
