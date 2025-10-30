@@ -8,7 +8,9 @@ function TeamLegend({ teamStats, teamColors }) {
   }
 
   return (
-    <div className="flex flex-wrap gap-2 mb-3">
+    <div className="flex flex-row flex-wrap gap-2 mb-3 w-full items-center">
+      <p className="w-full text-sm text-[#666]">Click to toggle team visibility:</p>
+      <div className="w-8" />
       {teamStats.map(ts => (
         <button
           key={ts.team}

@@ -9,7 +9,7 @@ import TeamSummaryGrid from '../components/tournament/TeamSummaryGrid'
 import TournamentGraphs from '../components/tournament/TournamentGraphs'
 import Statistics from '../components/Statistics'
 import Timeline from '../components/Timeline'
-import { teamStatsFromTournament } from '../utils/stats'
+import { calculateMatchStats, matchScoredOutOfTotal, teamStatsFromTournament } from '../utils/stats'
 
 
 function TournamentPage({ onBack }) {
@@ -124,8 +124,8 @@ function TournamentPage({ onBack }) {
         </div>
 
         <div className="bg-white p-6 border-2 border-[#445f8b] mt-5">
-          <h3 className="text-xl font-semibold mb-3">Per-Match Scores — All Teams</h3>
-          <div className="mb-2 text-sm text-[#666]">Sorted by median scored (highest first). Hover points for match details.</div>
+          <h3 className="text-xl font-semibold mb-3">Match Scores — All Teams</h3>
+          <div className="mb-2 text-sm text-[#666]">Sorted by median scored (highest first). Hover teams for score distributions.</div>
           
           <TeamLegend teamStats={teamStats} teamColors={teamColors} />
           <TeamChart matchesOrdered={tournament.matches} teamStats={teamStats} teamColors={teamColors} />
@@ -139,27 +139,30 @@ function TournamentPage({ onBack }) {
         )}
       </div>
 
+      <div className='w-full h-px my-24 bg-[#445f8b]' />
       <div className='w-full flex flex-col items-start p-8 bg-[#f0f5fd]'>
         <h2 className='mb-8'>
-          <span className="text-3xl mb-5">Individual Matches</span>
+          <span className="text-3xl mb-5">{selectedTeam ? "Team " + selectedTeam + "'s Matches" : "All Tournament Matches"}</span>
         </h2>
         
         <div className="w-full bg-white border-2 border-[#445f8b] p-6 mb-8">
           <h3 className="text-2xl mb-4">Select Match ({filteredMatches.length} total)</h3>
           <div className="flex gap-3 flex-wrap">
-            {filteredMatches.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedMatch(index)}
-                className={`px-6 py-3 border-2 font-semibold transition-colors ${
-                  selectedMatch === index
-                    ? 'border-[#445f8b] bg-[#445f8b] text-white'
+            {filteredMatches.map((_, index) => {
+              const matchStats = matchScoredOutOfTotal(filteredMatches[index]);
+              return (
+                <button
+                  key={index}
+                  onClick={() => setSelectedMatch(index)}
+                  className={`px-6 py-3 border-2 font-semibold transition-colors ${
+                    selectedMatch === index
+                      ? 'border-[#445f8b] bg-[#445f8b] text-white'
                     : 'border-[#ddd] bg-white hover:border-[#445f8b]'
                 }`}
               >
-                Match {index + 1} ({filteredMatches[index].teamNumber || 'No Team'})
+                Match {index + 1} ({filteredMatches[index].teamNumber || 'No Team'}) <span className={`ml-3 text-xs text-[#666] ${selectedMatch == index ? "text-[#ddd]" : ""}`}>{matchStats.scored}/{matchStats.total}</span>
               </button>
-            ))}
+            )})}
           </div>
         </div>
 

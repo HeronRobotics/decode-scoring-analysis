@@ -176,3 +176,10 @@ export const teamStatsFromTournament = (tournament) => {
     }
   }).sort((a,b) => b.median - a.median)
 }
+
+export const matchScoredOutOfTotal = (match) => {
+  const cycleEvents = match.events.filter(e => e.type === 'cycle')
+  const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0)
+  const total = cycleEvents.reduce((sum, e) => sum + e.total, 0)
+  return { scored, total }
+}
