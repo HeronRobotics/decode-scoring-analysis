@@ -24,7 +24,7 @@ function LifetimePage() {
           // It's a single match - wrap it in a tournament structure
           const matchDate = new Date(data.startTime).toISOString().split('T')[0]
           const tournament = {
-            name: `Match on ${new Date(data.startTime).toLocaleDateString()}`,
+            name: `Match on ${new Date(data.startTime).toLocaleString()}`,
             date: matchDate,
             matches: [data]
           }
@@ -172,7 +172,7 @@ function LifetimePage() {
                     data={matchStats.map((stat, i) => ({
                       ...stat,
                       index: i,
-                      dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      dateLabel: new Date(stat.date).toLocaleString('en-US')
                     }))}
                     margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                   >
@@ -218,7 +218,7 @@ function LifetimePage() {
                     data={matchStats.map((stat, i) => ({
                       ...stat,
                       index: i,
-                      dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      dateLabel: new Date(stat.date).toLocaleString()
                     }))}
                     margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                   >
