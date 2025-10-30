@@ -4,6 +4,7 @@ import Statistics from '../components/Statistics'
 import Timeline from '../components/Timeline'
 import TournamentGraphs from '../components/TournamentGraphs'
 import { logEvent } from 'firebase/analytics'
+import { analytics } from '../firebase'
 import {
   ResponsiveContainer,
   LineChart,
@@ -115,7 +116,7 @@ function TournamentPage({ onBack }) {
     setSelectedMatch(0)
     setSelectedTeam('')
     setIsCreating(false)
-    logEvent('create_tournament', {
+    logEvent(analytics, 'create_tournament', {
         tournamentName: tournamentName,
         numMatches: uploadedMatches.length
     });

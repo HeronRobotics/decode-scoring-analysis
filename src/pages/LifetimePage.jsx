@@ -6,6 +6,7 @@ import Statistics from '../components/Statistics'
 function LifetimePage() {
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
+  const [teamNumber, setTeamNumber] = useState("")
 
   const importTournament = (e) => {
     const file = e.target.files[0]
@@ -18,8 +19,19 @@ function LifetimePage() {
         
         // Check if it's a single match or a tournament
         if (data.matches) {
-          // It's a tournament
-          setTournaments(prev => [...prev, data].sort((a, b) => new Date(a.date) - new Date(b.date)))
+          // It's a tournament — filter to only your team's matches
+          const tn = (teamNumber || "").toString().trim()
+          if (!tn) {
+            alert('Please enter your team number above before importing a tournament file.')
+            return
+          }
+          const filteredMatches = (data.matches || []).filter(m => ((m.teamNumber || "").toString().trim()) === tn)
+          if (filteredMatches.length === 0) {
+            alert('No matches found for your team number in this tournament file.')
+            return
+          }
+          const filteredTournament = { ...data, matches: filteredMatches }
+          setTournaments(prev => [...prev, filteredTournament].sort((a, b) => new Date(a.date) - new Date(b.date)))
         } else if (data.events) {
           // It's a single match - wrap it in a tournament structure
           const matchDate = new Date(data.startTime).toISOString().split('T')[0]
@@ -135,13 +147,26 @@ function LifetimePage() {
       {/* Upload Section */}
       <div className="bg-white border-2 border-[#445f8b] p-6 mb-8">
         <h2 className="text-3xl mb-4">Upload</h2>
+        <div className="flex flex-col sm:flex-row gap-4 items-center mb-4">
+          <label className="flex items-center gap-2 font-semibold">
+            Your Team #:
+            <input
+              type="number"
+              value={teamNumber}
+              onChange={(e) => setTeamNumber(e.target.value)}
+              placeholder="1234"
+              className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-32 text-center font-mono"
+              min="1"
+            />
+          </label>
+        </div>
         <label className="btn">
           <Plus weight="bold" size={20} />
           Upload Tournament or Match
           <input type="file" accept=".json" onChange={importTournament} className="hidden" />
         </label>
         <p className="text-sm text-[#666] mt-3">
-          Upload all of your tournament and match JSON files here to see your lifetime statistics!
+          Upload your tournament JSONs and we'll keep only the matches for your team number above. You can also upload single match files.
         </p>
       </div>
 
