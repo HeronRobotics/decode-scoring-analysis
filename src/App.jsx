@@ -18,6 +18,7 @@ import TournamentPage from "./pages/TournamentPage";
 import LifetimePage from "./pages/LifetimePage";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "./firebase";
+import { TournamentProvider } from "./data/TournamentContext";
 
 function App() {
   const [matchStartTime, setMatchStartTime] = useState(null);
@@ -832,7 +833,11 @@ function MainApp() {
         setCurrentPage={setCurrentPage}
       />
       {currentPage === "home" && <App />}
-      {currentPage === "tournament" && <TournamentPage />}
+      {currentPage === "tournament" && (
+        <TournamentProvider>
+          <TournamentPage />
+        </TournamentProvider>
+      )}
       {currentPage === "lifetime" && <LifetimePage />}
     </>
   );

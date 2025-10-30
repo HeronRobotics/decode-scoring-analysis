@@ -3,15 +3,13 @@ import {
   Target,
   Clock,
   ListNumbers,
-  ArrowsDownUp,
   Crosshair,
 } from "@phosphor-icons/react";
 import { formatStat } from "../utils/format";
 import { BoxPlot } from "./BoxPlot";
+import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
 
 function Statistics({ events, matches, teamNumber }) {
-  // If matches are provided, extract events from them
-  // Otherwise, use the events prop directly
   const allEvents = matches ? matches.flatMap((m) => m.events) : events;
   const cycleEvents = allEvents.filter((e) => e.type === "cycle");
 
@@ -19,52 +17,8 @@ function Statistics({ events, matches, teamNumber }) {
     return null;
   }
 
-  // Calculate cycle times correctly, respecting match boundaries
-  const cycleTimes = [];
-
-  if (matches) {
-    // Process each match separately to avoid times spanning across matches
-    matches.forEach((match) => {
-      let lastEventTime = 0;
-      match.events.forEach((event) => {
-        if (event.type === "cycle") {
-          const cycleTime = (event.timestamp - lastEventTime) / 1000;
-          if (cycleTime > 0) {
-            cycleTimes.push(cycleTime);
-          }
-        }
-        lastEventTime = event.timestamp;
-      });
-    });
-  } else {
-    // Single match or continuous event list
-    let lastEventTime = 0;
-    allEvents.forEach((event) => {
-      if (event.type === "cycle") {
-        const cycleTime = (event.timestamp - lastEventTime) / 1000;
-        if (cycleTime > 0) {
-          cycleTimes.push(cycleTime);
-        }
-      }
-      lastEventTime = event.timestamp;
-    });
-  }
-
-  const calcStats = (arr) => {
-    if (arr.length === 0) return { avg: 0, std: 0, min: 0, max: 0 };
-
-    const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
-    const variance =
-      arr.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / arr.length;
-    const std = Math.sqrt(variance);
-    const min = Math.min(...arr);
-    const max = Math.max(...arr);
-
-    return { avg, std, min, max };
-  };
-
-  const timeStats = calcStats(cycleTimes);
-  // Prepare boxplot stats for cycle times (quartiles)
+  const cycleTimes = calculateCycleTimes(allEvents, matches);
+  const timeStats = calculateStats(cycleTimes);
   const sortedTimes = [...cycleTimes].sort((a, b) => a - b);
 
   const totalBalls = cycleEvents.map((e) => e.total);
@@ -72,12 +26,10 @@ function Statistics({ events, matches, teamNumber }) {
   const accuracy = cycleEvents.map((e) =>
     e.total > 0 ? (e.scored / e.total) * 100 : 0
   );
-  const boxplotCycles = [...totalBalls].sort((a, b) => a - b);
   const boxplotAccuracy = [...accuracy].sort((a, b) => a - b);
 
-  const ballStats = calcStats(scoredBalls);
-  const accuracyStats = calcStats(accuracy);
-
+  const ballStats = calculateStats(scoredBalls);
+  const accuracyStats = calculateStats(accuracy);
 
   return (
     <div className="mb-8 w-full">
@@ -87,7 +39,7 @@ function Statistics({ events, matches, teamNumber }) {
 
       {/* Summary Section - Most Important */}
       <div className="bg-[#445f8b] border-2 border-[#445f8b] p-8 mb-5">
-                    <div className="flex items-center gap-3 mb-6 -ml-4 -mt-4">
+        <div className="flex items-center gap-3 mb-6 -ml-4 -mt-4">
           <ChartLine size={32} className="text-white" />
           <h4 className="text-2xl text-white">Summary</h4>
         </div>
@@ -145,7 +97,6 @@ function Statistics({ events, matches, teamNumber }) {
             <h4 className="text-lg font-bold">Cycle Times</h4>
           </div>
 
-          {/* Average - Most Important */}
           <div className="mb-4 pb-3 border-b-2 border-[#f0f0f0]">
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
@@ -154,7 +105,6 @@ function Statistics({ events, matches, teamNumber }) {
             </div>
           </div>
 
-          {/* Min/Max - Related */}
           <div className="flex gap-3 pt-2">
             <div className="flex-1 text-center">
               <div className="text-xs text-[#666] mb-1">MIN</div>
@@ -179,7 +129,6 @@ function Statistics({ events, matches, teamNumber }) {
             <h4 className="text-lg font-bold">Balls Scored per Cycle</h4>
           </div>
 
-          {/* Average - Most Important */}
           <div className="mb-4 pb-3 border-b-2 border-[#f0f0f0]">
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
@@ -188,7 +137,6 @@ function Statistics({ events, matches, teamNumber }) {
             </div>
           </div>
 
-          {/* Min/Max - Related */}
           <div className="flex gap-3 pt-2 ">
             <div className="flex-1 text-center">
               <div className="text-xs text-[#666] mb-1">MIN</div>
@@ -213,7 +161,6 @@ function Statistics({ events, matches, teamNumber }) {
             <h4 className="text-lg font-bold">Accuracy per Cycle</h4>
           </div>
 
-          {/* Average - Most Important */}
           <div className="mb-4 pb-3 border-b-2 border-[#f0f0f0]">
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
@@ -222,7 +169,6 @@ function Statistics({ events, matches, teamNumber }) {
             </div>
           </div>
 
-          {/* Min/Max - Related */}
           <div className="flex gap-3 pt-2">
             <div className="flex-1 text-center">
               <div className="text-xs text-[#666] mb-1">MIN</div>
@@ -241,28 +187,21 @@ function Statistics({ events, matches, teamNumber }) {
         </div>
       </div>
       <div className="bg-white mt-8 border-2 border-[#445f8b] p-5 justify-around space-x-4 flex flex-row flex-wrap items-center">
-          <BoxPlot
-            data={sortedTimes}
-            width={400}
-            height={200}
-            unit="s"
-            title="Cycle Time Distribution"
-          />
-          {/* <BoxPlot
-            data={boxplotCycles}
-            width={400}
-            height={200}
-            unit=" balls"
-            title="Balls Attempted per cycle"
-          /> */}
-          <BoxPlot
-            data={boxplotAccuracy}
-            width={400}
-            height={200}
-            unit="%"
-            title="Accuracy per cycle"
-          />
-        </div>
+        <BoxPlot
+          data={sortedTimes}
+          width={400}
+          height={200}
+          unit="s"
+          title="Cycle Time Distribution"
+        />
+        <BoxPlot
+          data={boxplotAccuracy}
+          width={400}
+          height={200}
+          unit="%"
+          title="Accuracy per cycle"
+        />
+      </div>
     </div>
   );
 }

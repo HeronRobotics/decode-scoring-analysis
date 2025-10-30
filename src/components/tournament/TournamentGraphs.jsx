@@ -1,8 +1,7 @@
 import { ChartLine, Target, Clock } from '@phosphor-icons/react'
+import { calculateCycleTimes } from '../../utils/stats.js'
 
 function TournamentGraphs({ events, matches, numMatches }) {
-  // If matches are provided, extract events from them
-  // Otherwise, use the events prop directly
   const allEvents = matches ? matches.flatMap(m => m.events) : events
   const cycleEvents = allEvents.filter(e => e.type === 'cycle')
   
@@ -18,37 +17,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
   const totalBalls = cycleEvents.reduce((sum, e) => sum + e.total, 0)
   const overallAccuracy = totalBalls > 0 ? (totalScored / totalBalls * 100) : 0
 
-  // Calculate cycle times correctly, respecting match boundaries
-  const cycleTimes = []
-  
-  if (matches) {
-    // Process each match separately to avoid times spanning across matches
-    matches.forEach(match => {
-      let lastEventTime = 0
-      match.events.forEach(event => {
-        if (event.type === 'cycle') {
-          const timeDiff = event.timestamp - lastEventTime
-          if (timeDiff > 0) {
-            cycleTimes.push(timeDiff / 1000)
-          }
-        }
-        lastEventTime = event.timestamp
-      })
-    })
-  } else {
-    // Single match or continuous event list
-    let lastEventTime = 0
-    allEvents.forEach((event) => {
-      if (event.type === 'cycle') {
-        const timeDiff = event.timestamp - lastEventTime
-        if (timeDiff > 0) {
-          cycleTimes.push(timeDiff / 1000)
-        }
-      }
-      lastEventTime = event.timestamp
-    })
-  }
-
+  const cycleTimes = calculateCycleTimes(allEvents, matches)
   const avgCycleTime = cycleTimes.length > 0 
     ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length 
     : 0
@@ -95,38 +64,36 @@ function TournamentGraphs({ events, matches, numMatches }) {
           Scoring Distribution
         </h3>
 
-            <div className="mb-8">
-              <h4 className="text-xl font-semibold mb-8">Balls Scored Per Cycle</h4>
-              <div className="flex items-end gap-2 h-48">
-                {[0, 1, 2, 3].map(count => {
-                  const cyclesWithCount = cycleEvents.filter(e => e.scored === count).length
-                  const percentage = cycleEvents.length > 0 ? (cyclesWithCount / cycleEvents.length * 100) : 0
-                  const displayPercent = cyclesWithCount > 0 ? Math.max(percentage, 3) : 0 // give tiny bars a visible height
-                  const showLabelInside = displayPercent >= 18 // when bar tall enough, render label inside
+        <div className="mb-8">
+          <h4 className="text-xl font-semibold mb-8">Balls Scored Per Cycle</h4>
+          <div className="flex items-end gap-2 h-48">
+            {[0, 1, 2, 3].map(count => {
+              const cyclesWithCount = cycleEvents.filter(e => e.scored === count).length
+              const percentage = cycleEvents.length > 0 ? (cyclesWithCount / cycleEvents.length * 100) : 0
+              const displayPercent = cyclesWithCount > 0 ? Math.max(percentage, 3) : 0
+              const showLabelInside = displayPercent >= 18
 
-                  return (
+              return (
                 <div key={count} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full flex flex-col justify-end items-center relative" style={{ height: '160px' }}>
-                    {/* label above bar when bar is short */}
                     {cyclesWithCount > 0 && !showLabelInside && (
                       <div className="absolute bottom-1 z-10">
-                    <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-10 py-0.5 rounded">
-                      {cyclesWithCount}
-                    </span>
+                        <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-10 py-0.5 rounded">
+                          {cyclesWithCount}
+                        </span>
                       </div>
                     )}
 
-                    {/* baseline for zero to keep layout stable */}
                     {cyclesWithCount === 0 ? (
                       <div className="w-full h-1 bg-gray-100 rounded" />
                     ) : (
                       <div
-                    className="w-full bg-[#445f8b] flex items-end justify-center pb-2 transition-all rounded"
-                    style={{ height: `${displayPercent}%`, minHeight: '6px' }}
+                        className="w-full bg-[#445f8b] flex items-end justify-center pb-2 transition-all rounded"
+                        style={{ height: `${displayPercent}%`, minHeight: '6px' }}
                       >
-                    {showLabelInside && (
-                      <span className="text-white font-bold text-sm">{cyclesWithCount}</span>
-                    )}
+                        {showLabelInside && (
+                          <span className="text-white font-bold text-sm">{cyclesWithCount}</span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -136,51 +103,46 @@ function TournamentGraphs({ events, matches, numMatches }) {
                     <p className="text-sm text-[#666]">{percentage.toFixed(0)}%</p>
                   </div>
                 </div>
-                  )
-                })}
-              </div>
-            </div>
+              )
+            })}
+          </div>
+        </div>
 
-
-                <div>
-                  <h4 className="text-xl font-semibold mb-8">Cycle Time Distribution</h4>
-                  <div className="flex items-end gap-2 h-48">
-                {['0-10s', '10-20s', '20-30s', '30s+'].map((range, idx) => {
-                  // compute count by bucket
-                  let count = 0
-                  if (idx === 0) count = cycleTimes.filter(t => t < 10).length
-                  else if (idx === 1) count = cycleTimes.filter(t => t >= 10 && t < 20).length
-                  else if (idx === 2) count = cycleTimes.filter(t => t >= 20 && t < 30).length
-                  else count = cycleTimes.filter(t => t >= 30).length
-                  
-                  const percentage = cycleTimes.length > 0 ? (count / cycleTimes.length * 100) : 0
-                  const displayPercent = count > 0 ? Math.max(percentage, 3) : 0
-                  const showLabelInside = displayPercent >= 18 // threshold (percent) to show label inside the bar
-                  
-                  return (
+        <div>
+          <h4 className="text-xl font-semibold mb-8">Cycle Time Distribution</h4>
+          <div className="flex items-end gap-2 h-48">
+            {['0-10s', '10-20s', '20-30s', '30s+'].map((range, idx) => {
+              let count = 0
+              if (idx === 0) count = cycleTimes.filter(t => t < 10).length
+              else if (idx === 1) count = cycleTimes.filter(t => t >= 10 && t < 20).length
+              else if (idx === 2) count = cycleTimes.filter(t => t >= 20 && t < 30).length
+              else count = cycleTimes.filter(t => t >= 30).length
+              
+              const percentage = cycleTimes.length > 0 ? (count / cycleTimes.length * 100) : 0
+              const displayPercent = count > 0 ? Math.max(percentage, 3) : 0
+              const showLabelInside = displayPercent >= 18
+              
+              return (
                 <div key={range} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full flex flex-col justify-end items-center relative" style={{ height: '160px' }}>
-                    {/* When bar is very short, show the count above the bar so it's always readable */}
                     {count > 0 && !showLabelInside && (
                       <div className="absolute bottom-1 z-10">
-                    <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-10 py-0.5 rounded">
-                      {count}
-                    </span>
+                        <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-10 py-0.5 rounded">
+                          {count}
+                        </span>
                       </div>
                     )}
 
-                    {/* Show a thin baseline even when count is zero to keep layout consistent */}
                     {count === 0 ? (
                       <div className="w-full h-1 bg-gray-100 rounded" />
                     ) : (
                       <div 
-                    className="w-full bg-[#445f8b] flex items-end justify-center pb-2 transition-all rounded"
-                    style={{ height: `${displayPercent}%`, minHeight: '6px' }}
+                        className="w-full bg-[#445f8b] flex items-end justify-center pb-2 transition-all rounded"
+                        style={{ height: `${displayPercent}%`, minHeight: '6px' }}
                       >
-                    {/* When the bar is tall enough, show the count inside with white text for contrast */}
-                    {showLabelInside && (
-                      <span className="text-white font-bold text-sm">{count}</span>
-                    )}
+                        {showLabelInside && (
+                          <span className="text-white font-bold text-sm">{count}</span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -189,12 +151,13 @@ function TournamentGraphs({ events, matches, numMatches }) {
                     <p className="text-sm text-[#666]">{percentage.toFixed(0)}%</p>
                   </div>
                 </div>
-                  )
-                })}
-                  </div>
-                </div>
-            </div>
-              {/* Accuracy breakdown by ball count */}
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Accuracy breakdown by ball count */}
       <div className="bg-white border-2 border-[#445f8b] p-6">
         <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
           <Target weight="bold" size={28} className="text-[#445f8b]" />
