@@ -103,9 +103,23 @@ function TournamentPage({ onBack }) {
       <div className="mb-18">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <h2 className="text-3xl">Tournament Summary</h2>
+        </div>
+
+        <div className="bg-white p-6 border-2 border-[#445f8b] mt-5">
+          <h3 className="text-xl font-semibold mb-3">Match Scores — All Teams</h3>
+          <div className="mb-2 text-sm text-[#666]">Sorted by median scored (highest first). Hover teams for score distributions.</div>
+          
+          <TeamLegend teamStats={teamStats} teamColors={teamColors} />
+          <TeamChart matchesOrdered={tournament.matches} teamStats={teamStats} teamColors={teamColors} />
+          <TeamSummaryGrid teamStats={teamStats} />
+          <p className="mt-4 italic text-sm text-[#666]">^ Hover over a box above!</p>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mt-18">
+          <h2 className="text-3xl">Team Statistics</h2>
           {teams.length > 0 && (
-            <div className="flex items-center gap-3">
-              <label className="font-semibold">Team:</label>
+            <div className="flex items-center gap-3 mt-4">
+              <label className="font-semibold">Selected Team:</label>
               <select
                 value={selectedTeam}
                 onChange={(e) => {
@@ -122,24 +136,18 @@ function TournamentPage({ onBack }) {
             </div>
           )}
         </div>
-
-        <div className="bg-white p-6 border-2 border-[#445f8b] mt-5">
-          <h3 className="text-xl font-semibold mb-3">Match Scores — All Teams</h3>
-          <div className="mb-2 text-sm text-[#666]">Sorted by median scored (highest first). Hover teams for score distributions.</div>
-          
-          <TeamLegend teamStats={teamStats} teamColors={teamColors} />
-          <TeamChart matchesOrdered={tournament.matches} teamStats={teamStats} teamColors={teamColors} />
-          <TeamSummaryGrid teamStats={teamStats} />
-        </div>
-
-        {selectedTeam && (
-          <div className="mt-5">
-            <TournamentGraphs matches={filteredMatches} />
+        <div className="bg-white p-6 border-2 border-[#445f8b] mt-8">
+          <h3 className="text-xl font-semibold mb-3">Team Statistics</h3>
+          <div className={`mt-5 ${selectedTeam && 'mb-5'}`}>
+            <p className="text-[#666]">Select a team to view detailed graphs for that team.</p>
           </div>
-        )}
+
+          {selectedTeam && (
+            <TournamentGraphs matches={filteredMatches} />
+          )}
+      </div>
       </div>
 
-      <div className='w-full h-px my-24 bg-[#445f8b]' />
       <div className='w-full flex flex-col items-start p-8 bg-[#f0f5fd]'>
         <h2 className='mb-8'>
           <span className="text-3xl mb-5">{selectedTeam ? "Team " + selectedTeam + "'s Matches" : "All Tournament Matches"}</span>
