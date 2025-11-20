@@ -1,6 +1,7 @@
 {
   "startTime": 1729900000000,
   "duration": 150,
+  "notes": "Team performed well in autonomous, struggled with manual control in endgame",
   "events": [
     {
       "type": "cycle",

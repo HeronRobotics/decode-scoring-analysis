@@ -9,7 +9,7 @@ import { formatStat } from "../utils/format";
 import { BoxPlot } from "./BoxPlot";
 import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
 
-function Statistics({ events, matches, teamNumber }) {
+function Statistics({ events, matches, teamNumber, notes }) {
   const allEvents = matches ? matches.flatMap((m) => m.events) : events;
   const cycleEvents = allEvents.filter((e) => e.type === "cycle");
 
@@ -36,6 +36,14 @@ function Statistics({ events, matches, teamNumber }) {
       <h3 className="text-2xl mb-5">
         Statistics{teamNumber ? ` for ${teamNumber}` : ""}
       </h3>
+
+      {/* Notes Section */}
+      {notes && notes.trim() && (
+        <div className="bg-blue-50 border-2 border-blue-200 p-4 mb-5 rounded">
+          <h4 className="text-lg font-semibold mb-2 text-blue-800">Match Notes</h4>
+          <p className="text-blue-700 whitespace-pre-wrap">{notes.trim()}</p>
+        </div>
+      )}
 
       {/* Summary Section - Most Important */}
       <div className="bg-[#445f8b] border-2 border-[#445f8b] p-8 mb-5">

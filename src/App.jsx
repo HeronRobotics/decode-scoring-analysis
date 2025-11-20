@@ -36,6 +36,7 @@ function App() {
   const [keyEntryVisible, setKeyEntryVisible] = useState(false);
   const [keyEntryExpiresAt, setKeyEntryExpiresAt] = useState(null);
   const [cooldownUntil, setCooldownUntil] = useState(null);
+  const [notes, setNotes] = useState("");
   const expireTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -181,6 +182,7 @@ function App() {
     setTimerDuration(duration);
     setElapsedTime(0);
     setEvents([]);
+    setNotes("");
     setIsRecording(true);
   };
 
@@ -220,6 +222,7 @@ function App() {
       duration: timerDuration,
       teamNumber: teamNumber,
       events: events,
+      notes: notes || "",
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: "application/json",
@@ -314,6 +317,7 @@ function App() {
             : 0
         );
         setIsRecording(false);
+        setNotes(data.notes || "");
 
         setTeamNumber(data.teamNumber || "");
 
@@ -373,6 +377,7 @@ function App() {
       setIsRecording(false);
       setShowTextImport(false);
       setTextInput("");
+      setNotes(""); // Text import doesn't include notes, so reset
 
       // Set the extracted team number
       setTeamNumber(extractedTeamNumber);
@@ -512,7 +517,7 @@ function App() {
           </div>
 
           <div className="bg-white p-6 border-2 border-[#445f8b] w-full">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between flex-wrap">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between flex-wrap mb-4">
               <label className="flex items-center gap-2 text-lg font-semibold">
                 Team Number:
                 <input
@@ -529,8 +534,22 @@ function App() {
                 <strong>PRO TIP:</strong> Use your keyboard to record cycles! See instructions below.
               </div>
             </div>
+            
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-sm font-semibold">
+                Match Notes (optional):
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add any observations about this match..."
+                className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none resize-vertical min-h-[60px]"
+                rows="2"
+              />
+            </div>
+            
             <p className="mt-4">
-              Set the team number for this match. Put together all of your scouting on the Tournament Analysis page later to compare teams!
+              Set the team number and add notes for this match. Put together all of your scouting on the Tournament Analysis page later to compare teams!
             </p>
           </div>
 
@@ -559,6 +578,7 @@ function App() {
                   setMatchStartTime(null);
                   setEvents([]);
                   setElapsedTime(0);
+                  setNotes("");
                 }}
                 className="btn !px-6 !py-3"
               >
@@ -598,7 +618,7 @@ function App() {
           </div>
 
           {events.length > 0 && (
-            <Statistics events={events} teamNumber={teamNumber} />
+            <Statistics events={events} teamNumber={teamNumber} notes={notes} />
           )}
 
           {!isRecording && events.length > 0 && (

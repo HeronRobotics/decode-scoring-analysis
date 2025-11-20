@@ -177,7 +177,7 @@ function TournamentPage({ onBack }) {
         <div className="w-full mb-8">
           {currentMatch ? (
             <>
-              <Statistics events={currentMatch.events} teamNumber={currentMatch.teamNumber} />
+              <Statistics events={currentMatch.events} teamNumber={currentMatch.teamNumber} notes={currentMatch.notes} />
               <Timeline
                 events={currentMatch.events} 
                 currentTime={currentMatch.events[currentMatch.events.length - 1]?.timestamp || 0} 
