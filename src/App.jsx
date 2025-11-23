@@ -245,8 +245,9 @@ function App() {
   };
 
   const parseTextFormat = (text) => {
-    // Parse text format like: 0:00; 1/2 at 0:10; gate at 1:00; ...
+    // Parse text format like: hmadv1/teamNum/base64notes;; 0:00; 1/2 at 0:10; gate at 1:00; ...
     let events = [];
+    let extractedNotes = "";
 
     const tprefix = text.split(";;")[0].trim();
 
@@ -260,6 +261,17 @@ function App() {
         teamNumber: teamNumber,
         timestamp: 0,
       });
+    } else {
+      // Parse hmadv1 format: hmadv1/teamNumber/notesBase64
+      const parts = tprefix.split("/");
+      if (parts.length >= 3) {
+        // Has notes field (base64 encoded)
+        try {
+          extractedNotes = atob(parts[2]);
+        } catch (e) {
+          console.warn("Failed to decode notes from text format", e);
+        }
+      }
     }
 
     const parts = text
@@ -297,7 +309,7 @@ function App() {
       }
     }
 
-    return events;
+    return { events, notes: extractedNotes };
   };
 
   const importMatch = (e) => {
@@ -343,8 +355,8 @@ function App() {
 
   const importFromText = () => {
     try {
-      let parsedEvents = parseTextFormat(textInput);
-      if (parsedEvents.length === 0) {
+      let parsedData = parseTextFormat(textInput);
+      if (parsedData.events.length === 0) {
         alert("No valid match data found. Please check the format.");
         return;
       }
@@ -367,17 +379,16 @@ function App() {
         }
       }
 
-      let otherEvents = parsedEvents.filter((e) => e.type !== "info");
-      parsedEvents = otherEvents;
+      let otherEvents = parsedData.events.filter((e) => e.type !== "info");
 
       setMatchStartTime(Date.now());
       setTimerDuration(null);
-      setEvents(parsedEvents);
-      setElapsedTime(parsedEvents[parsedEvents.length - 1].timestamp);
+      setEvents(otherEvents);
+      setElapsedTime(otherEvents[otherEvents.length - 1].timestamp);
       setIsRecording(false);
       setShowTextImport(false);
       setTextInput("");
-      setNotes(""); // Text import doesn't include notes, so reset
+      setNotes(parsedData.notes || ""); // Import notes from parsed data
 
       // Set the extracted team number
       setTeamNumber(extractedTeamNumber);
@@ -395,7 +406,14 @@ function App() {
     if (teamNumber) {
       prefix += `/${teamNumber}`;
     }
-    prefix += ";; ";
+    
+    // Escape notes by converting to base64 to handle all special characters
+    let notesEncoded = "";
+    if (notes && notes.trim()) {
+      notesEncoded = `/${btoa(notes.trim())}`;
+    }
+    
+    prefix += notesEncoded + ";; ";
 
     let output = prefix + formatTime(0) + ";";
     events.forEach((event) => {
