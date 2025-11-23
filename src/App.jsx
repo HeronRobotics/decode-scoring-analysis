@@ -11,6 +11,8 @@ import {
   ClipboardTextIcon,
   Calendar,
   ChartLine,
+  Copy,
+  Check,
 } from "@phosphor-icons/react";
 import Timeline from "./components/Timeline";
 import Statistics from "./components/Statistics";
@@ -38,6 +40,7 @@ function App() {
   const [cooldownUntil, setCooldownUntil] = useState(null);
   const [notes, setNotes] = useState("");
   const expireTimeoutRef = useRef(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (isRecording) {
@@ -245,9 +248,11 @@ function App() {
   };
 
   const parseTextFormat = (text) => {
-    // Parse text format like: hmadv1/teamNum/base64notes;; 0:00; 1/2 at 0:10; gate at 1:00; ...
+    // Parse text format like: hmadv1/teamNum/base64notes/unixTimestamp/duration;; 0:00; 1/2 at 0:10; gate at 1:00; ...
     let events = [];
     let extractedNotes = "";
+    let parsedStartTime = null;
+    let parsedDuration = null;
 
     const tprefix = text.split(";;")[0].trim();
 
@@ -262,7 +267,7 @@ function App() {
         timestamp: 0,
       });
     } else {
-      // Parse hmadv1 format: hmadv1/teamNumber/notesBase64
+      // Parse hmadv1 format: hmadv1/teamNumber/notesBase64/unixTimestamp/duration
       const parts = tprefix.split("/");
       if (parts.length >= 3) {
         // Has notes field (base64 encoded)
@@ -271,6 +276,14 @@ function App() {
         } catch (e) {
           console.warn("Failed to decode notes from text format", e);
         }
+      }
+      if (parts.length >= 4) {
+        // Has unix timestamp
+        parsedStartTime = parseInt(parts[3]) * 1000; // Convert to milliseconds
+      }
+      if (parts.length >= 5) {
+        // Has duration in seconds
+        parsedDuration = parseInt(parts[4]);
       }
     }
 
@@ -309,7 +322,7 @@ function App() {
       }
     }
 
-    return { events, notes: extractedNotes };
+    return { events, notes: extractedNotes, startTime: parsedStartTime, duration: parsedDuration };
   };
 
   const importMatch = (e) => {
@@ -381,8 +394,9 @@ function App() {
 
       let otherEvents = parsedData.events.filter((e) => e.type !== "info");
 
-      setMatchStartTime(Date.now());
-      setTimerDuration(null);
+      // Use parsed start time if available, otherwise use current time
+      setMatchStartTime(parsedData.startTime || Date.now());
+      setTimerDuration(parsedData.duration || null);
       setEvents(otherEvents);
       setElapsedTime(otherEvents[otherEvents.length - 1].timestamp);
       setIsRecording(false);
@@ -413,7 +427,14 @@ function App() {
       notesEncoded = `/${btoa(notes.trim())}`;
     }
     
-    prefix += notesEncoded + ";; ";
+    prefix += notesEncoded;
+    
+    // Add unix timestamp start time and duration
+    const unixStartTime = matchStartTime ? Math.floor(matchStartTime / 1000) : 0;
+    const actualDuration = timerDuration || (elapsedTime ? Math.floor(elapsedTime / 1000) : 0);
+    prefix += `/${unixStartTime}/${actualDuration}`;
+    
+    prefix += ";; ";
 
     let output = prefix + formatTime(0) + ";";
     events.forEach((event) => {
@@ -437,6 +458,14 @@ function App() {
     .reduce((sum, e) => sum + e.total, 0);
 
   const [teamNumber, setTeamNumber] = useState("");
+
+  const copyToClipboard = () => {
+    const matchText = formatMatchData();
+    navigator.clipboard.writeText(matchText).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
@@ -641,7 +670,7 @@ function App() {
 
           {!isRecording && events.length > 0 && (
             <div className="bg-white p-8 mt-8 border-2 border-[#445f8b] flex flex-col justif-center items-center gap-6">
-              <div>
+              <div className="w-full">
                 <h3 className="text-xl mb-2">Match Data:</h3>
                 <p className="mb-2">
                   Export this Match as JSON so you can analyze it with Heron Scout
@@ -650,6 +679,22 @@ function App() {
                 <p className="bg-[#f5f5f5] p-4 max-w-full font-mono text-sm leading-relaxed border-2 border-[#ddd]">
                   {formatMatchData()}
                 </p>
+                <button 
+                  onClick={copyToClipboard}
+                  className="btn mt-3 !py-2 !px-4"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={20} weight="bold" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={20} weight="bold" />
+                      Copy Text
+                    </>
+                  )}
+                </button>
               </div>
               <div className="w-full flex flex-wrap justify-center items-center gap-6">
                 <p>
