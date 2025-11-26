@@ -270,16 +270,16 @@ function App() {
       // Parse hmadv1 format: hmadv1/teamNumber/notesBase64/unixTimestamp/duration
       const parts = tprefix.split("/");
       if (parts.length >= 3) {
+        // Has unix timestamp
+        parsedStartTime = parseInt(parts[3]) * 1000; // Convert to milliseconds
+      }
+      if (parts.length >= 4) {
         // Has notes field (base64 encoded)
         try {
           extractedNotes = atob(parts[2]);
         } catch (e) {
           console.warn("Failed to decode notes from text format", e);
         }
-      }
-      if (parts.length >= 4) {
-        // Has unix timestamp
-        parsedStartTime = parseInt(parts[3]) * 1000; // Convert to milliseconds
       }
       if (parts.length >= 5) {
         // Has duration in seconds
@@ -322,7 +322,12 @@ function App() {
       }
     }
 
-    return { events, notes: extractedNotes, startTime: parsedStartTime, duration: parsedDuration };
+    return {
+      events,
+      notes: extractedNotes,
+      startTime: parsedStartTime,
+      duration: parsedDuration,
+    };
   };
 
   const importMatch = (e) => {
@@ -420,20 +425,23 @@ function App() {
     if (teamNumber) {
       prefix += `/${teamNumber}`;
     }
-    
+
     // Escape notes by converting to base64 to handle all special characters
     let notesEncoded = "";
     if (notes && notes.trim()) {
       notesEncoded = `/${btoa(notes.trim())}`;
     }
-    
+
     prefix += notesEncoded;
-    
+
     // Add unix timestamp start time and duration
-    const unixStartTime = matchStartTime ? Math.floor(matchStartTime / 1000) : 0;
-    const actualDuration = timerDuration || (elapsedTime ? Math.floor(elapsedTime / 1000) : 0);
+    const unixStartTime = matchStartTime
+      ? Math.floor(matchStartTime / 1000)
+      : 0;
+    const actualDuration =
+      timerDuration || (elapsedTime ? Math.floor(elapsedTime / 1000) : 0);
     prefix += `/${unixStartTime}/${actualDuration}`;
-    
+
     prefix += ";; ";
 
     let output = prefix + formatTime(0) + ";";
@@ -536,16 +544,19 @@ function App() {
             </button>
           </div>
           <p className="mt-8 p-2">
-            Heron Scout is a scouting app designed for intensive data analysis. First
-            and foremost, it's easy to use — just press one of the buttons above
-            to start recording a match. (Or import one.)
+            Heron Scout is a scouting app designed for intensive data analysis.
+            First and foremost, it's easy to use — just press one of the buttons
+            above to start recording a match. (Or import one.)
             <br />
             <br />
-            Matches are stored as JSON and easily shareable! Scout matches with Heron Scout and you'll be able to compare teams
-            at tournaments using the Tournament Analysis page.
-            Matches and Tournaments can both be imported on the "Lifetime Stats"
-            page to explore your performance over the course of the season and
-            generate cool graphs!<br /><br />We love graphs at Heron Robotics, so we made this for you :)
+            Matches are stored as JSON and easily shareable! Scout matches with
+            Heron Scout and you'll be able to compare teams at tournaments using
+            the Tournament Analysis page. Matches and Tournaments can both be
+            imported on the "Lifetime Stats" page to explore your performance
+            over the course of the season and generate cool graphs!
+            <br />
+            <br />
+            We love graphs at Heron Robotics, so we made this for you :)
           </p>
         </div>
       )}
@@ -578,10 +589,11 @@ function App() {
                 />
               </label>
               <div className="text-sm text-[#666]">
-                <strong>PRO TIP:</strong> Use your keyboard to record cycles! See instructions below.
+                <strong>PRO TIP:</strong> Use your keyboard to record cycles!
+                See instructions below.
               </div>
             </div>
-            
+
             <div className="flex flex-col gap-2">
               <label className="flex items-center gap-2 text-sm font-semibold">
                 Match Notes (optional):
@@ -594,9 +606,11 @@ function App() {
                 rows="2"
               />
             </div>
-            
+
             <p className="mt-4">
-              Set the team number and add notes for this match. Put together all of your scouting on the Tournament Analysis page later to compare teams!
+              Set the team number and add notes for this match. Put together all
+              of your scouting on the Tournament Analysis page later to compare
+              teams!
             </p>
           </div>
 
@@ -660,7 +674,8 @@ function App() {
               <br />
               &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Text export:</strong> You can
               export matches in a readable text format if you just want to share
-              a match with your friends. Use JSON for advanced Heron Scout analysis!
+              a match with your friends. Use JSON for advanced Heron Scout
+              analysis!
             </p>
           </div>
 
@@ -673,13 +688,13 @@ function App() {
               <div className="w-full">
                 <h3 className="text-xl mb-2">Match Data:</h3>
                 <p className="mb-2">
-                  Export this Match as JSON so you can analyze it with Heron Scout
-                  later!
+                  Export this Match as JSON so you can analyze it with Heron
+                  Scout later!
                 </p>
                 <p className="bg-[#f5f5f5] p-4 max-w-full font-mono text-sm leading-relaxed border-2 border-[#ddd]">
                   {formatMatchData()}
                 </p>
-                <button 
+                <button
                   onClick={copyToClipboard}
                   className="btn mt-3 !py-2 !px-4"
                 >
@@ -698,7 +713,8 @@ function App() {
               </div>
               <div className="w-full flex flex-wrap justify-center items-center gap-6">
                 <p>
-                  Send the above text to your friends, or export as JSON to analyze it with Heron Scout later!
+                  Send the above text to your friends, or export as JSON to
+                  analyze it with Heron Scout later!
                 </p>
                 <button onClick={exportMatch} className="btn">
                   <DownloadSimple size={20} weight="bold" />
