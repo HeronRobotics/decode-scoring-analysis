@@ -2,15 +2,7 @@ import { createContext, useContext, useState } from 'react'
 
 const TournamentContext = createContext()
 
-export const useTournament = () => {
-  const context = useContext(TournamentContext)
-  if (!context) {
-    throw new Error('useTournament must be used within a TournamentProvider')
-  }
-  return context
-}
-
-export const TournamentProvider = ({ children }) => {
+const TournamentProviderInner = ({ children }) => {
   const [tournament, setTournament] = useState(null)
   const [selectedMatch, setSelectedMatch] = useState(0)
   const [selectedTeam, setSelectedTeam] = useState('')
@@ -35,4 +27,14 @@ export const TournamentProvider = ({ children }) => {
       {children}
     </TournamentContext.Provider>
   )
+}
+
+export const TournamentProvider = TournamentProviderInner
+
+export const useTournament = () => {
+  const context = useContext(TournamentContext)
+  if (!context) {
+    throw new Error('useTournament must be used within a TournamentProvider')
+  }
+  return context
 }

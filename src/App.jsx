@@ -22,6 +22,11 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "./firebase";
 import { TournamentProvider } from "./data/TournamentContext";
 
+const AUTO_DURATION = 30; // seconds
+const BUFFER_DURATION = 5; // seconds
+const TELEOP_DURATION = 120; // seconds
+const MATCH_TOTAL_DURATION = AUTO_DURATION + BUFFER_DURATION + TELEOP_DURATION;
+
 function App() {
   const [matchStartTime, setMatchStartTime] = useState(null);
   const [timerDuration, setTimerDuration] = useState(null); // in seconds
@@ -40,18 +45,41 @@ function App() {
   const [cooldownUntil, setCooldownUntil] = useState(null);
   const [notes, setNotes] = useState("");
   const expireTimeoutRef = useRef(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedFull, setCopiedFull] = useState(false);
+  const [copiedAuto, setCopiedAuto] = useState(false);
+  const [copiedTeleop, setCopiedTeleop] = useState(false);
+  const [mode, setMode] = useState("free"); // "free" | "match"
+  const [phase, setPhase] = useState("idle"); // "idle" | "auto" | "buffer" | "teleop" | "finished"
 
   useEffect(() => {
     if (isRecording) {
       intervalRef.current = setInterval(() => {
-        const elapsed = Date.now() - matchStartTime;
+        const now = Date.now();
+        const elapsed = now - matchStartTime;
         setElapsedTime(elapsed);
 
-        // Auto-stop when timer expires
+        if (mode === "match") {
+          const elapsedSeconds = Math.floor(elapsed / 1000);
+          if (elapsedSeconds < AUTO_DURATION) {
+            setPhase("auto");
+          } else if (elapsedSeconds < AUTO_DURATION + BUFFER_DURATION) {
+            setPhase("buffer");
+          } else if (
+            elapsedSeconds <
+            AUTO_DURATION + BUFFER_DURATION + TELEOP_DURATION
+          ) {
+            setPhase("teleop");
+          } else {
+            setPhase("finished");
+          }
+        }
+
         if (timerDuration && elapsed >= timerDuration * 1000) {
           setIsRecording(false);
           setElapsedTime(timerDuration * 1000);
+          if (mode === "match") {
+            setPhase("finished");
+          }
         }
       }, 100);
     } else {
@@ -64,7 +92,7 @@ function App() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRecording, matchStartTime, timerDuration]);
+  }, [isRecording, matchStartTime, timerDuration, mode]);
 
   // Auto-cancel pending key entry on timeout
   useEffect(() => {
@@ -105,9 +133,12 @@ function App() {
 
       const now = Date.now();
       if (!keyEntryVisible) {
-        // Quick gate record with 'G'
         if (e.key && e.key.toLowerCase() === "g") {
-          const event = { type: "gate", timestamp: elapsedTime };
+          const event = {
+            type: "gate",
+            timestamp: elapsedTime,
+            phase: mode === "match" ? phase : undefined,
+          };
           setEvents((prev) => [...prev, event]);
           e.preventDefault();
           return;
@@ -139,6 +170,7 @@ function App() {
             timestamp: elapsedTime,
             total: keyEntry.total,
             scored: keyEntry.scored,
+            phase: mode === "match" ? phase : undefined,
           };
           setEvents((prev) => [...prev, event]);
           setKeyEntry({ total: null, scored: null });
@@ -170,6 +202,8 @@ function App() {
     keyEntry,
     elapsedTime,
     cooldownUntil,
+    mode,
+    phase,
   ]);
 
   const formatTime = (ms) => {
@@ -179,7 +213,7 @@ function App() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const startMatch = (duration) => {
+  const startMatch = (duration, newMode = "free") => {
     const now = Date.now();
     setMatchStartTime(now);
     setTimerDuration(duration);
@@ -187,10 +221,15 @@ function App() {
     setEvents([]);
     setNotes("");
     setIsRecording(true);
+    setMode(newMode);
+    setPhase(newMode === "match" ? "auto" : "idle");
   };
 
   const stopMatch = () => {
     setIsRecording(false);
+    if (mode === "match") {
+      setPhase("finished");
+    }
   };
 
   const recordCycle = () => {
@@ -204,6 +243,7 @@ function App() {
       timestamp: elapsedTime,
       total: cycleData.total,
       scored: cycleData.scored,
+      phase: mode === "match" ? phase : undefined,
     };
     setEvents([...events, event]);
     setShowCycleModal(false);
@@ -215,6 +255,7 @@ function App() {
     const event = {
       type: "gate",
       timestamp: elapsedTime,
+      phase: mode === "match" ? phase : undefined,
     };
     setEvents([...events, event]);
   };
@@ -457,6 +498,61 @@ function App() {
     return output;
   };
 
+  const formatPhaseMatchData = (phaseFilter) => {
+    if (events.length === 0) return "No events recorded";
+
+    const phaseEvents = events.filter((event) => {
+      if (!event.phase && mode !== "match") return true;
+      if (!event.phase && mode === "match") return false;
+      return event.phase === phaseFilter;
+    });
+
+    if (phaseEvents.length === 0) return "No events recorded";
+
+    let prefix = "hmadv1";
+    if (teamNumber) {
+      prefix += `/${teamNumber}`;
+    }
+
+    let notesEncoded = "";
+    if (notes && notes.trim()) {
+      notesEncoded = `/${btoa(notes.trim())}`;
+    }
+
+    prefix += notesEncoded;
+
+    const unixStartTime = matchStartTime
+      ? Math.floor(matchStartTime / 1000)
+      : 0;
+
+    let phaseDurationSeconds = 0;
+    if (mode === "match") {
+      if (phaseFilter === "auto") {
+        phaseDurationSeconds = AUTO_DURATION + BUFFER_DURATION;
+      } else if (phaseFilter === "teleop") {
+        phaseDurationSeconds = TELEOP_DURATION;
+      }
+    } else {
+      phaseDurationSeconds =
+        timerDuration || (elapsedTime ? Math.floor(elapsedTime / 1000) : 0);
+    }
+
+    prefix += `/${unixStartTime}/${phaseDurationSeconds}`;
+    prefix += ";; ";
+
+    let output = prefix + formatTime(0) + ";";
+    phaseEvents.forEach((event) => {
+      if (event.type === "cycle") {
+        output += ` ${event.scored}/${event.total} at ${formatTime(
+          event.timestamp
+        )};`;
+      } else if (event.type === "gate") {
+        output += ` gate at ${formatTime(event.timestamp)};`;
+      }
+    });
+    return output;
+  };
+
   const totalScored = events
     .filter((e) => e.type === "cycle")
     .reduce((sum, e) => sum + e.scored, 0);
@@ -470,8 +566,24 @@ function App() {
   const copyToClipboard = () => {
     const matchText = formatMatchData();
     navigator.clipboard.writeText(matchText).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedFull(true);
+      setTimeout(() => setCopiedFull(false), 2000);
+    });
+  };
+
+  const copyAutoToClipboard = () => {
+    const matchText = formatPhaseMatchData("auto");
+    navigator.clipboard.writeText(matchText).then(() => {
+      setCopiedAuto(true);
+      setTimeout(() => setCopiedAuto(false), 2000);
+    });
+  };
+
+  const copyTeleopToClipboard = () => {
+    const matchText = formatPhaseMatchData("teleop");
+    navigator.clipboard.writeText(matchText).then(() => {
+      setCopiedTeleop(true);
+      setTimeout(() => setCopiedTeleop(false), 2000);
     });
   };
 
@@ -485,42 +597,70 @@ function App() {
       {!isRecording && matchStartTime === null && (
         <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center md:py-8 md:px-8 pb-4">
           <h2 className="text-3xl mt-2 mb-6 px-2">Start recording!</h2>
-          <button
-            onClick={() => {
-              startMatch(null);
-              logEvent(analytics, "start_no_timer");
-            }}
-            className="btn mb-4 !py-3 !bg-[#445f8b] !text-white !px-6"
-          >
-            <Play size={24} weight="fill" />
-            No Timer (Stop when you want)
-          </button>
-          <div className="flex flex-row gap-5 justify-center mb-8 flex-wrap">
+
+          <div className="bg-[#f7f9ff] border-2 border-[#445f8b] w-full max-w-xl p-4 mb-6">
+            <h3 className="text-xl font-semibold mb-3">Match Mode (Auto + TeleOp)</h3>
+            <label className="flex items-center gap-2 mb-3">
+              Team Number:
+              <input
+                type="number"
+                value={teamNumber}
+                onChange={(e) => setTeamNumber(e.target.value)}
+                placeholder="1234"
+                className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-32 text-center font-mono"
+                min="1"
+                max="99999"
+              />
+            </label>
             <button
               onClick={() => {
-                startMatch(30);
-                logEvent(analytics, "start_30sec_timer");
+                startMatch(MATCH_TOTAL_DURATION, "match");
+                logEvent(analytics, "start_match_mode");
               }}
-              className="btn "
+              className="btn mb-2 !py-3 !bg-[#445f8b] !text-white !px-6 w-full"
             >
               <Play size={24} weight="fill" />
-              0:30 Timer (Auto)
+              Start Match Mode (Auto + TeleOp)
             </button>
-            <button
-              onClick={() => {
-                startMatch(120);
-                logEvent(analytics, "start_2min_timer");
-              }}
-              className="btn"
-            >
-              <Play size={24} weight="fill" />
-              2:00 Timer (TeleOp)
-            </button>
+            <p className="text-sm text-[#555]">
+              Runs 30s Auto, a 5s buffer to wrap up auto, then 2:00 TeleOp — all in one match and one save code.
+            </p>
           </div>
-          <div className="flex gap-4 items-center mb-12">
-            <hr className="w-12 grow border-t border-gray-300" />
-            <span className="mx-2 text-gray-500">or</span>
-            <hr className="grow w-12 border-t border-gray-300" />
+
+          <div className="w-full max-w-xl mb-6">
+            <h3 className="text-lg font-semibold mb-2">Manual Session (Legacy)</h3>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+              <button
+                onClick={() => {
+                  startMatch(null, "free");
+                  logEvent(analytics, "start_no_timer");
+                }}
+                className="btn !py-3 !px-6"
+              >
+                <Play size={24} weight="fill" />
+                No Timer
+              </button>
+              <button
+                onClick={() => {
+                  startMatch(30, "free");
+                  logEvent(analytics, "start_30sec_timer");
+                }}
+                className="btn"
+              >
+                <Play size={24} weight="fill" />
+                0:30 Timer (Auto)
+              </button>
+              <button
+                onClick={() => {
+                  startMatch(120, "free");
+                  logEvent(analytics, "start_2min_timer");
+                }}
+                className="btn"
+              >
+                <Play size={24} weight="fill" />
+                2:00 Timer (TeleOp)
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-4">
@@ -565,6 +705,14 @@ function App() {
         <>
           <div className="bg-white p-8 text-center border-2 border-[#445f8b] flex flex-col items-center justify-center w-full gap-2">
             <h2 className="text-6xl font-mono">{formatTime(elapsedTime)}</h2>
+            {mode === "match" && (
+              <div className="mt-2 text-lg font-semibold">
+                {phase === "auto" && "Auto Phase"}
+                {phase === "buffer" && "Auto Wrap-up (5s buffer)"}
+                {phase === "teleop" && "TeleOp Phase"}
+                {phase === "finished" && "Match Complete"}
+              </div>
+            )}
             <div>
               Scored&nbsp;
               <span className="font-bold">
@@ -640,6 +788,8 @@ function App() {
                   setEvents([]);
                   setElapsedTime(0);
                   setNotes("");
+                  setMode("free");
+                  setPhase("idle");
                 }}
                 className="btn !px-6 !py-3"
               >
@@ -698,7 +848,7 @@ function App() {
                   onClick={copyToClipboard}
                   className="btn mt-3 !py-2 !px-4"
                 >
-                  {copied ? (
+                  {copiedFull ? (
                     <>
                       <Check size={20} weight="bold" />
                       Copied!
@@ -710,6 +860,54 @@ function App() {
                     </>
                   )}
                 </button>
+                {mode === "match" && (
+                  <div className="w-full mt-6 flex flex-col gap-4">
+                    <div>
+                      <h4 className="text-lg mb-1">Auto-only Text:</h4>
+                      <p className="bg-[#f5f5f5] p-3 max-w-full font-mono text-xs leading-relaxed border-2 border-[#ddd]">
+                        {formatPhaseMatchData("auto")}
+                      </p>
+                      <button
+                        onClick={copyAutoToClipboard}
+                        className="btn mt-2 !py-1 !px-3 text-sm"
+                      >
+                        {copiedAuto ? (
+                          <>
+                            <Check size={16} weight="bold" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={16} weight="bold" />
+                            Copy Auto Text
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div>
+                      <h4 className="text-lg mb-1">TeleOp-only Text:</h4>
+                      <p className="bg-[#f5f5f5] p-3 max-w-full font-mono text-xs leading-relaxed border-2 border-[#ddd]">
+                        {formatPhaseMatchData("teleop")}
+                      </p>
+                      <button
+                        onClick={copyTeleopToClipboard}
+                        className="btn mt-2 !py-1 !px-3 text-sm"
+                      >
+                        {copiedTeleop ? (
+                          <>
+                            <Check size={16} weight="bold" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={16} weight="bold" />
+                            Copy TeleOp Text
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="w-full flex flex-wrap justify-center items-center gap-6">
                 <p>

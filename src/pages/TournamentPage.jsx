@@ -9,7 +9,7 @@ import TeamSummaryGrid from '../components/tournament/TeamSummaryGrid'
 import TournamentGraphs from '../components/tournament/TournamentGraphs'
 import Statistics from '../components/Statistics'
 import Timeline from '../components/Timeline'
-import { calculateMatchStats, matchScoredOutOfTotal, teamStatsFromTournament } from '../utils/stats'
+import { matchScoredOutOfTotal, teamStatsFromTournament } from '../utils/stats'
 
 
 function TournamentPage({ onBack }) {
