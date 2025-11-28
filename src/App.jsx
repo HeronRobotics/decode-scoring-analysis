@@ -460,8 +460,8 @@ function App() {
               Start Match Mode (Auto + TeleOp)
             </button>
             <p className="text-sm text-[#555]">
-              Runs 30s Auto, a 5s buffer to wrap up auto, then 2:00 TeleOp — all
-              in one match and one save code.
+              Runs 30s Auto, an 8s buffer to wrap up auto, then 2:00 TeleOp —
+              all in one match and one save code.
             </p>
           </div>
 
