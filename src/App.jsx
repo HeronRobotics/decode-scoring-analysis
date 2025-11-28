@@ -18,6 +18,11 @@ import Timeline from "./components/Timeline";
 import Statistics from "./components/Statistics";
 import TournamentPage from "./pages/TournamentPage";
 import LifetimePage from "./pages/LifetimePage";
+import {
+  formatMatchText,
+  formatPhaseMatchText,
+  parseMatchText,
+} from "./utils/matchFormat";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "./firebase";
 import { TournamentProvider } from "./data/TournamentContext";
@@ -288,89 +293,6 @@ function App() {
     });
   };
 
-  const parseTextFormat = (text) => {
-    // Parse text format like: hmadv1/teamNum/base64notes/unixTimestamp/duration;; 0:00; 1/2 at 0:10; gate at 1:00; ...
-    let events = [];
-    let extractedNotes = "";
-    let parsedStartTime = null;
-    let parsedDuration = null;
-
-    const tprefix = text.split(";;")[0].trim();
-
-    // the rest
-    text = text.split(";;")[1].trim();
-    if (!tprefix.startsWith("hmadv1")) {
-      setTeamNumber(tprefix.split("/")[1] || "");
-      events.push({
-        type: "info",
-        version: "text_v1",
-        teamNumber: teamNumber,
-        timestamp: 0,
-      });
-    } else {
-      // Parse hmadv1 format: hmadv1/teamNumber/notesBase64/unixTimestamp/duration
-      const parts = tprefix.split("/");
-      if (parts.length >= 3) {
-        // Has unix timestamp
-        parsedStartTime = parseInt(parts[3]) * 1000; // Convert to milliseconds
-      }
-      if (parts.length >= 4) {
-        // Has notes field (base64 encoded)
-        try {
-          extractedNotes = atob(parts[2]);
-        } catch (e) {
-          console.warn("Failed to decode notes from text format", e);
-        }
-      }
-      if (parts.length >= 5) {
-        // Has duration in seconds
-        parsedDuration = parseInt(parts[4]);
-      }
-    }
-
-    const parts = text
-      .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s);
-
-    for (const part of parts) {
-      if (part === "0:00") continue; // Skip the initial timestamp
-
-      if (part.includes("gate at")) {
-        const timeMatch = part.match(/(\d+):(\d+)/);
-        if (timeMatch) {
-          const minutes = parseInt(timeMatch[1]);
-          const seconds = parseInt(timeMatch[2]);
-          events.push({
-            type: "gate",
-            timestamp: (minutes * 60 + seconds) * 1000,
-          });
-        }
-      } else {
-        const cycleMatch = part.match(/(\d+)\/(\d+)\s+at\s+(\d+):(\d+)/);
-        if (cycleMatch) {
-          const scored = parseInt(cycleMatch[1]);
-          const total = parseInt(cycleMatch[2]);
-          const minutes = parseInt(cycleMatch[3]);
-          const seconds = parseInt(cycleMatch[4]);
-          events.push({
-            type: "cycle",
-            timestamp: (minutes * 60 + seconds) * 1000,
-            total: total,
-            scored: scored,
-          });
-        }
-      }
-    }
-
-    return {
-      events,
-      notes: extractedNotes,
-      startTime: parsedStartTime,
-      duration: parsedDuration,
-    };
-  };
-
   const importMatch = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -414,44 +336,26 @@ function App() {
 
   const importFromText = () => {
     try {
-      let parsedData = parseTextFormat(textInput);
+      const parsedData = parseMatchText(textInput);
       if (parsedData.events.length === 0) {
         alert("No valid match data found. Please check the format.");
         return;
       }
+      const otherEvents = parsedData.events.filter((e) => e.type !== "info");
 
-      // Extract team number from the text input directly
-      const tprefix = textInput.split(";;")[0].trim();
-      let extractedTeamNumber = "";
-
-      if (tprefix.startsWith("hmadv1")) {
-        // Extract team number from hmadv1 format
-        const parts = tprefix.split("/");
-        if (parts.length > 1) {
-          extractedTeamNumber = parts[1];
-        }
-      } else {
-        // Extract team number from legacy format
-        const parts = tprefix.split("/");
-        if (parts.length > 1) {
-          extractedTeamNumber = parts[1];
-        }
-      }
-
-      let otherEvents = parsedData.events.filter((e) => e.type !== "info");
-
-      // Use parsed start time if available, otherwise use current time
       setMatchStartTime(parsedData.startTime || Date.now());
       setTimerDuration(parsedData.duration || null);
       setEvents(otherEvents);
-      setElapsedTime(otherEvents[otherEvents.length - 1].timestamp);
+      setElapsedTime(
+        otherEvents.length > 0
+          ? otherEvents[otherEvents.length - 1].timestamp
+          : 0
+      );
       setIsRecording(false);
       setShowTextImport(false);
       setTextInput("");
-      setNotes(parsedData.notes || ""); // Import notes from parsed data
-
-      // Set the extracted team number
-      setTeamNumber(extractedTeamNumber);
+      setNotes(parsedData.notes || "");
+      setTeamNumber(parsedData.teamNumber || "");
 
       logEvent(analytics, "import_match_text");
     } catch (e) {
@@ -459,99 +363,30 @@ function App() {
     }
   };
 
-  const formatMatchData = () => {
-    if (events.length === 0) return "No events recorded";
-
-    let prefix = "hmadv1";
-    if (teamNumber) {
-      prefix += `/${teamNumber}`;
-    }
-
-    // Escape notes by converting to base64 to handle all special characters
-    let notesEncoded = "";
-    if (notes && notes.trim()) {
-      notesEncoded = `/${btoa(notes.trim())}`;
-    }
-
-    prefix += notesEncoded;
-
-    // Add unix timestamp start time and duration
-    const unixStartTime = matchStartTime
-      ? Math.floor(matchStartTime / 1000)
-      : 0;
-    const actualDuration =
-      timerDuration || (elapsedTime ? Math.floor(elapsedTime / 1000) : 0);
-    prefix += `/${unixStartTime}/${actualDuration}`;
-
-    prefix += ";; ";
-
-    let output = prefix + formatTime(0) + ";";
-    events.forEach((event) => {
-      if (event.type === "cycle") {
-        output += ` ${event.scored}/${event.total} at ${formatTime(
-          event.timestamp
-        )};`;
-      } else if (event.type === "gate") {
-        output += ` gate at ${formatTime(event.timestamp)};`;
-      }
-    });
-    return output;
-  };
-
-  const formatPhaseMatchData = (phaseFilter) => {
-    if (events.length === 0) return "No events recorded";
-
-    const phaseEvents = events.filter((event) => {
-      if (!event.phase && mode !== "match") return true;
-      if (!event.phase && mode === "match") return false;
-      return event.phase === phaseFilter;
+  const formatMatchData = () =>
+    formatMatchText({
+      events,
+      notes,
+      teamNumber,
+      matchStartTime,
+      timerDuration,
+      elapsedTime,
     });
 
-    if (phaseEvents.length === 0) return "No events recorded";
-
-    let prefix = "hmadv1";
-    if (teamNumber) {
-      prefix += `/${teamNumber}`;
-    }
-
-    let notesEncoded = "";
-    if (notes && notes.trim()) {
-      notesEncoded = `/${btoa(notes.trim())}`;
-    }
-
-    prefix += notesEncoded;
-
-    const unixStartTime = matchStartTime
-      ? Math.floor(matchStartTime / 1000)
-      : 0;
-
-    let phaseDurationSeconds = 0;
-    if (mode === "match") {
-      if (phaseFilter === "auto") {
-        phaseDurationSeconds = AUTO_DURATION + BUFFER_DURATION;
-      } else if (phaseFilter === "teleop") {
-        phaseDurationSeconds = TELEOP_DURATION;
-      }
-    } else {
-      phaseDurationSeconds =
-        timerDuration || (elapsedTime ? Math.floor(elapsedTime / 1000) : 0);
-    }
-
-    prefix += `/${unixStartTime}/${phaseDurationSeconds}`;
-    prefix += ";; ";
-
-    let output = prefix + formatTime(0) + ";";
-    phaseEvents.forEach((event) => {
-      if (event.type === "cycle") {
-        output += ` ${event.scored}/${event.total} at ${formatTime(
-          event.timestamp
-        )};`;
-      } else if (event.type === "gate") {
-        output += ` gate at ${formatTime(event.timestamp)};`;
-      }
+  const formatPhaseMatchData = (phaseFilter) =>
+    formatPhaseMatchText({
+      events,
+      notes,
+      teamNumber,
+      matchStartTime,
+      timerDuration,
+      elapsedTime,
+      mode,
+      phaseFilter,
+      autoDuration: AUTO_DURATION,
+      bufferDuration: BUFFER_DURATION,
+      teleopDuration: TELEOP_DURATION,
     });
-    return output;
-  };
 
   const totalScored = events
     .filter((e) => e.type === "cycle")

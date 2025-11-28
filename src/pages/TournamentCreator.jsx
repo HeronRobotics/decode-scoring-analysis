@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrowLeft, UploadSimple, FloppyDisk, ClipboardTextIcon } from '@phosphor-icons/react'
 import { logEvent } from 'firebase/analytics'
 import { analytics } from '../firebase'
+import { parseMatchText } from '../utils/matchFormat'
 
 function TournamentCreator({ onCancel, onTournamentCreated }) {
   const [tournamentName, setTournamentName] = useState('')
@@ -9,89 +10,6 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
   const [uploadedMatches, setUploadedMatches] = useState([])
   const [showTextImport, setShowTextImport] = useState(false)
   const [textInput, setTextInput] = useState('')
-
-  const parseTextFormat = (text) => {
-    // Parse text format like: hmadv1/teamNum/base64notes/unixTimestamp/duration;; 0:00; 1/2 at 0:10; gate at 1:00; ...
-    let events = []
-    let extractedNotes = ""
-    let parsedStartTime = null
-    let parsedDuration = null
-    let teamNumber = ""
-
-    const tprefix = text.split(";;")[0].trim()
-
-    // the rest
-    let restText = text.split(";;")[1]?.trim() || ""
-    
-    if (!tprefix.startsWith("hmadv1")) {
-      teamNumber = tprefix.split("/")[1] || ""
-    } else {
-      // Parse hmadv1 format: hmadv1/teamNumber/notesBase64/unixTimestamp/duration
-      const parts = tprefix.split("/")
-      if (parts.length >= 2) {
-        teamNumber = parts[1]
-      }
-      if (parts.length >= 3) {
-        // Has notes field (base64 encoded)
-        try {
-          extractedNotes = atob(parts[2])
-        } catch (e) {
-          console.warn("Failed to decode notes from text format", e)
-        }
-      }
-      if (parts.length >= 4) {
-        // Has unix timestamp
-        parsedStartTime = parseInt(parts[3]) * 1000 // Convert to milliseconds
-      }
-      if (parts.length >= 5) {
-        // Has duration in seconds
-        parsedDuration = parseInt(parts[4])
-      }
-    }
-
-    const parts = restText
-      .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s)
-
-    for (const part of parts) {
-      if (part === "0:00") continue // Skip the initial timestamp
-
-      if (part.includes("gate at")) {
-        const timeMatch = part.match(/(\d+):(\d+)/)
-        if (timeMatch) {
-          const minutes = parseInt(timeMatch[1])
-          const seconds = parseInt(timeMatch[2])
-          events.push({
-            type: "gate",
-            timestamp: (minutes * 60 + seconds) * 1000,
-          })
-        }
-      } else {
-        const cycleMatch = part.match(/(\d+)\/(\d+)\s+at\s+(\d+):(\d+)/)
-        if (cycleMatch) {
-          const scored = parseInt(cycleMatch[1])
-          const total = parseInt(cycleMatch[2])
-          const minutes = parseInt(cycleMatch[3])
-          const seconds = parseInt(cycleMatch[4])
-          events.push({
-            type: "cycle",
-            timestamp: (minutes * 60 + seconds) * 1000,
-            total: total,
-            scored: scored,
-          })
-        }
-      }
-    }
-
-    return { 
-      events, 
-      notes: extractedNotes, 
-      startTime: parsedStartTime, 
-      duration: parsedDuration,
-      teamNumber 
-    }
-  }
 
   const importMatchFiles = (e) => {
     const files = Array.from(e.target.files)
@@ -132,7 +50,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
 
       const newMatches = []
       for (const line of lines) {
-        const parsedData = parseTextFormat(line)
+        const parsedData = parseMatchText(line)
         
         if (parsedData.events.length === 0) {
           continue // Skip invalid lines
