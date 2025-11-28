@@ -28,7 +28,7 @@ import { analytics } from "./firebase";
 import { TournamentProvider } from "./data/TournamentContext";
 
 const AUTO_DURATION = 30; // seconds
-const BUFFER_DURATION = 5; // seconds
+const BUFFER_DURATION = 8; // seconds
 const TELEOP_DURATION = 120; // seconds
 const MATCH_TOTAL_DURATION = AUTO_DURATION + BUFFER_DURATION + TELEOP_DURATION;
 
@@ -434,7 +434,9 @@ function App() {
           <h2 className="text-3xl mt-2 mb-6 px-2">Start recording!</h2>
 
           <div className="bg-[#f7f9ff] border-2 border-[#445f8b] w-full max-w-xl p-4 mb-6">
-            <h3 className="text-xl font-semibold mb-3">Match Mode (Auto + TeleOp)</h3>
+            <h3 className="text-xl font-semibold mb-3">
+              Match Mode (Auto + TeleOp)
+            </h3>
             <label className="flex items-center gap-2 mb-3">
               Team Number:
               <input
@@ -458,12 +460,15 @@ function App() {
               Start Match Mode (Auto + TeleOp)
             </button>
             <p className="text-sm text-[#555]">
-              Runs 30s Auto, a 5s buffer to wrap up auto, then 2:00 TeleOp — all in one match and one save code.
+              Runs 30s Auto, a 5s buffer to wrap up auto, then 2:00 TeleOp — all
+              in one match and one save code.
             </p>
           </div>
 
           <div className="w-full max-w-xl mb-6">
-            <h3 className="text-lg font-semibold mb-2">Manual Session (Legacy)</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Manual Session (Legacy)
+            </h3>
             <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
               <button
                 onClick={() => {
