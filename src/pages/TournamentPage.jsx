@@ -52,11 +52,32 @@ function TournamentPage({ onBack }) {
     )
   }
 
+  const handleImportTournament = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result)
+        setTournament(data)
+      } catch (err) {
+        console.error('Error parsing tournament JSON:', err)
+        alert('Error loading tournament file. Please ensure it is a valid JSON file.')
+      }
+    }
+    reader.onerror = (err) => {
+      console.error('Error reading file:', err)
+      alert('Error reading file.')
+    }
+    reader.readAsText(file)
+  }
+
   if (!tournament) {
     return (
       <TournamentLanding
         onCreateNew={handleCreateNew}
-        onLoadExisting={handleLoadExisting}
+        onImportTournament={handleImportTournament}
         onBack={onBack}
       />
     )
