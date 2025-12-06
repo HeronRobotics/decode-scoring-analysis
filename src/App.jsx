@@ -55,6 +55,7 @@ function App() {
   const [copiedTeleop, setCopiedTeleop] = useState(false);
   const [mode, setMode] = useState("free"); // "free" | "match"
   const [phase, setPhase] = useState("idle"); // "idle" | "auto" | "buffer" | "teleop" | "finished"
+  const [teamNumber, setTeamNumber] = useState("");
 
   useEffect(() => {
     if (isRecording) {
@@ -337,25 +338,14 @@ function App() {
   const importFromText = () => {
     try {
       const parsedData = parseMatchText(textInput);
-      if (parsedData.events.length === 0) {
+      const success = applyParsedMatchData(parsedData);
+      if (!success) {
         alert("No valid match data found. Please check the format.");
         return;
       }
-      const otherEvents = parsedData.events.filter((e) => e.type !== "info");
 
-      setMatchStartTime(parsedData.startTime || Date.now());
-      setTimerDuration(parsedData.duration || null);
-      setEvents(otherEvents);
-      setElapsedTime(
-        otherEvents.length > 0
-          ? otherEvents[otherEvents.length - 1].timestamp
-          : 0
-      );
-      setIsRecording(false);
       setShowTextImport(false);
       setTextInput("");
-      setNotes(parsedData.notes || "");
-      setTeamNumber(parsedData.teamNumber || "");
 
       logEvent(analytics, "import_match_text");
     } catch (e) {
@@ -396,7 +386,26 @@ function App() {
     .filter((e) => e.type === "cycle")
     .reduce((sum, e) => sum + e.total, 0);
 
-  const [teamNumber, setTeamNumber] = useState("");
+  const applyParsedMatchData = (parsedData) => {
+    if (!parsedData || !Array.isArray(parsedData.events)) return false;
+
+    const otherEvents = parsedData.events.filter((e) => e.type !== "info");
+    if (otherEvents.length === 0) {
+      return false;
+    }
+
+    setMatchStartTime(parsedData.startTime || Date.now());
+    setTimerDuration(parsedData.duration || null);
+    setEvents(otherEvents);
+    setElapsedTime(
+      otherEvents.length > 0 ? otherEvents[otherEvents.length - 1].timestamp : 0
+    );
+    setIsRecording(false);
+    setNotes(parsedData.notes || "");
+    setTeamNumber(parsedData.teamNumber || "");
+
+    return true;
+  };
 
   const copyToClipboard = () => {
     const matchText = formatMatchData();
@@ -421,6 +430,23 @@ function App() {
       setTimeout(() => setCopiedTeleop(false), 2000);
     });
   };
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("mt");
+      if (!encoded) return;
+
+      const decoded = atob(decodeURIComponent(encoded));
+      const parsedData = parseMatchText(decoded);
+      const success = applyParsedMatchData(parsedData);
+      if (success) {
+        logEvent(analytics, "import_match_text_url");
+      }
+    } catch (e) {
+      console.warn("Failed to import match from URL", e);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
@@ -548,7 +574,7 @@ function App() {
             {mode === "match" && (
               <div className="mt-2 text-lg font-semibold">
                 {phase === "auto" && "Auto Phase"}
-                {phase === "buffer" && "Auto Wrap-up (5s buffer)"}
+                {phase === "buffer" && "Auto Wrap-up (8s buffer)"}
                 {phase === "teleop" && "TeleOp Phase"}
                 {phase === "finished" && "Match Complete"}
               </div>
@@ -700,6 +726,19 @@ function App() {
                     </>
                   )}
                 </button>
+                <div className="mt-3 text-sm break-all">
+                  <span className="font-semibold">Share URL:</span>{" "}
+                  <a
+                    href={`${window.location.origin}${
+                      window.location.pathname
+                    }?mt=${encodeURIComponent(btoa(formatMatchData()))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    open in new tab
+                  </a>
+                </div>
                 {mode === "match" && (
                   <div className="w-full mt-6 flex flex-col gap-4">
                     <div>
@@ -723,6 +762,21 @@ function App() {
                           </>
                         )}
                       </button>
+                      <div className="mt-2 text-xs break-all">
+                        <span className="font-semibold">Auto URL:</span>{" "}
+                        <a
+                          href={`${window.location.origin}${
+                            window.location.pathname
+                          }?mt=${encodeURIComponent(
+                            btoa(formatPhaseMatchData("auto"))
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          open auto in new tab
+                        </a>
+                      </div>
                     </div>
                     <div>
                       <h4 className="text-lg mb-1">TeleOp-only Text:</h4>
@@ -745,6 +799,21 @@ function App() {
                           </>
                         )}
                       </button>
+                      <div className="mt-2 text-xs break-all">
+                        <span className="font-semibold">TeleOp URL:</span>{" "}
+                        <a
+                          href={`${window.location.origin}${
+                            window.location.pathname
+                          }?mt=${encodeURIComponent(
+                            btoa(formatPhaseMatchData("teleop"))
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          open teleop in new tab
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}

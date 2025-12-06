@@ -25,7 +25,6 @@ function TournamentPage({ onBack }) {
   const [isCreating, setIsCreating] = useState(false)
 
   const handleCreateNew = () => setIsCreating(true)
-  const handleLoadExisting = (data) => setTournament(data)
   const handleTournamentCreated = (newTournament) => {
     setTournament(newTournament)
     setIsCreating(false)

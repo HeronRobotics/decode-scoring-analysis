@@ -31,6 +31,7 @@ const TournamentProviderInner = ({ children }) => {
 
 export const TournamentProvider = TournamentProviderInner
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTournament = () => {
   const context = useContext(TournamentContext)
   if (!context) {
