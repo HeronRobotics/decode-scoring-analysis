@@ -1,13 +1,7 @@
 import { BasketballIcon, CricketIcon } from "@phosphor-icons/react"
+import { formatTime } from "../utils/format"
 
 function Timeline({ events, currentTime }) {
-  const formatTime = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(totalSeconds / 60)
-    const seconds = totalSeconds % 60
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
-
   const maxTime = Math.max(currentTime, ...events.map(e => e.timestamp), 1)
 
   return (

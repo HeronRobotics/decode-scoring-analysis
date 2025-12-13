@@ -1,3 +1,5 @@
+import { formatTime } from "./format";
+
 export const HMAD_VERSION = "hmadv1";
 
 export const formatMatchText = ({
@@ -197,9 +199,3 @@ export const parseMatchText = (text) => {
   };
 };
 
-const formatTime = (ms) => {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-};
