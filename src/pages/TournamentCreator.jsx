@@ -219,12 +219,12 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           >
             <h3 className="text-2xl mb-5">Paste Match Codes</h3>
             <p className="text-sm mb-4 text-[#666]">
-              Paste one or more match codes below (one per line). Format: hmadv1/teamNum/...;; 0:00; 1/2 at 0:10; ...
+              Paste one or more match codes below (one per line). Format: hmadv2/teamNum/...;; 0:00.000; 1/2 at 0:10.123; ... (hmadv1 also supported)
             </p>
             <textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder="hmadv1/1234/.../...;; 0:00; 1/2 at 0:10; 1/2 at 0:20; gate at 1:30; ..."
+              placeholder="hmadv2/1234/.../...;; 0:00.000; 1/2 at 0:10.123; 1/2 at 0:20.456; gate at 1:30.000; ..."
               className="w-full h-56 sm:h-64 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
             />
             <div className="flex gap-4 justify-end mt-6">
