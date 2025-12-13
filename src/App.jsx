@@ -53,6 +53,9 @@ function App() {
   const [copiedFull, setCopiedFull] = useState(false);
   const [copiedAuto, setCopiedAuto] = useState(false);
   const [copiedTeleop, setCopiedTeleop] = useState(false);
+  const [copiedFullUrl, setCopiedFullUrl] = useState(false);
+  const [copiedAutoUrl, setCopiedAutoUrl] = useState(false);
+  const [copiedTeleopUrl, setCopiedTeleopUrl] = useState(false);
   const [mode, setMode] = useState("free"); // "free" | "match"
   const [phase, setPhase] = useState("idle"); // "idle" | "auto" | "buffer" | "teleop" | "finished"
   const [teamNumber, setTeamNumber] = useState("");
@@ -431,6 +434,43 @@ function App() {
     });
   };
 
+  const buildShareUrl = (matchText) => {
+    return `${window.location.origin}${
+      window.location.pathname
+    }?mt=${encodeURIComponent(btoa(matchText))}`;
+  };
+
+  const copyUrlToClipboard = (matchText, setCopied) => {
+    const url = buildShareUrl(matchText);
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const shareUrl = async (matchText, label) => {
+    const url = buildShareUrl(matchText);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Heron Scout",
+          text: label,
+          url,
+        });
+        return;
+      } catch {
+        // User cancelled or share failed; fall back below.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -732,16 +772,24 @@ function App() {
                 </button>
                 <div className="mt-3 text-sm break-all">
                   <span className="font-semibold">Share URL:</span>{" "}
-                  <a
-                    href={`${window.location.origin}${
-                      window.location.pathname
-                    }?mt=${encodeURIComponent(btoa(formatMatchData()))}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
+                  <button
+                    type="button"
+                    onClick={() =>
+                      shareUrl(formatMatchData(), "Match data link")
+                    }
+                    className="text-blue-600 underline btn mt-2 !py-1 !px-3 text-sm"
                   >
-                    open in new tab
-                  </a>
+                    share link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyUrlToClipboard(formatMatchData(), setCopiedFullUrl)
+                    }
+                    className="btn mt-2 !py-1 !px-3 text-sm"
+                  >
+                    {copiedFullUrl ? <>Copied link!</> : <>copy link</>}
+                  </button>
                 </div>
                 {mode === "match" && (
                   <div className="w-full mt-6 flex flex-col gap-4">
@@ -768,18 +816,34 @@ function App() {
                       </button>
                       <div className="mt-2 text-xs break-all">
                         <span className="font-semibold">Auto URL:</span>{" "}
-                        <a
-                          href={`${window.location.origin}${
-                            window.location.pathname
-                          }?mt=${encodeURIComponent(
-                            btoa(formatPhaseMatchData("auto"))
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline"
+                        <button
+                          type="button"
+                          onClick={() =>
+                            shareUrl(
+                              formatPhaseMatchData("auto"),
+                              "Auto-only match data link"
+                            )
+                          }
+                          className="text-blue-600 underline btn mt-2 !py-1 !px-3 text-sm"
                         >
-                          open auto in new tab
-                        </a>
+                          share auto link
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            copyUrlToClipboard(
+                              formatPhaseMatchData("auto"),
+                              setCopiedAutoUrl
+                            )
+                          }
+                          className="btn mt-2 !py-1 !px-3 text-sm"
+                        >
+                          {copiedAutoUrl ? (
+                            <>Copied link!</>
+                          ) : (
+                            <>copy auto link</>
+                          )}
+                        </button>
                       </div>
                     </div>
                     <div>
@@ -805,18 +869,34 @@ function App() {
                       </button>
                       <div className="mt-2 text-xs break-all">
                         <span className="font-semibold">TeleOp URL:</span>{" "}
-                        <a
-                          href={`${window.location.origin}${
-                            window.location.pathname
-                          }?mt=${encodeURIComponent(
-                            btoa(formatPhaseMatchData("teleop"))
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline"
+                        <button
+                          type="button"
+                          onClick={() =>
+                            shareUrl(
+                              formatPhaseMatchData("teleop"),
+                              "TeleOp-only match data link"
+                            )
+                          }
+                          className="text-blue-600 underline btn mt-2 !py-1 !px-3 text-sm"
                         >
-                          open teleop in new tab
-                        </a>
+                          share teleop link
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            copyUrlToClipboard(
+                              formatPhaseMatchData("teleop"),
+                              setCopiedTeleopUrl
+                            )
+                          }
+                          className="btn mt-2 !py-1 !px-3 text-sm"
+                        >
+                          {copiedTeleopUrl ? (
+                            <>Copied link!</>
+                          ) : (
+                            <>copy teleop link</>
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
