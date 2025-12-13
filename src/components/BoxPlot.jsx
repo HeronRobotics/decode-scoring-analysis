@@ -47,7 +47,7 @@ export function BoxPlot({
   return (
     <div className="mt-4">
       <div className="text-xs text-[#666] mb-2">{title.toUpperCase()} ({unit.trim()})</div>
-      <div className="h-40">
+      <div className="w-full" style={{ height }}>
         <ResponsiveContainer width={width} height={height}>
           <ComposedChart
             data={[{ name: "dummy", x: boxMedian }]} // give XAxis a key to map
@@ -91,13 +91,15 @@ export function BoxPlot({
 
             {/* Custom box plot */}
             <Customized
-              component={() => {
-                const cy = height / 2;
-                const boxH = Math.min(80, height * 0.3);
+              component={({ width: containerWidth, height: containerHeight }) => {
+                const h = typeof containerHeight === "number" ? containerHeight : height;
+                const w = typeof containerWidth === "number" ? containerWidth : (typeof width === "number" ? width : 400);
+
+                const cy = h / 2;
+                const boxH = Math.min(80, h * 0.3);
                 const capH = Math.min(24, boxH);
 
-                let drawWidth = typeof width === "number" ? width : 400;
-                drawWidth -= 20;
+                const drawWidth = Math.max(0, w - 20);
 
                 const scale = (val) =>
                   ((val - rangeMin) / (rangeMax - rangeMin)) * drawWidth + 10; // base width for drawing

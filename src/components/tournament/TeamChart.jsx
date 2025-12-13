@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine } from 'recharts'
+import { useCallback, useMemo, useState } from 'react'
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useTournament } from '../../data/TournamentContext'
 
 const numToKey = (num) => `Team ${num}`
@@ -27,6 +27,12 @@ const calculateQuartiles = (values) => {
 
 function TeamChart({ matchesOrdered, teamStats, teamColors }) {
   const { visibleTeams, hoveredTeam, setHoveredTeam } = useTournament()
+  const [chartSize, setChartSize] = useState({ width: 0, height: 0 })
+
+  const onResize = useCallback((width, height) => {
+    // Recharts calls this frequently; keep it light.
+    setChartSize({ width, height })
+  }, [])
 
   const getMatchTime = (m) => {
     if (m.startTime) {
@@ -68,6 +74,16 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
   }, [matchesOrdered, teamStats])
 
   const sharedMax = Math.max(1, ...teamStats.flatMap(ts => ts.scores ? ts.scores.filter(v => v !== null) : []))
+
+  const isCompact = chartSize.width > 0 ? chartSize.width < 640 : false
+  const chartMargin = useMemo(() => (
+    {
+      top: 20,
+      right: isCompact ? 20 : 80,
+      left: 8,
+      bottom: isCompact ? 50 : 20,
+    }
+  ), [isCompact])
 
   // Calculate boxplot data for hovered team
   const hoveredTeamBoxplot = useMemo(() => {
@@ -119,12 +135,15 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
     const color = teamColors[hoveredTeam]
     const boxplotData = hoveredTeamBoxplot
     
-    // These coordinates are relative to the SVG chart area
-    // We'll position the boxplot on the right side
-    const boxplotX = 550 // position from left edge of chart
-    const topY = 40      // top of chart area
-    const bottomY = 540  // bottom of chart area (600 - 60 margin)
-    const boxplotHeight = bottomY - topY
+    // Coordinates are relative to the SVG viewBox (0..width, 0..height).
+    const w = chartSize.width || 700
+    const h = chartSize.height || 600
+    const topY = chartMargin.top
+    const bottomY = h - chartMargin.bottom
+    const boxplotHeight = Math.max(1, bottomY - topY)
+
+    // Position boxplot in the right margin so it doesn't overlap the lines.
+    const boxplotX = w - (chartMargin.right / 2)
     
     // Scale values based on chart's Y domain (0 to sharedMax)
     const scaleY = (value) => {
@@ -134,6 +153,7 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
     
     const boxWidth = 20
     const centerX = boxplotX
+    const labelX = Math.min(centerX + 15, w - 8)
     
     return (
       <>
@@ -197,19 +217,19 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
         />
         
         {/* Value labels */}
-        <text x={centerX + 15} y={scaleY(boxplotData.max) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.max) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
           {boxplotData.max}
         </text>
-        <text x={centerX + 15} y={scaleY(boxplotData.q3) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.q3) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
           {boxplotData.q3}
         </text>
-        <text x={centerX + 15} y={scaleY(boxplotData.median) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.median) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
           {boxplotData.median}
         </text>
-        <text x={centerX + 15} y={scaleY(boxplotData.q1) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.q1) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
           {boxplotData.q1}
         </text>
-        <text x={centerX + 15} y={scaleY(boxplotData.min) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.min) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
           {boxplotData.min}
         </text>
       </>
@@ -217,11 +237,19 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
   }
 
   return (
-    <div className="h-[600px]">
-      <ResponsiveContainer width="100%" height={600}>
-        <LineChart data={chartData} margin={{ top: 20, right: 80, left: 8, bottom: 20 }}>
+    <div className="h-[360px] sm:h-[600px]">
+      <ResponsiveContainer width="100%" height="100%" onResize={onResize}>
+        <LineChart data={chartData} margin={chartMargin}>
           <CartesianGrid stroke="#f7fafc" />
-          <XAxis dataKey="label" tick={{ fill: '#666' }} />
+          <XAxis
+            dataKey="label"
+            tick={{ fill: '#666', fontSize: isCompact ? 10 : 12 }}
+            interval="preserveStartEnd"
+            minTickGap={20}
+            angle={isCompact ? -35 : 0}
+            textAnchor={isCompact ? 'end' : 'middle'}
+            height={isCompact ? 60 : undefined}
+          />
           <YAxis domain={[0, sharedMax]} tick={{ fill: '#666' }} />
           <Tooltip content={<CustomTooltip />} />
           {teamStats.map((ts) => {
@@ -247,7 +275,7 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
             )
           })}
           {/* Custom content for boxplot overlay */}
-          {hoveredTeamBoxplot && hoveredTeam && (
+          {!isCompact && hoveredTeamBoxplot && hoveredTeam && (
             <g className="recharts-layer">
               <BoxplotOverlay />
             </g>

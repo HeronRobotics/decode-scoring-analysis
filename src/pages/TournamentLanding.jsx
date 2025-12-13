@@ -2,12 +2,12 @@ import { ArrowLeft, UploadSimple, Calendar } from '@phosphor-icons/react'
 
 function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
   return (
-    <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
-      <header className="text-center my-8">
-        <h1 className="text-5xl font-bold">Tournament Analysis</h1>
+    <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 sm:gap-12">
+      <header className="text-center my-6 sm:my-8 px-2">
+        <h1 className="text-3xl sm:text-5xl font-bold">Tournament Analysis</h1>
       </header>
 
-      <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center p-16 gap-6">
+      <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center p-6 sm:p-16 gap-6 w-full">
         <h2 className="text-3xl text-center">Load or Create Tournament</h2>
         <p className='mb-4 text-center'>
           Scout teams at tournaments (or other multi-match events like scrimmages) and import them here!
@@ -17,7 +17,7 @@ function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
         
         <button
           onClick={onCreateNew}
-          className="btn py-3! bg-[#445f8b]! text-white! px-6!"
+          className="btn !py-3 !bg-[#445f8b] !text-white !px-6"
         >
           <Calendar weight="bold" size={24} />
           Create New Tournament From Game Files
@@ -29,7 +29,7 @@ function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
           <hr className="grow w-12 border-t border-gray-300" />
         </div>
 
-        <label className="btn py-3!">
+        <label className="btn !py-3">
           <span className="flex items-center gap-2">
             <UploadSimple weight="bold" size={24} />
             Load Existing Tournament JSON

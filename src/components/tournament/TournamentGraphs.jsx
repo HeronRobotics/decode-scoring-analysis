@@ -34,7 +34,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
             <Target weight="bold" size={28} className="text-[#445f8b]" />
             <h3 className="text-2xl font-bold">Accuracy</h3>
           </div>
-          <p className="text-5xl font-bold text-[#445f8b]">{overallAccuracy.toFixed(1)}%</p>
+          <p className="text-4xl sm:text-5xl font-bold text-[#445f8b]">{overallAccuracy.toFixed(1)}%</p>
           <p className="text-sm text-[#666] mt-2">{totalScored}/{totalBalls} balls scored</p>
         </div>
 
@@ -43,7 +43,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
             <Clock weight="bold" size={28} className="text-[#445f8b]" />
             <h3 className="text-2xl font-bold">Avg Cycle Time</h3>
           </div>
-          <p className="text-5xl font-bold text-[#445f8b]">{avgCycleTime.toFixed(1)}s</p>
+          <p className="text-4xl sm:text-5xl font-bold text-[#445f8b]">{avgCycleTime.toFixed(1)}s</p>
           <p className="text-sm text-[#666] mt-2">{cycleTimes.length} cycles measured</p>
         </div>
 
@@ -52,7 +52,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
             <ChartLine weight="bold" size={28} className="text-[#445f8b]" />
             <h3 className="text-2xl font-bold">Avg Balls Per Match</h3>
           </div>
-          <p className="text-5xl font-bold text-[#445f8b]">{avgBallsPerMatch.toFixed(1)}</p>
+          <p className="text-4xl sm:text-5xl font-bold text-[#445f8b]">{avgBallsPerMatch.toFixed(1)}</p>
           <p className="text-sm text-[#666] mt-2">Balls attempted, across all matches</p>
         </div>
       </div>
@@ -78,7 +78,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                   <div className="w-full flex flex-col justify-end items-center relative" style={{ height: '160px' }}>
                     {cyclesWithCount > 0 && !showLabelInside && (
                       <div className="absolute bottom-1 z-10">
-                        <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-10 py-0.5 rounded">
+                        <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-2 sm:px-6 py-0.5 rounded max-w-full">
                           {cyclesWithCount}
                         </span>
                       </div>
@@ -99,7 +99,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                   </div>
 
                   <div className="text-center">
-                    <p className="font-bold text-lg">{count} ball{count !== 1 ? 's' : ''}</p>
+                    <p className="font-bold text-base sm:text-lg">{count} ball{count !== 1 ? 's' : ''}</p>
                     <p className="text-sm text-[#666]">{percentage.toFixed(0)}%</p>
                   </div>
                 </div>
@@ -127,7 +127,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                   <div className="w-full flex flex-col justify-end items-center relative" style={{ height: '160px' }}>
                     {count > 0 && !showLabelInside && (
                       <div className="absolute bottom-1 z-10">
-                        <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-10 py-0.5 rounded">
+                        <span className="bg-[#445f8b] font-bold text-sm text-white flex justify-center items-center px-2 sm:px-6 py-0.5 rounded max-w-full">
                           {count}
                         </span>
                       </div>
@@ -147,7 +147,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                     )}
                   </div>
                   <div className="text-center">
-                    <p className="font-bold text-lg">{range}</p>
+                    <p className="font-bold text-base sm:text-lg">{range}</p>
                     <p className="text-sm text-[#666]">{percentage.toFixed(0)}%</p>
                   </div>
                 </div>

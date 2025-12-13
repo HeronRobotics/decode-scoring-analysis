@@ -13,8 +13,8 @@ function Timeline({ events, currentTime }) {
   return (
     <div className="w-full">
       <h3 className="text-2xl mb-5">Timeline</h3>
-      <div className="bg-white p-10 border-2 border-[#445f8b]">
-        <div className="relative h-32 bg-white border-b-2 border-[#ddd] mb-3">
+      <div className="bg-white p-4 sm:p-10 border-2 border-[#445f8b]">
+        <div className="relative h-28 sm:h-32 bg-white border-b-2 border-[#ddd] mb-3">
           {events.map((event, index) => {
             const position = (event.timestamp / maxTime) * 100
 
@@ -26,7 +26,7 @@ function Timeline({ events, currentTime }) {
                     balls.push(
                         <div
                             key={i}
-                            className="w-6 h-6"
+                            className="w-5 h-5 sm:w-6 sm:h-6"
                         >
                             <BasketballIcon color={isScored ? successColor : '#ddd'} />
                         </div>
@@ -53,8 +53,8 @@ function Timeline({ events, currentTime }) {
                   style={{ left: `${position}%` }}
                   title={`Gate at ${formatTime(event.timestamp)}`}
                 >
-                  <div className="w-8 h-full bg-blue-50 text-white flex items-center justify-center font-bold border-2 border-blue-100">
-                    <CricketIcon className="w-5 h-5 text-[#445f8b]" />
+                  <div className="w-6 sm:w-8 h-full bg-blue-50 text-white flex items-center justify-center font-bold border-2 border-blue-100">
+                    <CricketIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#445f8b]" />
                   </div>
                 </div>
               )
@@ -67,13 +67,25 @@ function Timeline({ events, currentTime }) {
             style={{ left: `${(currentTime / maxTime) * 100}%` }}
           ></div>
         </div>
-        
-        <div className="relative flex justify-between mt-3">
+
+        {/* Desktop labels */}
+        <div className="relative mt-3 hidden sm:block">
           {[0, 0.25, 0.5, 0.75, 1].map((fraction, i) => (
-            <div key={i} className="absolute -translate-x-1/2 text-xs text-[#666]" style={{ left: `${fraction * 100}%` }}>
+            <div
+              key={i}
+              className="absolute -translate-x-1/2 text-xs text-[#666]"
+              style={{ left: `${fraction * 100}%` }}
+            >
               {formatTime(maxTime * fraction)}
             </div>
           ))}
+        </div>
+
+        {/* Mobile labels */}
+        <div className="mt-3 flex justify-between text-[10px] text-[#666] sm:hidden">
+          <div>{formatTime(0)}</div>
+          <div>{formatTime(maxTime * 0.5)}</div>
+          <div>{formatTime(maxTime)}</div>
         </div>
       </div>
     </div>

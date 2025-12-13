@@ -46,14 +46,14 @@ function Statistics({ events, matches, teamNumber, notes }) {
       )}
 
       {/* Summary Section - Most Important */}
-      <div className="bg-[#445f8b] border-2 border-[#445f8b] p-8 mb-5">
+      <div className="bg-[#445f8b] border-2 border-[#445f8b] p-4 sm:p-8 mb-5">
         <div className="flex items-center gap-3 mb-6 -ml-4 -mt-4">
           <ChartLine size={32} className="text-white" />
           <h4 className="text-2xl text-white">Summary</h4>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
-            <div className="text-4xl font-bold text-white">
+            <div className="text-3xl sm:text-4xl font-bold text-white">
               {cycleEvents.length}
             </div>
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
@@ -62,7 +62,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-white">
+            <div className="text-3xl sm:text-4xl font-bold text-white">
               {scoredBalls.reduce((a, b) => a + b, 0)}
             </div>
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
@@ -71,7 +71,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-white">
+            <div className="text-3xl sm:text-4xl font-bold text-white">
               {totalBalls.reduce((a, b) => a + b, 0)}
             </div>
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
@@ -80,7 +80,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-white">
+            <div className="text-3xl sm:text-4xl font-bold text-white">
               {formatStat(
                 (scoredBalls.reduce((a, b) => a + b, 0) /
                   totalBalls.reduce((a, b) => a + b, 0)) *
@@ -194,21 +194,23 @@ function Statistics({ events, matches, teamNumber, notes }) {
           </div>
         </div>
       </div>
-      <div className="bg-white mt-8 border-2 border-[#445f8b] p-5 justify-around space-x-4 flex flex-row flex-wrap items-center">
-        <BoxPlot
-          data={sortedTimes}
-          width={400}
-          height={200}
-          unit="s"
-          title="Cycle Time Distribution"
-        />
-        <BoxPlot
-          data={boxplotAccuracy}
-          width={400}
-          height={200}
-          unit="%"
-          title="Accuracy per cycle"
-        />
+      <div className="bg-white mt-8 border-2 border-[#445f8b] p-4 sm:p-5 flex flex-col lg:flex-row gap-4 items-stretch">
+        <div className="w-full lg:w-1/2">
+          <BoxPlot
+            data={sortedTimes}
+            height={200}
+            unit="s"
+            title="Cycle Time Distribution"
+          />
+        </div>
+        <div className="w-full lg:w-1/2">
+          <BoxPlot
+            data={boxplotAccuracy}
+            height={200}
+            unit="%"
+            title="Accuracy per cycle"
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, UploadSimple, Plus, Trash, ChartLine, TrendUp, Calendar } from '@phosphor-icons/react'
+import { UploadSimple, Plus, Trash, TrendUp, Calendar } from '@phosphor-icons/react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import Statistics from '../components/Statistics'
 
@@ -139,14 +139,14 @@ function LifetimePage() {
   })
 
   return (
-    <div className="min-h-screen p-5 max-w-7xl mx-auto">
-      <div className="my-8 flex items-center justify-between">
-        <h1 className="text-5xl font-bold">Lifetime Statistics</h1>
+    <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
+      <div className="my-6 sm:my-8 flex items-center justify-between">
+        <h1 className="text-3xl sm:text-5xl font-bold">Lifetime Statistics</h1>
       </div>
 
       {/* Upload Section */}
-      <div className="bg-white border-2 border-[#445f8b] p-6 mb-8">
-        <h2 className="text-3xl mb-4">Upload</h2>
+      <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
+        <h2 className="text-2xl sm:text-3xl mb-4">Upload</h2>
         <div className="flex flex-col sm:flex-row gap-4 items-center mb-4">
           <label className="flex items-center gap-2 font-semibold">
             Your Team #:
@@ -171,7 +171,7 @@ function LifetimePage() {
       </div>
 
       {tournaments.length === 0 ? (
-        <div className="bg-white border-2 border-[#445f8b] p-16 text-center">
+        <div className="bg-white border-2 border-[#445f8b] p-8 sm:p-16 text-center">
           <UploadSimple size={64} weight="light" className="mx-auto mb-4 text-[#445f8b]" />
           <p className="text-xl">No uploads yet. Upload your first tournament or match and it'll show up here 👀</p>
         </div>
@@ -183,7 +183,7 @@ function LifetimePage() {
           </div>
 
           {/* Progression Chart */}
-          <div className="bg-white border-2 border-[#445f8b] p-6 mb-8">
+          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
             <h2 className="text-3xl mb-5 flex items-center gap-3">
               <TrendUp weight="bold" size={32} />
               Progression
@@ -206,6 +206,11 @@ function LifetimePage() {
                       dataKey="dateLabel" 
                       stroke="#666"
                       style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      interval="preserveStartEnd"
+                      minTickGap={20}
+                      angle={-35}
+                      textAnchor="end"
+                      height={60}
                     />
                     <YAxis 
                       domain={[0, 100]}
@@ -252,6 +257,11 @@ function LifetimePage() {
                       dataKey="dateLabel" 
                       stroke="#666"
                       style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      interval="preserveStartEnd"
+                      minTickGap={20}
+                      angle={-35}
+                      textAnchor="end"
+                      height={60}
                     />
                     <YAxis 
                       stroke="#666"
@@ -282,7 +292,7 @@ function LifetimePage() {
           </div>
 
           {/* Tournament List */}
-          <div className="bg-white border-2 border-[#445f8b] p-6">
+          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6">
             <h2 className="text-3xl mb-5 flex items-center gap-3">
               <Calendar weight="bold" size={32} />
               Uploads ({tournaments.length})
@@ -300,11 +310,11 @@ function LifetimePage() {
                     }`}
                     onClick={() => setSelectedTournament(selectedTournament === index ? null : index)}
                   >
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                       <div>
                         <h3 className="text-2xl font-bold">{tournament.name}</h3>
                         <p className="text-[#666] mb-3">{new Date(tournament.date).toLocaleDateString()}</p>
-                        <div className="flex gap-6 text-sm">
+                        <div className="flex flex-wrap gap-3 text-xs sm:text-sm">
                           <span><strong>{stat.matchCount}</strong> match{stat.matchCount !== 1 ? 'es' : ''}</span>
                           <span><strong>{stat.scored}/{stat.total}</strong> scored</span>
                           <span><strong>{stat.accuracy.toFixed(1)}%</strong> accuracy</span>

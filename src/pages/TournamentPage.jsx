@@ -170,34 +170,34 @@ function TournamentPage({ onBack }) {
   }, {});
 
   return (
-    <div className="min-h-screen p-5 max-w-7xl mx-auto">
-      <div className="my-8 flex flex-row flex-wrap space-y-3 items-center justify-between">
+    <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
+      <div className="my-6 sm:my-8 flex flex-row flex-wrap gap-3 items-center justify-between">
         <div>
-          <h1 className="text-5xl font-bold">{tournament.name}</h1>
+          <h1 className="text-3xl sm:text-5xl font-bold">{tournament.name}</h1>
           <p className="text-lg text-[#666] mt-2">{new Date(tournament.date).toLocaleDateString()}</p>
         </div>
-        <div className="flex gap-3">
-          <button onClick={saveTournament} className="btn">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
+          <button onClick={saveTournament} className="btn w-full sm:w-auto justify-center">
             <FloppyDisk size={20} weight="bold" />
             Save Tournament
           </button>
-          <button onClick={exportMatchesCsv} className="btn">
+          <button onClick={exportMatchesCsv} className="btn w-full sm:w-auto justify-center">
             <DownloadSimple size={20} weight="bold" />
             Export CSV
           </button>
-          <button onClick={onBack} className="btn">
+          <button onClick={onBack} className="btn w-full sm:w-auto justify-center">
             <ArrowLeft size={20} weight="bold" />
             Back
           </button>
         </div>
       </div>
 
-      <div className="mb-18">
+      <div className="mb-16">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <h2 className="text-3xl">Tournament Summary</h2>
         </div>
 
-        <div className="bg-white p-6 border-2 border-[#445f8b] mt-5">
+        <div className="bg-white p-4 sm:p-6 border-2 border-[#445f8b] mt-5">
           <h3 className="text-xl font-semibold mb-3">Match Scores — All Teams</h3>
           <div className="mb-2 text-sm text-[#666]">Sorted by median scored (highest first). Hover teams for score distributions.</div>
           
@@ -207,10 +207,10 @@ function TournamentPage({ onBack }) {
           <p className="mt-4 italic text-sm text-[#666]">^ Hover over a box above!</p>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mt-18">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mt-16">
           <h2 className="text-3xl">Team Statistics</h2>
           {teams.length > 0 && (
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-4 w-full md:w-auto">
               <label className="font-semibold">Selected Team:</label>
               <select
                 value={selectedTeam}
@@ -218,7 +218,7 @@ function TournamentPage({ onBack }) {
                   setSelectedTeam(e.target.value)
                   setSelectedMatch(0)
                 }}
-                className="p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none min-w-40"
+                className="p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:min-w-40"
               >
                 <option value="">All Teams</option>
                 {teams.map(t => (
@@ -228,7 +228,7 @@ function TournamentPage({ onBack }) {
             </div>
           )}
         </div>
-        <div className="bg-white p-6 border-2 border-[#445f8b] mt-8">
+        <div className="bg-white p-4 sm:p-6 border-2 border-[#445f8b] mt-8">
           <h3 className="text-xl font-semibold mb-3">Team Statistics</h3>
           <div className={`mt-5 ${selectedTeam && 'mb-5'}`}>
             <p className="text-[#666]">Select a team to view detailed graphs for that team.</p>
@@ -240,12 +240,12 @@ function TournamentPage({ onBack }) {
       </div>
       </div>
 
-      <div className='w-full flex flex-col items-start p-8 bg-[#f0f5fd]'>
+      <div className='w-full flex flex-col items-start p-4 sm:p-8 bg-[#f0f5fd]'>
         <h2 className='mb-8'>
           <span className="text-3xl mb-5">{selectedTeam ? "Team " + selectedTeam + "'s Matches" : "All Tournament Matches"}</span>
         </h2>
         
-        <div className="w-full bg-white border-2 border-[#445f8b] p-6 mb-8">
+        <div className="w-full bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
           <h3 className="text-2xl mb-4">Select Match ({filteredMatches.length} total)</h3>
           <div className="flex gap-3 flex-wrap">
             {filteredMatches.map((_, index) => {
@@ -254,7 +254,7 @@ function TournamentPage({ onBack }) {
                 <button
                   key={index}
                   onClick={() => setSelectedMatch(index)}
-                  className={`px-6 py-3 border-2 font-semibold transition-colors ${
+                  className={`px-3 py-2 sm:px-6 sm:py-3 text-sm sm:text-base border-2 font-semibold transition-colors ${
                     selectedMatch === index
                       ? 'border-[#445f8b] bg-[#445f8b] text-white'
                     : 'border-[#ddd] bg-white hover:border-[#445f8b]'

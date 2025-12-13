@@ -116,16 +116,16 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
   }
 
   return (
-    <div className="min-h-screen p-5 max-w-7xl mx-auto">
-      <div className="my-8 flex items-center justify-between">
-        <h1 className="text-5xl font-bold">Create Tournament</h1>
-        <button onClick={onCancel} className="btn">
+    <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
+      <div className="my-6 sm:my-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h1 className="text-3xl sm:text-5xl font-bold">Create Tournament</h1>
+        <button onClick={onCancel} className="btn w-full sm:w-auto justify-center">
           <ArrowLeft size={20} weight="bold" />
           Cancel
         </button>
       </div>
 
-      <div className="bg-white border-2 border-[#445f8b] p-8">
+      <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-8">
         <div className="space-y-6 mb-8">
           <div>
             <label className="block font-semibold mb-2">Tournament Name</label>
@@ -151,7 +151,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           <div>
             <label className="block font-semibold mb-2">Upload Match Files ({uploadedMatches.length} uploaded)</label>
             <div className="flex gap-3 flex-wrap">
-              <label className="btn py-3!">
+              <label className="btn !py-3 w-full sm:w-auto justify-center">
                 <UploadSimple weight="bold" size={20} />
                 Upload Match JSON Files
                 <input
@@ -162,7 +162,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                   className="hidden"
                 />
               </label>
-              <button onClick={() => setShowTextImport(true)} className="btn py-3!">
+              <button onClick={() => setShowTextImport(true)} className="btn !py-3 w-full sm:w-auto justify-center">
                 <ClipboardTextIcon weight="bold" size={20} />
                 Paste Match Codes
               </button>
@@ -187,7 +187,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                       </div>
                       <button
                         onClick={() => removeMatch(index)}
-                        className="error-btn py-1! px-3! text-sm!"
+                        className="error-btn !py-1 !px-3 !text-sm"
                       >
                         Remove
                       </button>
@@ -201,7 +201,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
 
         <button
           onClick={createTournament}
-          className="btn py-3! bg-[#445f8b]! text-white! px-6!"
+          className="btn !py-3 !bg-[#445f8b] !text-white !px-6 w-full sm:w-auto justify-center"
         >
           <FloppyDisk weight="bold" size={20} />
           Create Tournament
@@ -214,7 +214,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           onClick={() => setShowTextImport(false)}
         >
           <div
-            className="bg-white p-8 max-w-2xl w-11/12 border-2 border-[#445f8b]"
+            className="bg-white p-4 sm:p-8 max-w-2xl w-11/12 border-2 border-[#445f8b]"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl mb-5">Paste Match Codes</h3>
@@ -225,7 +225,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="hmadv1/1234/.../...;; 0:00; 1/2 at 0:10; 1/2 at 0:20; gate at 1:30; ..."
-              className="w-full h-64 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
+              className="w-full h-56 sm:h-64 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
             />
             <div className="flex gap-4 justify-end mt-6">
               <button onClick={importFromText} className="btn">

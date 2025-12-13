@@ -489,28 +489,28 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-12">
-      <header className="text-center mt-8">
-        <h1 className="text-5xl font-bold">Heron Scout</h1>
-        <p className="text-lg ">Heron's Match Analysis for DECODE</p>
+    <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 sm:gap-12">
+      <header className="text-center mt-4 sm:mt-8 px-2">
+        <h1 className="text-3xl sm:text-5xl font-bold">Heron Scout</h1>
+        <p className="text-base sm:text-lg">Heron's Match Analysis for DECODE</p>
       </header>
 
       {!isRecording && matchStartTime === null && (
-        <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center md:py-8 md:px-8 pb-4">
-          <h2 className="text-3xl mt-2 mb-6 px-2">Start recording!</h2>
+        <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center w-full p-4 sm:p-8">
+          <h2 className="text-2xl sm:text-3xl mt-2 mb-6 px-2 text-center">Start recording!</h2>
 
           <div className="bg-[#f7f9ff] border-2 border-[#445f8b] w-full max-w-xl p-4 mb-6">
             <h3 className="text-xl font-semibold mb-3">
               Match Mode (Auto + TeleOp)
             </h3>
-            <label className="flex items-center gap-2 mb-3">
-              Team Number:
+            <label className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3 w-full">
+              <span>Team Number:</span>
               <input
                 type="number"
                 value={teamNumber}
                 onChange={(e) => setTeamNumber(e.target.value)}
                 placeholder="1234"
-                className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-32 text-center font-mono"
+                className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:w-32 text-center font-mono"
                 min="1"
                 max="99999"
               />
@@ -569,8 +569,8 @@ function App() {
             </div>
           </div>
 
-          <div className="flex gap-4">
-            <label className="btn">
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xl justify-center">
+            <label className="btn w-full sm:w-auto justify-center">
               <span className="flex items-center gap-2">
                 <UploadSimple weight="bold" />
                 Import Match from JSON
@@ -582,14 +582,14 @@ function App() {
                 className="hidden"
               />
             </label>
-            <button onClick={() => setShowTextImport(true)} className="btn">
+            <button onClick={() => setShowTextImport(true)} className="btn w-full sm:w-auto justify-center">
               <span className="flex items-center gap-2">
                 <ClipboardTextIcon weight="bold" />
                 From Text
               </span>
             </button>
           </div>
-          <p className="mt-8 p-2">
+          <p className="mt-8 p-2 text-sm sm:text-base">
             Heron Scout is a scouting app designed for intensive data analysis.
             Its usages are threefold: Track your own robot in the workshop to
             see how design iterations affect performance, track your robot
@@ -613,8 +613,8 @@ function App() {
 
       {(isRecording || matchStartTime !== null) && (
         <>
-          <div className="bg-white p-8 text-center border-2 border-[#445f8b] flex flex-col items-center justify-center w-full gap-2">
-            <h2 className="text-6xl font-mono">{formatTime(elapsedTime)}</h2>
+          <div className="bg-white p-4 sm:p-8 text-center border-2 border-[#445f8b] flex flex-col items-center justify-center w-full gap-2">
+            <h2 className="text-5xl sm:text-6xl font-mono">{formatTime(elapsedTime)}</h2>
             {mode === "match" && (
               <div className="mt-2 text-lg font-semibold">
                 {phase === "auto" && "Auto Phase"}
@@ -623,7 +623,7 @@ function App() {
                 {phase === "finished" && "Match Complete"}
               </div>
             )}
-            <div>
+            <div className="text-sm sm:text-base px-2">
               Scored&nbsp;
               <span className="font-bold">
                 {totalScored}/{totalBalls}
@@ -632,21 +632,21 @@ function App() {
             </div>
           </div>
 
-          <div className="bg-white p-6 border-2 border-[#445f8b] w-full">
+          <div className="bg-white p-4 sm:p-6 border-2 border-[#445f8b] w-full">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between flex-wrap mb-4">
-              <label className="flex items-center gap-2 text-lg font-semibold">
-                Team Number:
+              <label className="flex flex-col sm:flex-row sm:items-center gap-2 text-lg font-semibold w-full sm:w-auto">
+                <span>Team Number:</span>
                 <input
                   type="number"
                   value={teamNumber}
                   onChange={(e) => setTeamNumber(e.target.value)}
                   placeholder="1234"
-                  className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-48 text-center font-mono"
+                  className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:w-48 text-center font-mono"
                   min="1"
                   max="99999"
                 />
               </label>
-              <div className="text-sm text-[#666]">
+              <div className="text-xs sm:text-sm text-[#666]">
                 <strong>PRO TIP:</strong> Use your keyboard to record cycles!
                 See instructions below.
               </div>
@@ -672,21 +672,21 @@ function App() {
             </p>
           </div>
 
-          <div className="flex gap-4 justify-center flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center flex-wrap w-full">
             {isRecording ? (
               <>
                 <button
                   onClick={recordCycle}
-                  className="px-8 py-4 text-lg border-2 border-[#445f8b] bg-[#445f8b] text-white hover:bg-white hover:text-[#2d3e5c] transition-colors font-semibold flex items-center gap-2"
+                  className="w-full sm:w-auto px-4 py-3 sm:px-8 sm:py-4 text-base sm:text-lg border-2 border-[#445f8b] bg-[#445f8b] text-white hover:bg-white hover:text-[#2d3e5c] transition-colors font-semibold flex items-center justify-center gap-2"
                 >
                   <Record size={24} weight="fill" />
                   Record Cycle
                 </button>
-                <button onClick={recordGate} className="btn">
+                <button onClick={recordGate} className="btn w-full sm:w-auto justify-center">
                   <CricketIcon size={24} weight="bold" />
                   Gate Open
                 </button>
-                <button onClick={stopMatch} className="error-btn">
+                <button onClick={stopMatch} className="error-btn w-full sm:w-auto justify-center">
                   <Stop size={24} weight="fill" />
                   Stop Match
                 </button>
@@ -744,16 +744,16 @@ function App() {
           )}
 
           {!isRecording && events.length > 0 && (
-            <div className="bg-white p-8 mt-8 border-2 border-[#445f8b] flex flex-col justif-center items-center gap-6">
+            <div className="bg-white p-4 sm:p-8 mt-8 border-2 border-[#445f8b] flex flex-col justif-center items-center gap-6 w-full">
               <div className="w-full">
                 <h3 className="text-xl mb-2">Match Data:</h3>
                 <p className="mb-2">
                   Export this Match as JSON so you can analyze it with Heron
                   Scout later!
                 </p>
-                <p className="bg-[#f5f5f5] p-4 max-w-full font-mono text-sm leading-relaxed border-2 border-[#ddd]">
+                <pre className="bg-[#f5f5f5] p-4 max-w-full font-mono text-xs sm:text-sm leading-relaxed border-2 border-[#ddd] whitespace-pre-wrap break-words overflow-x-auto">
                   {formatMatchData()}
-                </p>
+                </pre>
                 <button
                   onClick={copyToClipboard}
                   className="btn mt-3 !py-2 !px-4"
@@ -770,34 +770,34 @@ function App() {
                     </>
                   )}
                 </button>
-                <div className="mt-3 text-sm break-all">
-                  <span className="font-semibold">Share URL:</span>{" "}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      shareUrl(formatMatchData(), "Match data link")
-                    }
-                    className="text-blue-600 underline btn mt-2 !py-1 !px-3 text-sm"
-                  >
-                    share link
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      copyUrlToClipboard(formatMatchData(), setCopiedFullUrl)
-                    }
-                    className="btn mt-2 !py-1 !px-3 text-sm"
-                  >
-                    {copiedFullUrl ? <>Copied link!</> : <>copy link</>}
-                  </button>
+                <div className="mt-3 text-sm break-all flex flex-col sm:flex-row sm:items-center gap-2">
+                  <span className="font-semibold">Share URL:</span>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      onClick={() => shareUrl(formatMatchData(), "Match data link")}
+                      className="btn !py-1 !px-3 text-sm justify-center"
+                    >
+                      share link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyUrlToClipboard(formatMatchData(), setCopiedFullUrl)
+                      }
+                      className="btn !py-1 !px-3 text-sm justify-center"
+                    >
+                      {copiedFullUrl ? <>Copied link!</> : <>copy link</>}
+                    </button>
+                  </div>
                 </div>
                 {mode === "match" && (
                   <div className="w-full mt-6 flex flex-col gap-4">
                     <div>
                       <h4 className="text-lg mb-1">Auto-only Text:</h4>
-                      <p className="bg-[#f5f5f5] p-3 max-w-full font-mono text-xs leading-relaxed border-2 border-[#ddd]">
+                      <pre className="bg-[#f5f5f5] p-3 max-w-full font-mono text-xs leading-relaxed border-2 border-[#ddd] whitespace-pre-wrap break-words overflow-x-auto">
                         {formatPhaseMatchData("auto")}
-                      </p>
+                      </pre>
                       <button
                         onClick={copyAutoToClipboard}
                         className="btn mt-2 !py-1 !px-3 text-sm"
@@ -814,43 +814,41 @@ function App() {
                           </>
                         )}
                       </button>
-                      <div className="mt-2 text-xs break-all">
-                        <span className="font-semibold">Auto URL:</span>{" "}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            shareUrl(
-                              formatPhaseMatchData("auto"),
-                              "Auto-only match data link"
-                            )
-                          }
-                          className="text-blue-600 underline btn mt-2 !py-1 !px-3 text-sm"
-                        >
-                          share auto link
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            copyUrlToClipboard(
-                              formatPhaseMatchData("auto"),
-                              setCopiedAutoUrl
-                            )
-                          }
-                          className="btn mt-2 !py-1 !px-3 text-sm"
-                        >
-                          {copiedAutoUrl ? (
-                            <>Copied link!</>
-                          ) : (
-                            <>copy auto link</>
-                          )}
-                        </button>
+                      <div className="mt-2 text-xs break-all flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span className="font-semibold">Auto URL:</span>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              shareUrl(
+                                formatPhaseMatchData("auto"),
+                                "Auto-only match data link"
+                              )
+                            }
+                            className="btn !py-1 !px-3 text-sm justify-center"
+                          >
+                            share auto link
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              copyUrlToClipboard(
+                                formatPhaseMatchData("auto"),
+                                setCopiedAutoUrl
+                              )
+                            }
+                            className="btn !py-1 !px-3 text-sm justify-center"
+                          >
+                            {copiedAutoUrl ? <>Copied link!</> : <>copy auto link</>}
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div>
                       <h4 className="text-lg mb-1">TeleOp-only Text:</h4>
-                      <p className="bg-[#f5f5f5] p-3 max-w-full font-mono text-xs leading-relaxed border-2 border-[#ddd]">
+                      <pre className="bg-[#f5f5f5] p-3 max-w-full font-mono text-xs leading-relaxed border-2 border-[#ddd] whitespace-pre-wrap break-words overflow-x-auto">
                         {formatPhaseMatchData("teleop")}
-                      </p>
+                      </pre>
                       <button
                         onClick={copyTeleopToClipboard}
                         className="btn mt-2 !py-1 !px-3 text-sm"
@@ -867,42 +865,40 @@ function App() {
                           </>
                         )}
                       </button>
-                      <div className="mt-2 text-xs break-all">
-                        <span className="font-semibold">TeleOp URL:</span>{" "}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            shareUrl(
-                              formatPhaseMatchData("teleop"),
-                              "TeleOp-only match data link"
-                            )
-                          }
-                          className="text-blue-600 underline btn mt-2 !py-1 !px-3 text-sm"
-                        >
-                          share teleop link
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            copyUrlToClipboard(
-                              formatPhaseMatchData("teleop"),
-                              setCopiedTeleopUrl
-                            )
-                          }
-                          className="btn mt-2 !py-1 !px-3 text-sm"
-                        >
-                          {copiedTeleopUrl ? (
-                            <>Copied link!</>
-                          ) : (
-                            <>copy teleop link</>
-                          )}
-                        </button>
+                      <div className="mt-2 text-xs break-all flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span className="font-semibold">TeleOp URL:</span>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              shareUrl(
+                                formatPhaseMatchData("teleop"),
+                                "TeleOp-only match data link"
+                              )
+                            }
+                            className="btn !py-1 !px-3 text-sm justify-center"
+                          >
+                            share teleop link
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              copyUrlToClipboard(
+                                formatPhaseMatchData("teleop"),
+                                setCopiedTeleopUrl
+                              )
+                            }
+                            className="btn !py-1 !px-3 text-sm justify-center"
+                          >
+                            {copiedTeleopUrl ? <>Copied link!</> : <>copy teleop link</>}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-              <div className="w-full flex flex-wrap justify-center items-center gap-6">
+              <div className="w-full flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6">
                 <p>
                   Send the above text to your friends, or export as JSON to
                   analyze it with Heron Scout later!
@@ -919,8 +915,8 @@ function App() {
 
       {/* Keyboard entry popup */}
       {keyEntryVisible && (
-        <div className="fixed top-4 right-4 z-50">
-          <div className="bg-white border-2 border-[#445f8b] shadow p-4 min-w-64">
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
+          <div className="bg-white border-2 border-[#445f8b] shadow p-4 w-full">
             <div className="text-sm text-[#666] mb-1">Quick Entry</div>
             <div className="text-lg font-semibold mb-2">
               Shot {keyEntry.total} balls; how many scored?
@@ -945,18 +941,18 @@ function App() {
           onClick={() => setShowCycleModal(false)}
         >
           <div
-            className="bg-white p-8 max-w-lg w-11/12 border-2 border-[#445f8b]"
+            className="bg-white p-4 sm:p-8 max-w-lg w-11/12 border-2 border-[#445f8b]"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl mb-5">Record Cycle</h3>
             <div className="flex flex-col gap-5 mb-6">
               <label className="flex flex-col gap-3 font-semibold">
                 Total Balls:
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   {[1, 2, 3].map((num) => (
                     <button
                       key={num}
-                      className={`flex-1 p-4 text-lg border-2 font-semibold transition-colors ${
+                      className={`flex-1 p-3 sm:p-4 text-base sm:text-lg border-2 font-semibold transition-colors ${
                         cycleData.total === num
                           ? "border-[#445f8b] bg-[#445f8b] text-white"
                           : "border-[#ddd] bg-white hover:border-[#445f8b]"
@@ -976,12 +972,12 @@ function App() {
               </label>
               <label className="flex flex-col gap-3 font-semibold">
                 Balls Scored:
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   {[0, 1, 2, 3].map((i) => {
                     const disabled = i > cycleData.total;
                     const selected = cycleData.scored === i;
                     const base =
-                      "flex-1 p-4 text-lg border-2 font-semibold transition-colors";
+                      "flex-1 p-3 sm:p-4 text-base sm:text-lg border-2 font-semibold transition-colors";
                     const cls = selected
                       ? "border-[#445f8b] bg-[#445f8b] text-white"
                       : disabled
@@ -1025,7 +1021,7 @@ function App() {
           onClick={() => setShowTextImport(false)}
         >
           <div
-            className="bg-white p-8 max-w-2xl w-11/12 border-2 border-[#445f8b]"
+            className="bg-white p-4 sm:p-8 max-w-2xl w-11/12 border-2 border-[#445f8b]"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl mb-5">Paste Match Text</h3>
@@ -1037,7 +1033,7 @@ function App() {
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="0:00; 1/2 at 0:10; 1/2 at 0:20; gate at 1:30; ..."
-              className="w-full h-32 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
+              className="w-full h-40 sm:h-32 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
             />
             <div className="flex gap-4 justify-end mt-6">
               <button onClick={importFromText} className="btn">
@@ -1062,8 +1058,8 @@ function App() {
 
 function NavigationBar({ currentPage, setCurrentPage }) {
   return (
-    <div className="bg-white border-b-2 border-[#445f8b] z-20 flex flex-row items-between px-4">
-      <div className="max-w-7xl px-5 py-4 flex gap-4">
+    <div className="bg-white border-b-2 border-[#445f8b] z-20 sticky top-0">
+      <div className="max-w-7xl mx-auto px-2 sm:px-5 py-2 sm:py-4 flex flex-wrap items-center gap-2 sm:gap-4">
         <button
           onClick={() => {
             setCurrentPage("home");
@@ -1105,9 +1101,9 @@ function NavigationBar({ currentPage, setCurrentPage }) {
           <ChartLine weight="bold" size={20} />
           Lifetime Stats
         </button>
-      </div>
-      <div className="hidden md:flex ml-auto items-center">
-        <h2 className="text-lg font-bold">Heron Scout</h2>
+        <div className="hidden md:flex ml-auto items-center">
+          <h2 className="text-lg font-bold">Heron Scout</h2>
+        </div>
       </div>
     </div>
   );
