@@ -551,8 +551,12 @@ function App() {
           </div>
           <p className="mt-8 p-2">
             Heron Scout is a scouting app designed for intensive data analysis.
-            First and foremost, it's easy to use — just press one of the buttons
-            above to start recording a match. (Or import one.)
+            Its usages are threefold: Track your own robot in the workshop to
+            see how design iterations affect performance, track your robot
+            during competition, or track other people's robots during
+            competitions for scouting. First and foremost, it's easy to use —
+            just press one of the buttons above to start recording a match. (Or
+            import one.)
             <br />
             <br />
             Matches are stored as JSON and easily shareable! Scout matches with
