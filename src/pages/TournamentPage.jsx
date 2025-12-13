@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, FloppyDisk } from '@phosphor-icons/react'
+import { ArrowLeft, DownloadSimple, FloppyDisk } from '@phosphor-icons/react'
 import { useTournament } from '../data/TournamentContext'
 import TournamentLanding from './TournamentLanding'
 import TournamentCreator from './TournamentCreator'
@@ -9,7 +9,8 @@ import TeamSummaryGrid from '../components/tournament/TeamSummaryGrid'
 import TournamentGraphs from '../components/tournament/TournamentGraphs'
 import Statistics from '../components/Statistics'
 import Timeline from '../components/Timeline'
-import { matchScoredOutOfTotal, teamStatsFromTournament } from '../utils/stats'
+import { calculateCycleTimes, calculateStats, matchScoredOutOfTotal, teamStatsFromTournament } from '../utils/stats'
+import { downloadCsv, toCsv } from '../utils/csv'
 
 
 function TournamentPage({ onBack }) {
@@ -40,6 +41,73 @@ function TournamentPage({ onBack }) {
     a.download = `tournament-${tournament.name.replace(/\s+/g, '-')}-${tournament.date}.json`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const exportMatchesCsv = () => {
+    if (!tournament || !tournament.matches) return
+
+    const round = (n, digits = 3) => {
+      const num = Number(n)
+      if (!Number.isFinite(num)) return 0
+      const m = Math.pow(10, digits)
+      return Math.round(num * m) / m
+    }
+
+    const rows = filteredMatches.map((match) => {
+      const matchIndex = tournament.matches.indexOf(match)
+      const events = match?.events || []
+      const cycleEvents = events.filter((e) => e.type === 'cycle')
+      const cycleTimes = calculateCycleTimes(events)
+      const timeStats = calculateStats(cycleTimes)
+
+      const scoredBalls = cycleEvents.map((e) => e.scored)
+      const totalBalls = cycleEvents.map((e) => e.total)
+      const accuracyPerCycle = cycleEvents.map((e) => (e.total > 0 ? (e.scored / e.total) * 100 : 0))
+
+      const ballStats = calculateStats(scoredBalls)
+      const accuracyStats = calculateStats(accuracyPerCycle)
+
+      const totalScored = scoredBalls.reduce((a, b) => a + b, 0)
+      const totalBallCount = totalBalls.reduce((a, b) => a + b, 0)
+      const overallAccuracy = totalBallCount > 0 ? (totalScored / totalBallCount) * 100 : 0
+
+      return {
+        tournament_name: tournament.name,
+        tournament_date: tournament.date,
+        match_number: matchIndex >= 0 ? matchIndex + 1 : null,
+        team_number: match.teamNumber || '',
+        start_time: match.startTime ? new Date(match.startTime).toISOString() : '',
+        duration_ms: match.duration ?? '',
+        notes: match.notes || '',
+
+        total_cycles: cycleEvents.length,
+        total_scored: totalScored,
+        total_balls: totalBallCount,
+        overall_accuracy_percent: round(overallAccuracy, 3),
+
+        cycle_time_avg_s: round(timeStats.avg, 3),
+        cycle_time_std_s: round(timeStats.std, 3),
+        cycle_time_min_s: round(timeStats.min, 3),
+        cycle_time_max_s: round(timeStats.max, 3),
+
+        balls_scored_per_cycle_avg: round(ballStats.avg, 3),
+        balls_scored_per_cycle_std: round(ballStats.std, 3),
+        balls_scored_per_cycle_min: round(ballStats.min, 3),
+        balls_scored_per_cycle_max: round(ballStats.max, 3),
+
+        accuracy_per_cycle_avg_percent: round(accuracyStats.avg, 3),
+        accuracy_per_cycle_std_percent: round(accuracyStats.std, 3),
+        accuracy_per_cycle_min_percent: round(accuracyStats.min, 3),
+        accuracy_per_cycle_max_percent: round(accuracyStats.max, 3),
+      }
+    })
+
+    const safe = (s) => (s || '').toString().trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9\-_.]/g, '')
+    const suffix = selectedTeam ? `team-${safe(selectedTeam)}` : 'all-teams'
+    const filename = `tournament-${safe(tournament.name)}-${tournament.date}-${suffix}-matches.csv`
+
+    const csv = toCsv(rows)
+    downloadCsv(filename, csv)
   }
 
   if (isCreating) {
@@ -112,6 +180,10 @@ function TournamentPage({ onBack }) {
           <button onClick={saveTournament} className="btn">
             <FloppyDisk size={20} weight="bold" />
             Save Tournament
+          </button>
+          <button onClick={exportMatchesCsv} className="btn">
+            <DownloadSimple size={20} weight="bold" />
+            Export CSV
           </button>
           <button onClick={onBack} className="btn">
             <ArrowLeft size={20} weight="bold" />
