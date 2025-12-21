@@ -27,3 +27,4 @@ src/firebase.js
 .firebase/hosting.ZGlzdA.cache
 
 .firebase/
+.env.local
