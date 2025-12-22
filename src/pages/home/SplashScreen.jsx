@@ -1,14 +1,12 @@
-import {
-  ClipboardTextIcon,
-  Play,
-  UploadSimple,
-} from "@phosphor-icons/react";
+import { ClipboardTextIcon, Play, UploadSimple } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
+import { usePostHog } from "posthog-js/react";
 import { analytics } from "../../firebase";
 import { matchRecorderConstants } from "../../hooks/useMatchRecorder";
 
 function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
   const { startMatch } = recorder;
+  const posthog = usePostHog();
 
   return (
     <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center w-full p-4 sm:p-8">
@@ -36,6 +34,10 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
           onClick={() => {
             startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match");
             logEvent(analytics, "start_match_mode");
+            posthog.capture("start_match", {
+              mode: "match",
+              duration: matchRecorderConstants.MATCH_TOTAL_DURATION,
+            });
           }}
           className="btn mb-2 !py-3 !bg-[#445f8b] !text-white !px-6 w-full"
         >
@@ -43,20 +45,19 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
           Start Match Mode (Auto + TeleOp)
         </button>
         <p className="text-sm text-[#555]">
-          Runs 30s Auto, an 8s buffer to wrap up auto, then 2:00 TeleOp — all
-          in one match and one save code.
+          Runs 30s Auto, an 8s buffer to wrap up auto, then 2:00 TeleOp — all in
+          one match and one save code.
         </p>
       </div>
 
       <div className="w-full max-w-xl mb-6">
-        <h3 className="text-lg font-semibold mb-2">
-          Manual Session (Legacy)
-        </h3>
+        <h3 className="text-lg font-semibold mb-2">Manual Session (Legacy)</h3>
         <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
           <button
             onClick={() => {
               startMatch(null, "free");
               logEvent(analytics, "start_no_timer");
+              posthog.capture("start_match", { mode: "free", duration: null });
             }}
             className="btn !py-3 !px-6"
           >
@@ -67,6 +68,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             onClick={() => {
               startMatch(30, "free");
               logEvent(analytics, "start_30sec_timer");
+              posthog.capture("start_match", { mode: "free", duration: 30 });
             }}
             className="btn"
           >
@@ -77,6 +79,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             onClick={() => {
               startMatch(120, "free");
               logEvent(analytics, "start_2min_timer");
+              posthog.capture("start_match", { mode: "free", duration: 120 });
             }}
             className="btn"
           >
@@ -120,10 +123,10 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         <br />
         <br />
         Matches are stored as JSON and easily shareable! Scout matches with
-        Heron Scout and you'll be able to compare teams at tournaments using
-        the Tournament Analysis page. Matches and Tournaments can both be
-        imported on the "Lifetime Stats" page to explore your performance over
-        the course of the season and generate cool graphs!
+        Heron Scout and you'll be able to compare teams at tournaments using the
+        Tournament Analysis page. Matches and Tournaments can both be imported
+        on the "Lifetime Stats" page to explore your performance over the course
+        of the season and generate cool graphs!
         <br />
         <br />
         We love graphs at Heron Robotics, so we made this for you :)
