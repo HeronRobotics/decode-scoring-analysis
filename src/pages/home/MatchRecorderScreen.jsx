@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowClockwise,
   CricketIcon,
@@ -6,6 +6,7 @@ import {
   Stop,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
+import { usePostHog } from "posthog-js/react";
 import { analytics } from "../../firebase";
 
 import Timeline from "../../components/Timeline";
@@ -30,6 +31,10 @@ function MatchRecorderScreen({ recorder }) {
   const [copiedFullUrl, setCopiedFullUrl] = useState(false);
   const [copiedAutoUrl, setCopiedAutoUrl] = useState(false);
   const [copiedTeleopUrl, setCopiedTeleopUrl] = useState(false);
+
+  const posthog = usePostHog();
+  const wasRecordingRef = useRef(false);
+  const wasManualStopRef = useRef(false);
 
   const {
     matchStartTime,
@@ -65,6 +70,25 @@ function MatchRecorderScreen({ recorder }) {
       .reduce((sum, e) => sum + e.total, 0);
   }, [events]);
 
+  // Track match finish with PostHog
+  useEffect(() => {
+    if (wasRecordingRef.current && !isRecording) {
+      const totalCycles = events.filter((e) => e.type === "cycle").length;
+      const finishReason = wasManualStopRef.current ? "manual_stop" : "timeout";
+
+      posthog.capture("finish_match", {
+        finishReason,
+        teamNumber,
+        totalCycles,
+        matchDuration: elapsedTime,
+        mode,
+      });
+
+      wasManualStopRef.current = false;
+    }
+    wasRecordingRef.current = isRecording;
+  }, [isRecording, events, teamNumber, elapsedTime, mode, posthog]);
+
   const matchText = useMemo(
     () =>
       formatMatchText({
@@ -93,7 +117,15 @@ function MatchRecorderScreen({ recorder }) {
         bufferDuration: matchRecorderConstants.BUFFER_DURATION,
         teleopDuration: matchRecorderConstants.TELEOP_DURATION,
       }),
-    [events, notes, teamNumber, matchStartTime, timerDuration, elapsedTime, mode]
+    [
+      events,
+      notes,
+      teamNumber,
+      matchStartTime,
+      timerDuration,
+      elapsedTime,
+      mode,
+    ]
   );
 
   const teleopText = useMemo(
@@ -111,7 +143,15 @@ function MatchRecorderScreen({ recorder }) {
         bufferDuration: matchRecorderConstants.BUFFER_DURATION,
         teleopDuration: matchRecorderConstants.TELEOP_DURATION,
       }),
-    [events, notes, teamNumber, matchStartTime, timerDuration, elapsedTime, mode]
+    [
+      events,
+      notes,
+      teamNumber,
+      matchStartTime,
+      timerDuration,
+      elapsedTime,
+      mode,
+    ]
   );
 
   const copyWithFeedback = (text, setCopied) => {
@@ -122,9 +162,9 @@ function MatchRecorderScreen({ recorder }) {
   };
 
   const buildShareUrl = (text) => {
-    return `${window.location.origin}${window.location.pathname}?mt=${encodeURIComponent(
-      btoa(text)
-    )}`;
+    return `${window.location.origin}${
+      window.location.pathname
+    }?mt=${encodeURIComponent(btoa(text))}`;
   };
 
   const copyUrlWithFeedback = (text, setCopied) => {
@@ -258,7 +298,10 @@ function MatchRecorderScreen({ recorder }) {
               Gate Open
             </button>
             <button
-              onClick={() => recorder.stopMatch()}
+              onClick={() => {
+                wasManualStopRef.current = true;
+                recorder.stopMatch();
+              }}
               className="error-btn w-full sm:w-auto justify-center"
             >
               <Stop size={24} weight="fill" />
@@ -266,7 +309,10 @@ function MatchRecorderScreen({ recorder }) {
             </button>
           </>
         ) : (
-          <button onClick={() => recorder.resetMatch()} className="btn !px-6 !py-3">
+          <button
+            onClick={() => recorder.resetMatch()}
+            className="btn !px-6 !py-3"
+          >
             <ArrowClockwise size={24} weight="bold" />
             New Match
           </button>
@@ -280,8 +326,7 @@ function MatchRecorderScreen({ recorder }) {
           <strong>Instructions:</strong>
           <br />
           - To record a shooting cycle, press the "Record Cycle" button and
-          select how many balls were shot and how many were successfully
-          scored.
+          select how many balls were shot and how many were successfully scored.
           <br />
           &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Keyboard Users:</strong> Type the
           total number of balls (1-3) attempted, followed by the number scored
@@ -292,8 +337,8 @@ function MatchRecorderScreen({ recorder }) {
           - Events will appear on the timeline above as they are recorded.
           <br />
           - Export the Match and save it somewhere! The "Lifetime Stats" and
-          "Tournament Analysis" pages can import your saved Matches and give
-          you a lot more insight into your performance over time.
+          "Tournament Analysis" pages can import your saved Matches and give you
+          a lot more insight into your performance over time.
           <br />
           &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Text export:</strong> You can export
           matches in a readable text format if you just want to share a match
