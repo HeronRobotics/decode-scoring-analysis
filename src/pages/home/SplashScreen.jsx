@@ -37,6 +37,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             posthog.capture("start_match", {
               mode: "match",
               duration: matchRecorderConstants.MATCH_TOTAL_DURATION,
+              teamNumber: recorder.teamNumber,
             });
           }}
           className="btn mb-2 !py-3 !bg-[#445f8b] !text-white !px-6 w-full"
@@ -57,7 +58,11 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             onClick={() => {
               startMatch(null, "free");
               logEvent(analytics, "start_no_timer");
-              posthog.capture("start_match", { mode: "free", duration: null });
+              posthog.capture("start_match", {
+                mode: "free",
+                duration: null,
+                teamNumber: recorder.teamNumber,
+              });
             }}
             className="btn !py-3 !px-6"
           >
@@ -68,7 +73,11 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             onClick={() => {
               startMatch(30, "free");
               logEvent(analytics, "start_30sec_timer");
-              posthog.capture("start_match", { mode: "free", duration: 30 });
+              posthog.capture("start_match", {
+                mode: "free",
+                duration: 30,
+                teamNumber: recorder.teamNumber,
+              });
             }}
             className="btn"
           >
@@ -79,7 +88,11 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             onClick={() => {
               startMatch(120, "free");
               logEvent(analytics, "start_2min_timer");
-              posthog.capture("start_match", { mode: "free", duration: 120 });
+              posthog.capture("start_match", {
+                mode: "free",
+                duration: 120,
+                teamNumber: recorder.teamNumber,
+              });
             }}
             className="btn"
           >
