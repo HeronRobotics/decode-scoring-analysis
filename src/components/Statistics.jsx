@@ -51,7 +51,7 @@ const normalizeCycleEvents = (matches, events = []) => {
       });
 
       const lastTs = ordered.length
-        ? (Number(ordered[ordered.length - 1].timestamp) || 0)
+        ? Number(ordered[ordered.length - 1].timestamp) || 0
         : 0;
       offset += lastTs + 60_000; // add a gap between matches for clarity
     });
@@ -104,9 +104,7 @@ const buildRollingAccuracyPoints = (ballStream) => {
     if (window.length >= Math.min(ROLLING_WINDOW_BALLS, 3)) {
       points.push({
         timestamp: ball.timestamp,
-        accuracy: Number(
-          ((scoredCount / window.length) * 100).toFixed(1)
-        ),
+        accuracy: Number(((scoredCount / window.length) * 100).toFixed(1)),
       });
     }
   });
@@ -146,15 +144,14 @@ const buildBallsPerMinutePoints = (cycleEvents) => {
   return points;
 };
 
-const computeSecondsPerThreeBalls = (ballStream) => {
-  if (ballStream.length < 3) return null;
-  const lastThree = ballStream.slice(-3);
-  const durationMs =
-    lastThree[lastThree.length - 1].timestamp - lastThree[0].timestamp;
-  return Math.max(durationMs, 0) / 1000;
+const computeSecondsPerThreeBalls = (cycleTimes, attemptedBalls) => {
+  if (!cycleTimes.length || !attemptedBalls) return null;
+  const secondsElapsed = cycleTimes.reduce((sum, time) => sum + time, 0);
+  if (secondsElapsed <= 0) return null;
+  return (secondsElapsed * 3) / attemptedBalls;
 };
 
-const computeBallsPerTwoMinutes = (cycleEvents) => {
+const computeBallsPerTwoMinutes = (cycleEvents, valueKey = "total") => {
   if (!cycleEvents.length) return null;
 
   const window = [];
@@ -163,12 +160,13 @@ const computeBallsPerTwoMinutes = (cycleEvents) => {
 
   cycleEvents.forEach((event) => {
     const timestamp = Number(event.timestamp) || 0;
-    window.push(event);
-    windowBalls += event.total;
+    const value = Number(event[valueKey]) || 0;
+    window.push({ timestamp, value });
+    windowBalls += value;
 
     const cutoff = timestamp - TWO_MIN_WINDOW_MS;
     while (window.length && (Number(window[0].timestamp) || 0) < cutoff) {
-      windowBalls -= window[0].total;
+      windowBalls -= window[0].value;
       window.shift();
     }
 
@@ -184,7 +182,8 @@ const computeBallsPerTwoMinutes = (cycleEvents) => {
 };
 
 function Statistics({ events, matches, teamNumber, notes }) {
-  const allEvents = (matches ? matches.flatMap((m) => m.events || []) : events) || [];
+  const allEvents =
+    (matches ? matches.flatMap((m) => m.events || []) : events) || [];
   const cycleEvents = allEvents.filter((e) => e.type === "cycle");
 
   if (cycleEvents.length === 0) {
@@ -196,6 +195,12 @@ function Statistics({ events, matches, teamNumber, notes }) {
 
   const totalBalls = cycleEvents.map((e) => e.total);
   const scoredBalls = cycleEvents.map((e) => e.scored);
+  const totalBallsAttempted = totalBalls.reduce((a, b) => a + b, 0);
+  const totalBallsScored = scoredBalls.reduce((a, b) => a + b, 0);
+  const overallAccuracy =
+    totalBallsAttempted > 0
+      ? (totalBallsScored / totalBallsAttempted) * 100
+      : 0;
   const accuracy = cycleEvents.map((e) =>
     e.total > 0 ? (e.scored / e.total) * 100 : 0
   );
@@ -206,12 +211,21 @@ function Statistics({ events, matches, teamNumber, notes }) {
   const ballStream = buildBallStream(timelineCycleEvents);
   const rollingAccuracyData = buildRollingAccuracyPoints(ballStream);
   const ballsPerMinuteData = buildBallsPerMinutePoints(timelineCycleEvents);
-  const secondsPerThreeBalls = computeSecondsPerThreeBalls(ballStream);
-  const ballsPerTwoMinutes = computeBallsPerTwoMinutes(timelineCycleEvents);
+  const secondsPerThreeBalls = computeSecondsPerThreeBalls(
+    cycleTimes,
+    totalBallsAttempted
+  );
+  const ballsScoredPerTwoMinutes = computeBallsPerTwoMinutes(
+    timelineCycleEvents,
+    "scored"
+  );
+  const ballsAttemptedPerTwoMinutes = computeBallsPerTwoMinutes(
+    timelineCycleEvents,
+    "total"
+  );
   const averageBpm =
     ballsPerMinuteData.length > 0
-      ?
-        ballsPerMinuteData.reduce((sum, point) => sum + point.bpm, 0) /
+      ? ballsPerMinuteData.reduce((sum, point) => sum + point.bpm, 0) /
         ballsPerMinuteData.length
       : null;
 
@@ -224,7 +238,9 @@ function Statistics({ events, matches, teamNumber, notes }) {
       {/* Notes Section */}
       {notes && notes.trim() && (
         <div className="bg-blue-50 border-2 border-blue-200 p-4 mb-5 rounded">
-          <h4 className="text-lg font-semibold mb-2 text-blue-800">Match Notes</h4>
+          <h4 className="text-lg font-semibold mb-2 text-blue-800">
+            Match Notes
+          </h4>
           <p className="text-blue-700 whitespace-pre-wrap">{notes.trim()}</p>
         </div>
       )}
@@ -247,7 +263,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
           </div>
           <div className="text-center">
             <div className="text-3xl sm:text-4xl font-bold text-white">
-              {scoredBalls.reduce((a, b) => a + b, 0)}
+              {totalBallsScored}
             </div>
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
               <Crosshair size={16} />
@@ -256,7 +272,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
           </div>
           <div className="text-center">
             <div className="text-3xl sm:text-4xl font-bold text-white">
-              {totalBalls.reduce((a, b) => a + b, 0)}
+              {totalBallsAttempted}
             </div>
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
               <Target size={16} />
@@ -265,12 +281,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
           </div>
           <div className="text-center">
             <div className="text-3xl sm:text-4xl font-bold text-white">
-              {formatStat(
-                (scoredBalls.reduce((a, b) => a + b, 0) /
-                  totalBalls.reduce((a, b) => a + b, 0)) *
-                  100
-              )}
-              %
+              {formatStat(overallAccuracy)}%
             </div>
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
               <Target size={16} weight="fill" />
@@ -292,13 +303,18 @@ function Statistics({ events, matches, teamNumber, notes }) {
           </div>
           <div className="bg-white/10 border border-white/20 rounded-lg p-4 text-center">
             <div className="text-white/70 text-xs tracking-wide uppercase mb-2">
-              Balls per 2 Minutes
+              Balls Scored per 2 Minutes (scaled)
             </div>
             <div className="text-3xl sm:text-4xl font-bold text-white">
-              {ballsPerTwoMinutes != null
-                ? formatStat(ballsPerTwoMinutes, 1)
+              {ballsScoredPerTwoMinutes != null
+                ? formatStat(ballsScoredPerTwoMinutes, 1)
                 : "—"}
             </div>
+            {ballsAttemptedPerTwoMinutes != null && (
+              <div className="text-white/70 text-xs mt-1">
+                {formatStat(ballsAttemptedPerTwoMinutes, 1)} attempted
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -316,7 +332,9 @@ function Statistics({ events, matches, teamNumber, notes }) {
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
               {formatStat(timeStats.avg)}s
-              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">± {formatStat(timeStats.std)}s (std. dev)</span>
+              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">
+                ± {formatStat(timeStats.std)}s (std. dev)
+              </span>
             </div>
           </div>
 
@@ -348,7 +366,9 @@ function Statistics({ events, matches, teamNumber, notes }) {
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
               {formatStat(ballStats.avg)}
-              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">± {formatStat(ballStats.std)} (std. dev)</span>
+              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">
+                ± {formatStat(ballStats.std)} (std. dev)
+              </span>
             </div>
           </div>
 
@@ -380,7 +400,9 @@ function Statistics({ events, matches, teamNumber, notes }) {
             <div className="text-xs text-[#666] mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-[#445f8b]">
               {formatStat(accuracyStats.avg)}%
-              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">± {formatStat(accuracyStats.std)}% (std. dev)</span>
+              <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">
+                ± {formatStat(accuracyStats.std)}% (std. dev)
+              </span>
             </div>
           </div>
 
@@ -412,11 +434,28 @@ function Statistics({ events, matches, teamNumber, notes }) {
             </div>
             {rollingAccuracyData.length ? (
               <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={rollingAccuracyData} margin={{ top: 10, left: 0, right: 10, bottom: 0 }}>
+                <AreaChart
+                  data={rollingAccuracyData}
+                  margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
+                >
                   <defs>
-                    <linearGradient id="accuracyGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#445f8b" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="#445f8b" stopOpacity={0.05} />
+                    <linearGradient
+                      id="accuracyGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor="#445f8b"
+                        stopOpacity={0.35}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="#445f8b"
+                        stopOpacity={0.05}
+                      />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="#f0f4ff" />
@@ -425,10 +464,19 @@ function Statistics({ events, matches, teamNumber, notes }) {
                     tickFormatter={formatRoundedTimeLabel}
                     tick={{ fontSize: 11 }}
                   />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(value) => `${value}%`} />
+                  <YAxis
+                    domain={[0, 100]}
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(value) => `${value}%`}
+                  />
                   <Tooltip
-                    labelFormatter={(value) => `Time ${formatRoundedTimeLabel(value)}`}
-                    formatter={(value) => [`${formatStat(value, 1)}%`, "Accuracy"]}
+                    labelFormatter={(value) =>
+                      `Time ${formatRoundedTimeLabel(value)}`
+                    }
+                    formatter={(value) => [
+                      `${formatStat(value, 1)}%`,
+                      "Accuracy",
+                    ]}
                   />
                   <Area
                     type="monotone"
@@ -456,24 +504,39 @@ function Statistics({ events, matches, teamNumber, notes }) {
             </div>
             {ballsPerMinuteData.length ? (
               <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={ballsPerMinuteData} margin={{ top: 10, left: 0, right: 10, bottom: 0 }}>
+                <LineChart
+                  data={ballsPerMinuteData}
+                  margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
+                >
                   <CartesianGrid stroke="#f0f4ff" />
                   <XAxis
                     dataKey="timestamp"
                     tickFormatter={formatRoundedTimeLabel}
                     tick={{ fontSize: 11 }}
                   />
-                  <YAxis tickFormatter={(value) => `${formatStat(value, 0)}`} tick={{ fontSize: 11 }} />
+                  <YAxis
+                    tickFormatter={(value) => `${formatStat(value, 0)}`}
+                    tick={{ fontSize: 11 }}
+                  />
                   <Tooltip
-                    labelFormatter={(value) => `Time ${formatRoundedTimeLabel(value)}`}
-                    formatter={(value) => [`${formatStat(value, 1)} bpm`, "Balls / min"]}
+                    labelFormatter={(value) =>
+                      `Time ${formatRoundedTimeLabel(value)}`
+                    }
+                    formatter={(value) => [
+                      `${formatStat(value, 1)} bpm`,
+                      "Balls / min",
+                    ]}
                   />
                   {averageBpm !== null && (
                     <ReferenceLine
                       y={averageBpm}
                       stroke="#eab308"
                       strokeDasharray="6 6"
-                      label={{ value: `Avg ${formatStat(averageBpm, 1)}`, fill: "#aa8504", position: "right" }}
+                      label={{
+                        value: `Avg ${formatStat(averageBpm, 1)}`,
+                        fill: "#aa8504",
+                        position: "right",
+                      }}
                     />
                   )}
                   <Line
@@ -487,7 +550,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
               </ResponsiveContainer>
             ) : (
               <div className="h-56 flex items-center justify-center text-[#666] text-sm">
-                Record at least one cycle to chart pace.
+                Record for at least one minute to chart pace.
               </div>
             )}
           </div>
