@@ -5,12 +5,186 @@ import {
   ListNumbers,
   Crosshair,
 } from "@phosphor-icons/react";
-import { formatStat } from "../utils/format";
-import { BoxPlot } from "./BoxPlot";
+import { formatStat, formatTime } from "../utils/format";
 import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+const ROLLING_WINDOW_BALLS = 10;
+const BPM_WINDOW_MS = 60_000;
+const TWO_MIN_WINDOW_MS = 120_000;
+
+const formatRoundedTimeLabel = (value) => {
+  const rounded = Math.round((Number(value) || 0) / 1000) * 1000;
+  return formatTime(Math.max(0, rounded));
+};
+
+const normalizeCycleEvents = (matches, events = []) => {
+  if (matches && matches.length > 0) {
+    let offset = 0;
+    const normalized = [];
+
+    matches.forEach((match) => {
+      const ordered = (match.events || [])
+        .slice()
+        .sort(
+          (a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0)
+        );
+
+      ordered.forEach((event) => {
+        if (event.type === "cycle") {
+          normalized.push({
+            ...event,
+            timestamp: (Number(event.timestamp) || 0) + offset,
+          });
+        }
+      });
+
+      const lastTs = ordered.length
+        ? (Number(ordered[ordered.length - 1].timestamp) || 0)
+        : 0;
+      offset += lastTs + 60_000; // add a gap between matches for clarity
+    });
+
+    return normalized;
+  }
+
+  return (events || [])
+    .filter((event) => event.type === "cycle")
+    .map((event) => ({
+      ...event,
+      timestamp: Number(event.timestamp) || 0,
+    }));
+};
+
+const buildBallStream = (cycleEvents) => {
+  const stream = [];
+
+  cycleEvents.forEach((event) => {
+    const ts = Number(event.timestamp) || 0;
+    for (let i = 0; i < event.total; i += 1) {
+      stream.push({
+        timestamp: ts + i * 10, // slight offset so windows have width
+        scored: i < event.scored,
+      });
+    }
+  });
+
+  return stream;
+};
+
+const buildRollingAccuracyPoints = (ballStream) => {
+  const points = [];
+  const window = [];
+  let scoredCount = 0;
+
+  ballStream.forEach((ball) => {
+    window.push(ball);
+    if (ball.scored) {
+      scoredCount += 1;
+    }
+
+    if (window.length > ROLLING_WINDOW_BALLS) {
+      const removed = window.shift();
+      if (removed.scored) {
+        scoredCount -= 1;
+      }
+    }
+
+    if (window.length >= Math.min(ROLLING_WINDOW_BALLS, 3)) {
+      points.push({
+        timestamp: ball.timestamp,
+        accuracy: Number(
+          ((scoredCount / window.length) * 100).toFixed(1)
+        ),
+      });
+    }
+  });
+
+  return points;
+};
+
+const buildBallsPerMinutePoints = (cycleEvents) => {
+  const window = [];
+  let windowBalls = 0;
+  const points = [];
+
+  cycleEvents.forEach((event) => {
+    const timestamp = Number(event.timestamp) || 0;
+    window.push(event);
+    windowBalls += event.total;
+
+    const cutoff = timestamp - BPM_WINDOW_MS;
+    while (window.length && (Number(window[0].timestamp) || 0) < cutoff) {
+      windowBalls -= window[0].total;
+      window.shift();
+    }
+
+    const earliestTs = window.length
+      ? Math.max(Number(window[0].timestamp) || 0, cutoff)
+      : timestamp;
+    const durationMs = Math.max(timestamp - earliestTs, 1_000); // prevent div/0
+    const ratePerSecond = windowBalls / (durationMs / 1000);
+    if (timestamp >= BPM_WINDOW_MS) {
+      points.push({
+        timestamp,
+        bpm: Number((ratePerSecond * 60).toFixed(2)),
+      });
+    }
+  });
+
+  return points;
+};
+
+const computeSecondsPerThreeBalls = (ballStream) => {
+  if (ballStream.length < 3) return null;
+  const lastThree = ballStream.slice(-3);
+  const durationMs =
+    lastThree[lastThree.length - 1].timestamp - lastThree[0].timestamp;
+  return Math.max(durationMs, 0) / 1000;
+};
+
+const computeBallsPerTwoMinutes = (cycleEvents) => {
+  if (!cycleEvents.length) return null;
+
+  const window = [];
+  let windowBalls = 0;
+  let latest = null;
+
+  cycleEvents.forEach((event) => {
+    const timestamp = Number(event.timestamp) || 0;
+    window.push(event);
+    windowBalls += event.total;
+
+    const cutoff = timestamp - TWO_MIN_WINDOW_MS;
+    while (window.length && (Number(window[0].timestamp) || 0) < cutoff) {
+      windowBalls -= window[0].total;
+      window.shift();
+    }
+
+    const earliestTs = window.length
+      ? Math.max(Number(window[0].timestamp) || 0, cutoff)
+      : timestamp;
+    const durationMs = Math.max(timestamp - earliestTs, 1_000);
+    const perSecond = windowBalls / (durationMs / 1000);
+    latest = perSecond * 120;
+  });
+
+  return latest;
+};
 
 function Statistics({ events, matches, teamNumber, notes }) {
-  const allEvents = matches ? matches.flatMap((m) => m.events) : events;
+  const allEvents = (matches ? matches.flatMap((m) => m.events || []) : events) || [];
   const cycleEvents = allEvents.filter((e) => e.type === "cycle");
 
   if (cycleEvents.length === 0) {
@@ -19,17 +193,27 @@ function Statistics({ events, matches, teamNumber, notes }) {
 
   const cycleTimes = calculateCycleTimes(allEvents, matches);
   const timeStats = calculateStats(cycleTimes);
-  const sortedTimes = [...cycleTimes].sort((a, b) => a - b);
 
   const totalBalls = cycleEvents.map((e) => e.total);
   const scoredBalls = cycleEvents.map((e) => e.scored);
   const accuracy = cycleEvents.map((e) =>
     e.total > 0 ? (e.scored / e.total) * 100 : 0
   );
-  const boxplotAccuracy = [...accuracy].sort((a, b) => a - b);
 
   const ballStats = calculateStats(scoredBalls);
   const accuracyStats = calculateStats(accuracy);
+  const timelineCycleEvents = normalizeCycleEvents(matches, allEvents);
+  const ballStream = buildBallStream(timelineCycleEvents);
+  const rollingAccuracyData = buildRollingAccuracyPoints(ballStream);
+  const ballsPerMinuteData = buildBallsPerMinutePoints(timelineCycleEvents);
+  const secondsPerThreeBalls = computeSecondsPerThreeBalls(ballStream);
+  const ballsPerTwoMinutes = computeBallsPerTwoMinutes(timelineCycleEvents);
+  const averageBpm =
+    ballsPerMinuteData.length > 0
+      ?
+        ballsPerMinuteData.reduce((sum, point) => sum + point.bpm, 0) /
+        ballsPerMinuteData.length
+      : null;
 
   return (
     <div className="mb-8 w-full">
@@ -91,6 +275,29 @@ function Statistics({ events, matches, teamNumber, notes }) {
             <div className="text-white/70 text-sm mb-1 flex items-center justify-center gap-1">
               <Target size={16} weight="fill" />
               Overall Accuracy
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+          <div className="bg-white/10 border border-white/20 rounded-lg p-4 text-center">
+            <div className="text-white/70 text-xs tracking-wide uppercase mb-2">
+              Seconds per 3 Balls
+            </div>
+            <div className="text-3xl sm:text-4xl font-bold text-white">
+              {secondsPerThreeBalls != null
+                ? `${formatStat(secondsPerThreeBalls, 1)}s`
+                : "—"}
+            </div>
+          </div>
+          <div className="bg-white/10 border border-white/20 rounded-lg p-4 text-center">
+            <div className="text-white/70 text-xs tracking-wide uppercase mb-2">
+              Balls per 2 Minutes
+            </div>
+            <div className="text-3xl sm:text-4xl font-bold text-white">
+              {ballsPerTwoMinutes != null
+                ? formatStat(ballsPerTwoMinutes, 1)
+                : "—"}
             </div>
           </div>
         </div>
@@ -194,22 +401,96 @@ function Statistics({ events, matches, teamNumber, notes }) {
           </div>
         </div>
       </div>
-      <div className="bg-white mt-8 border-2 border-[#445f8b] p-4 sm:p-5 flex flex-col lg:flex-row gap-4 items-stretch">
-        <div className="w-full lg:w-1/2">
-          <BoxPlot
-            data={sortedTimes}
-            height={200}
-            unit="s"
-            title="Cycle Time Distribution"
-          />
-        </div>
-        <div className="w-full lg:w-1/2">
-          <BoxPlot
-            data={boxplotAccuracy}
-            height={200}
-            unit="%"
-            title="Accuracy per cycle"
-          />
+      <div className="bg-white mt-8 border-2 border-[#445f8b] p-4 sm:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Crosshair size={20} className="text-[#445f8b]" />
+              <h4 className="text-lg font-semibold text-[#2d3e5c]">
+                Rolling Accuracy (Last 10 Balls)
+              </h4>
+            </div>
+            {rollingAccuracyData.length ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={rollingAccuracyData} margin={{ top: 10, left: 0, right: 10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="accuracyGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#445f8b" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#445f8b" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#f0f4ff" />
+                  <XAxis
+                    dataKey="timestamp"
+                    tickFormatter={formatRoundedTimeLabel}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(value) => `${value}%`} />
+                  <Tooltip
+                    labelFormatter={(value) => `Time ${formatRoundedTimeLabel(value)}`}
+                    formatter={(value) => [`${formatStat(value, 1)}%`, "Accuracy"]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="accuracy"
+                    stroke="#445f8b"
+                    fillOpacity={1}
+                    fill="url(#accuracyGradient)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-56 flex items-center justify-center text-[#666] text-sm">
+                Record at least a few balls to see rolling accuracy.
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Clock size={20} className="text-[#445f8b]" />
+              <h4 className="text-lg font-semibold text-[#2d3e5c]">
+                Balls per Minute (Rolling 60s)
+              </h4>
+            </div>
+            {ballsPerMinuteData.length ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={ballsPerMinuteData} margin={{ top: 10, left: 0, right: 10, bottom: 0 }}>
+                  <CartesianGrid stroke="#f0f4ff" />
+                  <XAxis
+                    dataKey="timestamp"
+                    tickFormatter={formatRoundedTimeLabel}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <YAxis tickFormatter={(value) => `${formatStat(value, 0)}`} tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    labelFormatter={(value) => `Time ${formatRoundedTimeLabel(value)}`}
+                    formatter={(value) => [`${formatStat(value, 1)} bpm`, "Balls / min"]}
+                  />
+                  {averageBpm !== null && (
+                    <ReferenceLine
+                      y={averageBpm}
+                      stroke="#eab308"
+                      strokeDasharray="6 6"
+                      label={{ value: `Avg ${formatStat(averageBpm, 1)}`, fill: "#aa8504", position: "right" }}
+                    />
+                  )}
+                  <Line
+                    type="monotone"
+                    dataKey="bpm"
+                    stroke="#445f8b"
+                    strokeWidth={2.5}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-56 flex items-center justify-center text-[#666] text-sm">
+                Record at least one cycle to chart pace.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
