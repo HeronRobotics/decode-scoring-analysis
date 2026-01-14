@@ -169,33 +169,30 @@ function MatchRecorderScreen({ recorder }) {
     }
 
     const encoded = btoa(text);
-    const key = await createPaste(encoded);
-    const url = `${window.location.origin}${
-      window.location.pathname
-    }?p=${encodeURIComponent(key)}`;
+
+    let url;
+    try {
+      const key = await createPaste(encoded);
+      url = `${window.location.origin}${
+        window.location.pathname
+      }?p=${encodeURIComponent(key)}`;
+    } catch {
+      url = `${window.location.origin}${
+        window.location.pathname
+      }?mt=${encodeURIComponent(encoded)}`;
+    }
 
     shareUrlCacheRef.current.set(text, url);
     return url;
   };
 
   const copyUrlWithFeedback = async (text, setCopied) => {
-    try {
-      const url = await getShareUrl(text);
-      copyWithFeedback(url, setCopied);
-    } catch {
-      alert("Unable to create share link. Please try again.");
-    }
+    const url = await getShareUrl(text);
+    copyWithFeedback(url, setCopied);
   };
 
   const shareUrl = async (text, label) => {
-    let url;
-
-    try {
-      url = await getShareUrl(text);
-    } catch {
-      alert("Unable to create share link. Please try again.");
-      return;
-    }
+    const url = await getShareUrl(text);
 
     if (navigator.share) {
       try {
