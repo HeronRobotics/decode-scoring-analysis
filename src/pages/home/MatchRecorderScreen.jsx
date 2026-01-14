@@ -20,6 +20,7 @@ import { formatTime } from "../../utils/format";
 import { formatMatchText, formatPhaseMatchText } from "../../utils/matchFormat";
 import { downloadJson } from "../../utils/fileJson";
 import { matchRecorderConstants } from "../../hooks/useMatchRecorder";
+import { createPaste } from "../../utils/pasteService";
 
 function MatchRecorderScreen({ recorder }) {
   const [showCycleModal, setShowCycleModal] = useState(false);
@@ -35,6 +36,7 @@ function MatchRecorderScreen({ recorder }) {
   const posthog = usePostHog();
   const wasRecordingRef = useRef(false);
   const wasManualStopRef = useRef(false);
+  const shareUrlCacheRef = useRef(new Map());
 
   const {
     matchStartTime,
@@ -161,18 +163,39 @@ function MatchRecorderScreen({ recorder }) {
     });
   };
 
-  const buildShareUrl = (text) => {
-    return `${window.location.origin}${
+  const getShareUrl = async (text) => {
+    if (shareUrlCacheRef.current.has(text)) {
+      return shareUrlCacheRef.current.get(text);
+    }
+
+    const encoded = btoa(text);
+    const key = await createPaste(encoded);
+    const url = `${window.location.origin}${
       window.location.pathname
-    }?mt=${encodeURIComponent(btoa(text))}`;
+    }?p=${encodeURIComponent(key)}`;
+
+    shareUrlCacheRef.current.set(text, url);
+    return url;
   };
 
-  const copyUrlWithFeedback = (text, setCopied) => {
-    copyWithFeedback(buildShareUrl(text), setCopied);
+  const copyUrlWithFeedback = async (text, setCopied) => {
+    try {
+      const url = await getShareUrl(text);
+      copyWithFeedback(url, setCopied);
+    } catch {
+      alert("Unable to create share link. Please try again.");
+    }
   };
 
   const shareUrl = async (text, label) => {
-    const url = buildShareUrl(text);
+    let url;
+
+    try {
+      url = await getShareUrl(text);
+    } catch {
+      alert("Unable to create share link. Please try again.");
+      return;
+    }
 
     if (navigator.share) {
       try {

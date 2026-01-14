@@ -8,6 +8,7 @@ import TextImportModal from "../components/home/modals/TextImportModal";
 import useMatchRecorder from "../hooks/useMatchRecorder";
 import { parseMatchText } from "../utils/matchFormat";
 import { readJsonFile } from "../utils/fileJson";
+import { readPaste } from "../utils/pasteService";
 
 function HomePage() {
   const recorder = useMatchRecorder();
@@ -60,20 +61,45 @@ function HomePage() {
   };
 
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const encoded = params.get("mt");
-      if (!encoded) return;
+    let cancelled = false;
 
-      const decoded = atob(decodeURIComponent(encoded));
-      const parsedData = parseMatchText(decoded);
-      const success = applyParsedMatchData(parsedData);
-      if (success) {
-        logEvent(analytics, "import_match_text_url");
+    const importFromQuery = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const pasteKey = params.get("p");
+      const encoded = params.get("mt");
+
+      if (!pasteKey && !encoded) return;
+
+      try {
+        let decoded;
+
+        if (pasteKey) {
+          const b64Payload = await readPaste(pasteKey);
+          decoded = atob(b64Payload);
+        } else {
+          decoded = atob(decodeURIComponent(encoded));
+        }
+
+        if (cancelled) return;
+
+        const parsedData = parseMatchText(decoded);
+        const success = applyParsedMatchData(parsedData);
+        if (success) {
+          logEvent(
+            analytics,
+            pasteKey ? "import_match_text_paste" : "import_match_text_url"
+          );
+        }
+      } catch (e) {
+        console.warn("Failed to import match from URL", e);
       }
-    } catch (e) {
-      console.warn("Failed to import match from URL", e);
-    }
+    };
+
+    importFromQuery();
+
+    return () => {
+      cancelled = true;
+    };
   }, [applyParsedMatchData]);
 
   const showRecorder = recorder.isRecording || recorder.matchStartTime !== null;
