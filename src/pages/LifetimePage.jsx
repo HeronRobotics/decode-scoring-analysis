@@ -1,12 +1,50 @@
-import { useState } from 'react'
-import { UploadSimple, Plus, Trash, TrendUp, Calendar } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
+import { UploadSimple, Plus, Trash, TrendUp, Calendar, LinkSimple } from '@phosphor-icons/react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import Statistics from '../components/Statistics'
+import TextImportModal from '../components/home/modals/TextImportModal'
+import { parseLifetimeImportInput } from '../utils/importLifetime'
+
+const LIFETIME_STORAGE_KEY = 'heron_lifetime_stats_v1'
 
 function LifetimePage() {
   const [tournaments, setTournaments] = useState([])
   const [selectedTournament, setSelectedTournament] = useState(null)
   const [teamNumber, setTeamNumber] = useState("")
+  const [showTextImport, setShowTextImport] = useState(false)
+  const [textInput, setTextInput] = useState("")
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(LIFETIME_STORAGE_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed.tournaments)) {
+        setTournaments(parsed.tournaments)
+      }
+      if (parsed.teamNumber) {
+        setTeamNumber(parsed.teamNumber.toString())
+      }
+    } catch (e) {
+      console.warn('Failed to load lifetime stats from localStorage', e)
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      if (!tournaments.length && !teamNumber) {
+        window.localStorage.removeItem(LIFETIME_STORAGE_KEY)
+        return
+      }
+      const payload = {
+        tournaments,
+        teamNumber,
+      }
+      window.localStorage.setItem(LIFETIME_STORAGE_KEY, JSON.stringify(payload))
+    } catch (e) {
+      console.warn('Failed to save lifetime stats to localStorage', e)
+    }
+  }, [tournaments, teamNumber])
 
   const importTournament = (e) => {
     const file = e.target.files[0]
@@ -49,6 +87,51 @@ function LifetimePage() {
       }
     }
     reader.readAsText(file)
+  }
+
+  const importFromText = async () => {
+    const tn = (teamNumber || "").toString().trim()
+
+    try {
+      const payloads = await parseLifetimeImportInput(textInput)
+      if (!payloads.length) {
+        alert('No valid matches or tournaments found in the pasted text or links.')
+        return
+      }
+
+      const next = [...tournaments]
+
+      for (const data of payloads) {
+        if (data.matches) {
+          if (!tn) {
+            alert('Please enter your team number above before importing a tournament.')
+            return
+          }
+          const filteredMatches = (data.matches || []).filter(m => ((m.teamNumber || "").toString().trim()) === tn)
+          if (!filteredMatches.length) continue
+          next.push({ ...data, matches: filteredMatches })
+        } else if (data.events) {
+          const matchDate = new Date(data.startTime).toISOString().split('T')[0]
+          next.push({
+            name: `Match on ${new Date(data.startTime).toLocaleString()}`,
+            date: matchDate,
+            matches: [data]
+          })
+        }
+      }
+
+      if (!next.length) {
+        alert('No valid matches for your team number were found in the pasted content.')
+        return
+      }
+
+      const sorted = next.sort((a, b) => new Date(a.date) - new Date(b.date))
+      setTournaments(sorted)
+      setShowTextImport(false)
+      setTextInput("")
+    } catch {
+      alert('Error importing from text. Please check your links or JSON.')
+    }
   }
 
   const removeTournament = (index) => {
@@ -165,8 +248,16 @@ function LifetimePage() {
           Upload Tournament or Match
           <input type="file" accept=".json" onChange={importTournament} className="hidden" />
         </label>
+        <button
+          type="button"
+          className="btn ml-0 sm:ml-4 mt-3 sm:mt-0 flex items-center gap-2"
+          onClick={() => setShowTextImport(true)}
+        >
+          <LinkSimple weight="bold" size={20} />
+          Import text or links
+        </button>
         <p className="text-sm text-[#666] mt-3">
-          Upload your tournament JSONs and we'll keep only the matches for your team number above. You can also upload single match files.
+          Upload your tournament JSONs and we'll keep only the matches for your team number above. You can also upload single match files or paste match links and text.
         </p>
       </div>
 
@@ -345,6 +436,14 @@ function LifetimePage() {
           </div>
         </>
       )}
+
+      <TextImportModal
+        open={showTextImport}
+        textInput={textInput}
+        setTextInput={setTextInput}
+        onImport={importFromText}
+        onClose={() => setShowTextImport(false)}
+      />
     </div>
   )
 }

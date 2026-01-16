@@ -15,7 +15,7 @@ function TextImportModal({ open, textInput, setTextInput, onImport, onClose }) {
         <textarea
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
-          placeholder="0:00; 1/2 at 0:10; 1/2 at 0:20; gate at 1:30; ..."
+          placeholder="https://heronscout.me/?p=..."
           className="w-full h-40 sm:h-32 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
         />
         <div className="flex gap-4 justify-end mt-6">

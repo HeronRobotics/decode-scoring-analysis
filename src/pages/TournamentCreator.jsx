@@ -3,6 +3,7 @@ import { ArrowLeft, UploadSimple, FloppyDisk, ClipboardTextIcon } from '@phospho
 import { logEvent } from 'firebase/analytics'
 import { analytics } from '../firebase'
 import { parseMatchText } from '../utils/matchFormat'
+import { readPaste } from '../utils/pasteService'
 
 function TournamentCreator({ onCancel, onTournamentCreated }) {
   const [tournamentName, setTournamentName] = useState('')
@@ -38,7 +39,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
     })
   }
 
-  const importFromText = () => {
+  const importFromText = async () => {
     try {
       // Split by newlines to handle multiple match codes
       const lines = textInput.split('\n').map(line => line.trim()).filter(line => line)
@@ -50,10 +51,33 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
 
       const newMatches = []
       for (const line of lines) {
-        const parsedData = parseMatchText(line)
-        
-        if (parsedData.events.length === 0) {
-          continue // Skip invalid lines
+        let parsedData = null
+
+        if (line.startsWith('http://') || line.startsWith('https://')) {
+          try {
+            const url = new URL(line)
+            const pasteKey = url.searchParams.get('p')
+            const mt = url.searchParams.get('mt')
+
+            if (pasteKey) {
+              const b64Payload = await readPaste(pasteKey)
+              const decodedText = atob(b64Payload)
+              parsedData = parseMatchText(decodedText)
+            } else if (mt) {
+              const decodedText = atob(decodeURIComponent(mt))
+              parsedData = parseMatchText(decodedText)
+            }
+          } catch (e) {
+            console.warn('Failed to import match from URL', e)
+          }
+        }
+
+        if (!parsedData && line && !line.startsWith('http://') && !line.startsWith('https://')) {
+          parsedData = parseMatchText(line)
+        }
+
+        if (!parsedData || !parsedData.events || parsedData.events.length === 0) {
+          continue
         }
 
         const matchData = {
@@ -63,7 +87,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           events: parsedData.events,
           notes: parsedData.notes || "",
         }
-        
+
         newMatches.push(matchData)
       }
 
