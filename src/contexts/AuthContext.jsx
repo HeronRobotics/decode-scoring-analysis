@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { usePostHog } from 'posthog-js/react'
 import { supabase } from '../supabaseClient'
 
 const AuthContext = createContext(null)
@@ -7,6 +8,7 @@ const AuthProviderInner = ({ children }) => {
   const [session, setSession] = useState(null)
   const [user, setUser] = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const posthog = usePostHog()
 
   useEffect(() => {
     const init = async () => {
@@ -33,6 +35,18 @@ const AuthProviderInner = ({ children }) => {
     }
   }, [])
 
+  useEffect(() => {
+    if (!posthog) return
+
+    if (user) {
+      posthog.identify(user.id, {
+        email: user.email ?? undefined,
+      })
+    } else {
+      posthog.reset()
+    }
+  }, [user, posthog])
+
   const value = {
     user,
     session,
@@ -45,6 +59,14 @@ const AuthProviderInner = ({ children }) => {
       if (!error) {
         setSession(data.session)
         setUser(data.session?.user ?? null)
+
+        if (posthog && data.session?.user) {
+          const u = data.session.user
+          posthog.identify(u.id, {
+            email: u.email ?? undefined,
+          })
+          posthog.capture('signed_in')
+        }
       }
       return { data, error }
     },
@@ -56,6 +78,14 @@ const AuthProviderInner = ({ children }) => {
       if (!error) {
         setSession(data.session)
         setUser(data.session?.user ?? null)
+
+        if (posthog && data.session?.user) {
+          const u = data.session.user
+          posthog.identify(u.id, {
+            email: u.email ?? undefined,
+          })
+          posthog.capture('signed_up')
+        }
       }
       return { data, error }
     },
