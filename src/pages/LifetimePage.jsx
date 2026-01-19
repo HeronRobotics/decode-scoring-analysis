@@ -1,15 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { TrendUp } from "@phosphor-icons/react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import Statistics from "../components/Statistics";
+import ProgressionCharts from "../components/lifetime/ProgressionCharts.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { listMatchesForCurrentUser } from "../api/matchesApi.js";
 
@@ -86,7 +78,10 @@ function LifetimePage() {
   // Extract individual matches for graphing
   const matchStats = teamMatches
     .map((match, index) => {
-      const cycleEvents = match.events.filter((e) => e.type === "cycle");
+      const cycleEvents = (match.events || [])
+        .filter((e) => e.type === "cycle")
+        .slice()
+        .sort((a, b) => a.timestamp - b.timestamp);
       const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0);
       const total = cycleEvents.reduce((sum, e) => sum + e.total, 0);
 
@@ -108,6 +103,17 @@ function LifetimePage() {
           ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length
           : 0;
 
+      let ballsPerTwoMinutes = null;
+      if (cycleEvents.length > 1) {
+        const firstTs = cycleEvents[0].timestamp;
+        const lastTs = cycleEvents[cycleEvents.length - 1].timestamp;
+        const durationSeconds = (lastTs - firstTs) / 1000;
+        if (durationSeconds > 0) {
+          const perSecond = scored / durationSeconds;
+          ballsPerTwoMinutes = perSecond * 120;
+        }
+      }
+
       const matchDate = new Date(match.startTime);
 
       return {
@@ -118,6 +124,7 @@ function LifetimePage() {
         total,
         accuracy: total > 0 ? (scored / total) * 100 : 0,
         avgCycleTime,
+        ballsPerTwoMinutes,
       };
     })
     .sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -184,131 +191,7 @@ function LifetimePage() {
 
       {!authLoading && user && !error && allMatches.length > 0 && (
         <>
-          {/* Career Summary
-          <div className="mb-8">
-            <Statistics matches={allMatches} />
-          </div> */}
-
-          {/* Progression Chart */}
-          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
-            <h2 className="text-3xl mb-5 flex items-center gap-3">
-              <TrendUp weight="bold" size={32} />
-              Progression
-            </h2>
-
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-3">Accuracy Over Time</h3>
-              <div className="h-80 border-2 border-[#ddd] bg-white">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={matchStats.map((stat, i) => ({
-                      ...stat,
-                      index: i,
-                      dateLabel: new Date(stat.date).toLocaleString("en-US"),
-                    }))}
-                    margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
-                  >
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
-                    <XAxis
-                      dataKey="dateLabel"
-                      stroke="#666"
-                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
-                      interval="preserveStartEnd"
-                      minTickGap={20}
-                      angle={-35}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis
-                      domain={[0, 100]}
-                      stroke="#666"
-                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
-                      tickFormatter={(val) => `${val}%`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "2px solid #445f8b",
-                        fontFamily: "League Spartan",
-                      }}
-                      formatter={(value) => [
-                        `${value.toFixed(1)}%`,
-                        "Accuracy",
-                      ]}
-                      labelFormatter={(label, payload) =>
-                        payload[0]?.payload.name
-                      }
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="accuracy"
-                      stroke="#445f8b"
-                      strokeWidth={2}
-                      dot={{ fill: "#445f8b", r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-semibold mb-3">
-                Average Cycle Time Over Time
-              </h3>
-              <div className="h-80 border-2 border-[#ddd] bg-white">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={matchStats.map((stat, i) => ({
-                      ...stat,
-                      index: i,
-                      dateLabel: new Date(stat.date).toLocaleString(),
-                    }))}
-                    margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
-                  >
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
-                    <XAxis
-                      dataKey="dateLabel"
-                      stroke="#666"
-                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
-                      interval="preserveStartEnd"
-                      minTickGap={20}
-                      angle={-35}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis
-                      stroke="#666"
-                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
-                      tickFormatter={(val) => `${val}s`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "2px solid #445f8b",
-                        fontFamily: "League Spartan",
-                      }}
-                      formatter={(value) => [
-                        `${value.toFixed(1)}s`,
-                        "Avg Cycle Time",
-                      ]}
-                      labelFormatter={(label, payload) =>
-                        payload[0]?.payload.name
-                      }
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="avgCycleTime"
-                      stroke="#445f8b"
-                      strokeWidth={2}
-                      dot={{ fill: "#445f8b", r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+          <ProgressionCharts matchStats={matchStats} />
         </>
       )}
     </div>
