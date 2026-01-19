@@ -41,8 +41,11 @@ createRoot(document.getElementById("root")).render(
               Contribute on GitHub
             </a>
             !
-            <a href="/privacy" className="block mt-1 underline">
-              Privacy Policy
+            <a
+              href="https://heronscout.me/privacy"
+              className="block mt-1 underline"
+            >
+              Privacy Policy: https://heronscout.me/privacy
             </a>
           </footer>
         </MatchRecorderProvider>
