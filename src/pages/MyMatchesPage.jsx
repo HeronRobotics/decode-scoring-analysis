@@ -11,7 +11,9 @@ import {
   Users,
   PencilSimple,
   CaretRight,
-  Info,
+  CaretDown,
+  MagnifyingGlass,
+  Funnel,
 } from "@phosphor-icons/react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import {
@@ -56,6 +58,13 @@ function MyMatchesPage() {
   const [textInput, setTextInput] = useState("");
   const [importing, setImporting] = useState(false);
   const [showImportSection, setShowImportSection] = useState(false);
+
+  // Search, filter, and grouping state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterTournament, setFilterTournament] = useState("");
+  const [filterTeam, setFilterTeam] = useState("");
+  const [groupBy, setGroupBy] = useState("none"); // "none" | "tournament" | "team" | "date"
+  const [collapsedGroups, setCollapsedGroups] = useState({});
 
   // Editing state for detail panel
   const [editTitle, setEditTitle] = useState("");
@@ -128,6 +137,97 @@ function MyMatchesPage() {
     names.sort((a, b) => a.localeCompare(b));
     return names;
   }, [matches]);
+
+  const teamNumbers = useMemo(() => {
+    const teams = Array.from(
+      new Set(
+        matches.map((m) => (m.teamNumber || "").toString().trim()).filter(Boolean),
+      ),
+    );
+    teams.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+    return teams;
+  }, [matches]);
+
+  // Filter matches based on search and filters
+  const filteredMatches = useMemo(() => {
+    return matches.filter((m) => {
+      // Search filter - check title, team number, tournament name, notes
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const title = (m.title || "").toLowerCase();
+        const team = (m.teamNumber || "").toString().toLowerCase();
+        const tournament = (m.tournamentName || "").toLowerCase();
+        const notes = (m.notes || "").toLowerCase();
+        if (!title.includes(query) && !team.includes(query) && !tournament.includes(query) && !notes.includes(query)) {
+          return false;
+        }
+      }
+      // Tournament filter
+      if (filterTournament && (m.tournamentName || "") !== filterTournament) {
+        return false;
+      }
+      // Team filter
+      if (filterTeam && (m.teamNumber || "").toString() !== filterTeam) {
+        return false;
+      }
+      return true;
+    });
+  }, [matches, searchQuery, filterTournament, filterTeam]);
+
+  // Group matches based on groupBy setting
+  const groupedMatches = useMemo(() => {
+    if (groupBy === "none") {
+      return [{ key: "all", label: null, matches: filteredMatches }];
+    }
+
+    const groups = {};
+    for (const m of filteredMatches) {
+      let key;
+      let label;
+      if (groupBy === "tournament") {
+        key = m.tournamentName || "__none__";
+        label = m.tournamentName || "No Tournament";
+      } else if (groupBy === "team") {
+        key = (m.teamNumber || "").toString() || "__none__";
+        label = m.teamNumber ? `Team ${m.teamNumber}` : "No Team";
+      } else if (groupBy === "date") {
+        const date = m.startTime ? new Date(m.startTime) : m.createdAt ? new Date(m.createdAt) : null;
+        if (date) {
+          key = date.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+          label = key;
+        } else {
+          key = "__none__";
+          label = "Unknown Date";
+        }
+      }
+      if (!groups[key]) {
+        groups[key] = { key, label, matches: [] };
+      }
+      groups[key].matches.push(m);
+    }
+
+    // Sort groups
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      if (a === "__none__") return 1;
+      if (b === "__none__") return -1;
+      if (groupBy === "team") {
+        return parseInt(a, 10) - parseInt(b, 10);
+      }
+      if (groupBy === "date") {
+        // Parse month-year strings and sort descending (newest first)
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+        return dateB - dateA;
+      }
+      return a.localeCompare(b);
+    });
+
+    return sortedKeys.map((k) => groups[k]);
+  }, [filteredMatches, groupBy]);
+
+  const toggleGroup = (key) => {
+    setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const selectedMatch = matches.find((m) => m.id === selectedMatchId) || null;
 
@@ -305,47 +405,38 @@ function MyMatchesPage() {
       )}
 
       {!authLoading && user && (
-        <div className="grid gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] items-start">
-          {/* Left Column - Match List */}
-          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6">
-            {/* Import Section - Collapsible */}
-            <div className="mb-5">
-              <button
-                type="button"
-                onClick={() => setShowImportSection(!showImportSection)}
-                className="w-full flex items-center justify-between text-left group"
-              >
-                <div className="flex items-center gap-2">
-                  <UploadSimple
-                    size={20}
-                    weight="bold"
-                    className="text-[#445f8b]"
-                  />
-                  <span className="font-semibold text-[#445f8b]">
-                    Import Matches
-                  </span>
-                </div>
-                <CaretRight
-                  size={18}
+        <>
+          {/* Import Section - Full Width at Top */}
+          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-5 mb-6">
+            <button
+              type="button"
+              onClick={() => setShowImportSection(!showImportSection)}
+              className="w-full flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-2">
+                <UploadSimple
+                  size={20}
                   weight="bold"
-                  className={`text-[#445f8b] transition-transform ${
-                    showImportSection ? "rotate-90" : ""
-                  }`}
+                  className="text-[#445f8b]"
                 />
-              </button>
+                <span className="font-semibold text-[#445f8b]">
+                  Import Matches
+                </span>
+              </div>
+              <CaretRight
+                size={18}
+                weight="bold"
+                className={`text-[#445f8b] transition-transform ${
+                  showImportSection ? "rotate-90" : ""
+                }`}
+              />
+            </button>
 
-              {showImportSection && (
-                <div className="mt-4 p-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg">
-                  <div className="flex items-start gap-2 mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                    <Info size={18} className="flex-shrink-0 mt-0.5" />
-                    <span>
-                      Import matches from JSON files or paste links. Matches
-                      will appear in Tournament Analysis and Lifetime Stats.
-                    </span>
-                  </div>
-
+            {showImportSection && (
+              <div className="mt-4 pt-4 border-t border-[#e2e8f0]">
+                <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
                   {/* Tournament Tag */}
-                  <div className="mb-4">
+                  <div className="flex-1">
                     <label className="block text-sm font-medium text-[#444] mb-2">
                       Tournament Tag (optional)
                     </label>
@@ -376,7 +467,7 @@ function MyMatchesPage() {
 
                   {/* Import Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <label className="btn flex-1 !py-2.5 justify-center cursor-pointer">
+                    <label className="btn !py-2.5 justify-center cursor-pointer">
                       <UploadSimple size={18} weight="bold" />
                       Upload JSON
                       <input
@@ -390,30 +481,119 @@ function MyMatchesPage() {
                     <button
                       type="button"
                       onClick={() => setShowTextImport(true)}
-                      className="btn flex-1 !py-2.5 justify-center"
+                      className="btn !py-2.5 justify-center"
                     >
                       <LinkSimple size={18} weight="bold" />
                       Paste Links
                     </button>
                   </div>
-
-                  {importing && (
-                    <div className="mt-3 text-sm text-[#445f8b] flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-[#445f8b] border-t-transparent rounded-full animate-spin" />
-                      Importing matches...
-                    </div>
-                  )}
                 </div>
-              )}
-            </div>
 
+                {importing && (
+                  <div className="mt-3 text-sm text-[#445f8b] flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-[#445f8b] border-t-transparent rounded-full animate-spin" />
+                    Importing matches...
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] items-start">
+          {/* Left Column - Match List */}
+          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6">
             {/* Saved Matches Header */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">Saved Matches</h2>
               <span className="text-sm text-[#666]">
-                {matches.length} {matches.length === 1 ? "match" : "matches"}
+                {filteredMatches.length === matches.length
+                  ? `${matches.length} ${matches.length === 1 ? "match" : "matches"}`
+                  : `${filteredMatches.length} of ${matches.length}`}
               </span>
             </div>
+
+            {/* Search and Filter Section */}
+            {matches.length > 0 && (
+              <div className="mb-4 space-y-3">
+                {/* Search Input */}
+                <div className="relative">
+                  <MagnifyingGlass
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888]"
+                  />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search matches..."
+                    className="w-full pl-10 pr-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                  />
+                </div>
+
+                {/* Filter and Group Row */}
+                <div className="flex flex-wrap gap-2">
+                  {/* Tournament Filter */}
+                  {tournamentTags.length > 0 && (
+                    <select
+                      value={filterTournament}
+                      onChange={(e) => setFilterTournament(e.target.value)}
+                      className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                    >
+                      <option value="">All Tournaments</option>
+                      {tournamentTags.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {/* Team Filter */}
+                  {teamNumbers.length > 1 && (
+                    <select
+                      value={filterTeam}
+                      onChange={(e) => setFilterTeam(e.target.value)}
+                      className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                    >
+                      <option value="">All Teams</option>
+                      {teamNumbers.map((num) => (
+                        <option key={num} value={num}>
+                          Team {num}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {/* Group By */}
+                  <select
+                    value={groupBy}
+                    onChange={(e) => setGroupBy(e.target.value)}
+                    className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white ml-auto"
+                  >
+                    <option value="none">No Grouping</option>
+                    <option value="tournament">Group by Tournament</option>
+                    <option value="team">Group by Team</option>
+                    <option value="date">Group by Month</option>
+                  </select>
+                </div>
+
+                {/* Clear Filters */}
+                {(searchQuery || filterTournament || filterTeam) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setFilterTournament("");
+                      setFilterTeam("");
+                    }}
+                    className="text-sm text-[#445f8b] hover:underline flex items-center gap-1"
+                  >
+                    <Funnel size={14} />
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
 
             {loading && <p className="text-[#666]">Loading matches...</p>}
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
@@ -431,108 +611,151 @@ function MyMatchesPage() {
 
             {/* Match List */}
             <div className="space-y-2 max-h-[calc(100vh-380px)] min-h-[300px] overflow-y-auto pr-1">
-              {matches.map((m) => {
-                const date = m.startTime
-                  ? new Date(m.startTime)
-                  : m.createdAt
-                    ? new Date(m.createdAt)
-                    : null;
-                const dateStr = date
-                  ? date.toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "Unknown date";
-                const stats = getMatchStats(m.events);
-                const isSelected = selectedMatchId === m.id;
+              {/* No results message */}
+              {!loading && filteredMatches.length === 0 && matches.length > 0 && (
+                <div className="text-center py-8 text-[#666]">
+                  <MagnifyingGlass size={48} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No matches found.</p>
+                  <p className="text-xs mt-1">Try adjusting your search or filters.</p>
+                </div>
+              )}
 
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setSelectedMatchId(m.id)}
-                    className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
-                      isSelected
-                        ? "border-[#445f8b] bg-[#f0f5ff] shadow-sm"
-                        : "border-[#e5e7eb] bg-white hover:border-[#445f8b] hover:bg-[#fafbfc]"
-                    }`}
-                  >
-                    {/* Match Header */}
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-[#1a1a1a] truncate">
-                          {m.title || `Team ${m.teamNumber || "?"} Match`}
-                        </div>
-                        {m.tournamentName && (
-                          <div className="text-xs text-[#445f8b] font-medium mt-0.5">
-                            {m.tournamentName}
-                          </div>
+              {groupedMatches.map((group) => (
+                <div key={group.key}>
+                  {/* Group Header (only shown when grouping is enabled) */}
+                  {group.label && (
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.key)}
+                      className="w-full flex items-center justify-between py-2 px-3 mb-2 bg-[#f0f5ff] border border-[#c8d6f0] rounded-lg hover:bg-[#e8eef8] transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        {collapsedGroups[group.key] ? (
+                          <CaretRight size={16} weight="bold" className="text-[#445f8b]" />
+                        ) : (
+                          <CaretDown size={16} weight="bold" className="text-[#445f8b]" />
                         )}
+                        <span className="font-semibold text-[#445f8b]">{group.label}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <a
-                          href={`/match?match=${encodeURIComponent(m.id)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-1.5 text-[#666] hover:text-[#445f8b] hover:bg-[#e8eef8] rounded transition-colors"
-                          title="Open in new tab"
-                        >
-                          <ArrowSquareOut size={16} weight="bold" />
-                        </a>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(m.id);
-                          }}
-                          className="p-1.5 text-[#666] hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="Delete match"
-                        >
-                          <Trash size={16} weight="bold" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Match Stats Row */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#555]">
-                      <span className="flex items-center gap-1.5">
-                        <Users size={14} className="text-[#888]" />
-                        Team {m.teamNumber || "?"}
+                      <span className="text-sm text-[#666]">
+                        {group.matches.length} {group.matches.length === 1 ? "match" : "matches"}
                       </span>
-                      <span className="flex items-center gap-1.5">
-                        <CalendarBlank size={14} className="text-[#888]" />
-                        {dateStr}
-                      </span>
-                    </div>
+                    </button>
+                  )}
 
-                    {/* Score Summary */}
-                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#eee]">
-                      <div className="flex items-center gap-1.5">
-                        <Target size={16} className="text-[#445f8b]" />
-                        <span className="font-semibold text-[#1a1a1a]">
-                          {stats.scored}/{stats.total}
-                        </span>
-                        <span className="text-xs text-[#888]">scored</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <ListNumbers size={16} className="text-[#445f8b]" />
-                        <span className="font-semibold text-[#1a1a1a]">
-                          {stats.cycles}
-                        </span>
-                        <span className="text-xs text-[#888]">cycles</span>
-                      </div>
-                      <div className="text-sm">
-                        <span className="font-semibold text-[#1a1a1a]">
-                          {formatStat(stats.accuracy, 0)}%
-                        </span>
-                        <span className="text-xs text-[#888] ml-1">acc</span>
-                      </div>
+                  {/* Group Content */}
+                  {!collapsedGroups[group.key] && (
+                    <div className="space-y-2">
+                      {group.matches.map((m) => {
+                        const date = m.startTime
+                          ? new Date(m.startTime)
+                          : m.createdAt
+                            ? new Date(m.createdAt)
+                            : null;
+                        const dateStr = date
+                          ? date.toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "Unknown date";
+                        const stats = getMatchStats(m.events);
+                        const isSelected = selectedMatchId === m.id;
+
+                        return (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => setSelectedMatchId(m.id)}
+                            className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
+                              isSelected
+                                ? "border-[#445f8b] bg-[#f0f5ff] shadow-sm"
+                                : "border-[#e5e7eb] bg-white hover:border-[#445f8b] hover:bg-[#fafbfc]"
+                            }`}
+                          >
+                            {/* Match Header */}
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-[#1a1a1a] truncate">
+                                  {m.title || `Team ${m.teamNumber || "?"} Match`}
+                                </div>
+                                {m.tournamentName && groupBy !== "tournament" && (
+                                  <div className="text-xs text-[#445f8b] font-medium mt-0.5">
+                                    {m.tournamentName}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <a
+                                  href={`/match?match=${encodeURIComponent(m.id)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="p-1.5 text-[#666] hover:text-[#445f8b] hover:bg-[#e8eef8] rounded transition-colors"
+                                  title="Open in new tab"
+                                >
+                                  <ArrowSquareOut size={16} weight="bold" />
+                                </a>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(m.id);
+                                  }}
+                                  className="p-1.5 text-[#666] hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  title="Delete match"
+                                >
+                                  <Trash size={16} weight="bold" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Match Stats Row */}
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#555]">
+                              {groupBy !== "team" && (
+                                <span className="flex items-center gap-1.5">
+                                  <Users size={14} className="text-[#888]" />
+                                  Team {m.teamNumber || "?"}
+                                </span>
+                              )}
+                              {groupBy !== "date" && (
+                                <span className="flex items-center gap-1.5">
+                                  <CalendarBlank size={14} className="text-[#888]" />
+                                  {dateStr}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Score Summary */}
+                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#eee]">
+                              <div className="flex items-center gap-1.5">
+                                <Target size={16} className="text-[#445f8b]" />
+                                <span className="font-semibold text-[#1a1a1a]">
+                                  {stats.scored}/{stats.total}
+                                </span>
+                                <span className="text-xs text-[#888]">scored</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <ListNumbers size={16} className="text-[#445f8b]" />
+                                <span className="font-semibold text-[#1a1a1a]">
+                                  {stats.cycles}
+                                </span>
+                                <span className="text-xs text-[#888]">cycles</span>
+                              </div>
+                              <div className="text-sm">
+                                <span className="font-semibold text-[#1a1a1a]">
+                                  {formatStat(stats.accuracy, 0)}%
+                                </span>
+                                <span className="text-xs text-[#888] ml-1">acc</span>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                  </button>
-                );
-              })}
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -696,6 +919,7 @@ function MyMatchesPage() {
             )}
           </div>
         </div>
+        </>
       )}
 
       <TextImportModal

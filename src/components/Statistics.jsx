@@ -5,29 +5,10 @@ import {
   ListNumbers,
   Crosshair,
 } from "@phosphor-icons/react";
-import { formatStat, formatTime } from "../utils/format";
+import { formatStat } from "../utils/format";
 import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
-const ROLLING_WINDOW_BALLS = 10;
-const BPM_WINDOW_MS = 60_000;
 const TWO_MIN_WINDOW_MS = 120_000;
-
-const formatRoundedTimeLabel = (value) => {
-  const rounded = Math.round((Number(value) || 0) / 1000) * 1000;
-  return formatTime(Math.max(0, rounded));
-};
 
 const normalizeCycleEvents = (matches, events = []) => {
   if (matches && matches.length > 0) {
@@ -53,7 +34,7 @@ const normalizeCycleEvents = (matches, events = []) => {
       const lastTs = ordered.length
         ? Number(ordered[ordered.length - 1].timestamp) || 0
         : 0;
-      offset += lastTs + 60_000; // add a gap between matches for clarity
+      offset += lastTs + 60_000;
     });
 
     return normalized;
@@ -65,83 +46,6 @@ const normalizeCycleEvents = (matches, events = []) => {
       ...event,
       timestamp: Number(event.timestamp) || 0,
     }));
-};
-
-const buildBallStream = (cycleEvents) => {
-  const stream = [];
-
-  cycleEvents.forEach((event) => {
-    const ts = Number(event.timestamp) || 0;
-    for (let i = 0; i < event.total; i += 1) {
-      stream.push({
-        timestamp: ts + i * 10, // slight offset so windows have width
-        scored: i < event.scored,
-      });
-    }
-  });
-
-  return stream;
-};
-
-const buildRollingAccuracyPoints = (ballStream) => {
-  const points = [];
-  const window = [];
-  let scoredCount = 0;
-
-  ballStream.forEach((ball) => {
-    window.push(ball);
-    if (ball.scored) {
-      scoredCount += 1;
-    }
-
-    if (window.length > ROLLING_WINDOW_BALLS) {
-      const removed = window.shift();
-      if (removed.scored) {
-        scoredCount -= 1;
-      }
-    }
-
-    if (window.length >= Math.min(ROLLING_WINDOW_BALLS, 3)) {
-      points.push({
-        timestamp: ball.timestamp,
-        accuracy: Number(((scoredCount / window.length) * 100).toFixed(1)),
-      });
-    }
-  });
-
-  return points;
-};
-
-const buildBallsPerMinutePoints = (cycleEvents) => {
-  const window = [];
-  let windowBalls = 0;
-  const points = [];
-
-  cycleEvents.forEach((event) => {
-    const timestamp = Number(event.timestamp) || 0;
-    window.push(event);
-    windowBalls += event.total;
-
-    const cutoff = timestamp - BPM_WINDOW_MS;
-    while (window.length && (Number(window[0].timestamp) || 0) < cutoff) {
-      windowBalls -= window[0].total;
-      window.shift();
-    }
-
-    const earliestTs = window.length
-      ? Math.max(Number(window[0].timestamp) || 0, cutoff)
-      : timestamp;
-    const durationMs = Math.max(timestamp - earliestTs, 1_000); // prevent div/0
-    const ratePerSecond = windowBalls / (durationMs / 1000);
-    if (timestamp >= BPM_WINDOW_MS) {
-      points.push({
-        timestamp,
-        bpm: Number((ratePerSecond * 60).toFixed(2)),
-      });
-    }
-  });
-
-  return points;
 };
 
 const computeSecondsPerThreeBalls = (cycleTimes, attemptedBalls) => {
@@ -208,9 +112,6 @@ function Statistics({ events, matches, teamNumber, notes }) {
   const ballStats = calculateStats(scoredBalls);
   const accuracyStats = calculateStats(accuracy);
   const timelineCycleEvents = normalizeCycleEvents(matches, allEvents);
-  const ballStream = buildBallStream(timelineCycleEvents);
-  const rollingAccuracyData = buildRollingAccuracyPoints(ballStream);
-  const ballsPerMinuteData = buildBallsPerMinutePoints(timelineCycleEvents);
   const secondsPerThreeBalls = computeSecondsPerThreeBalls(
     cycleTimes,
     totalBallsAttempted
@@ -223,11 +124,6 @@ function Statistics({ events, matches, teamNumber, notes }) {
     timelineCycleEvents,
     "total"
   );
-  const averageBpm =
-    ballsPerMinuteData.length > 0
-      ? ballsPerMinuteData.reduce((sum, point) => sum + point.bpm, 0) /
-        ballsPerMinuteData.length
-      : null;
 
   return (
     <div className="mb-8 w-full">
@@ -420,140 +316,6 @@ function Statistics({ events, matches, teamNumber, notes }) {
                 {formatStat(accuracyStats.max)}%
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <div className="bg-white mt-8 border-2 border-[#445f8b] p-4 sm:p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Crosshair size={20} className="text-[#445f8b]" />
-              <h4 className="text-lg font-semibold text-[#2d3e5c]">
-                Rolling Accuracy (Last 10 Balls)
-              </h4>
-            </div>
-            {rollingAccuracyData.length ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <AreaChart
-                  data={rollingAccuracyData}
-                  margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="accuracyGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor="#445f8b"
-                        stopOpacity={0.35}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="#445f8b"
-                        stopOpacity={0.05}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="#f0f4ff" />
-                  <XAxis
-                    dataKey="timestamp"
-                    tickFormatter={formatRoundedTimeLabel}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    tick={{ fontSize: 11 }}
-                    tickFormatter={(value) => `${value}%`}
-                  />
-                  <Tooltip
-                    labelFormatter={(value) =>
-                      `Time ${formatRoundedTimeLabel(value)}`
-                    }
-                    formatter={(value) => [
-                      `${formatStat(value, 1)}%`,
-                      "Accuracy",
-                    ]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="accuracy"
-                    stroke="#445f8b"
-                    fillOpacity={1}
-                    fill="url(#accuracyGradient)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-56 flex items-center justify-center text-[#666] text-sm">
-                Record at least a few balls to see rolling accuracy.
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Clock size={20} className="text-[#445f8b]" />
-              <h4 className="text-lg font-semibold text-[#2d3e5c]">
-                Balls per Minute (Rolling 60s)
-              </h4>
-            </div>
-            {ballsPerMinuteData.length ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart
-                  data={ballsPerMinuteData}
-                  margin={{ top: 10, left: 0, right: 10, bottom: 0 }}
-                >
-                  <CartesianGrid stroke="#f0f4ff" />
-                  <XAxis
-                    dataKey="timestamp"
-                    tickFormatter={formatRoundedTimeLabel}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <YAxis
-                    tickFormatter={(value) => `${formatStat(value, 0)}`}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <Tooltip
-                    labelFormatter={(value) =>
-                      `Time ${formatRoundedTimeLabel(value)}`
-                    }
-                    formatter={(value) => [
-                      `${formatStat(value, 1)} bpm`,
-                      "Balls / min",
-                    ]}
-                  />
-                  {averageBpm !== null && (
-                    <ReferenceLine
-                      y={averageBpm}
-                      stroke="#eab308"
-                      strokeDasharray="6 6"
-                      label={{
-                        value: `Avg ${formatStat(averageBpm, 1)}`,
-                        fill: "#aa8504",
-                        position: "right",
-                      }}
-                    />
-                  )}
-                  <Line
-                    type="monotone"
-                    dataKey="bpm"
-                    stroke="#445f8b"
-                    strokeWidth={2.5}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-56 flex items-center justify-center text-[#666] text-sm">
-                Record for at least one minute to chart pace.
-              </div>
-            )}
           </div>
         </div>
       </div>
