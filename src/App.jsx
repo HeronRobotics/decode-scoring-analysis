@@ -7,6 +7,7 @@ import LifetimePage from "./pages/LifetimePage";
 import MatchPage from "./pages/MatchPage";
 
 import { setPath } from "./utils/navigation";
+import MyMatchesPage from "./pages/MyMatchesPage.jsx";
 
 function App() {
   const pageToPath = useMemo(
@@ -15,8 +16,9 @@ function App() {
       tournament: "/tournament",
       lifetime: "/lifetime",
       match: "/match",
+      myMatches: "/my-matches",
     }),
-    []
+    [],
   );
 
   const getPageFromLocation = () => {
@@ -27,6 +29,7 @@ function App() {
     if (path.startsWith("/tournament")) return "tournament";
     if (path.startsWith("/lifetime")) return "lifetime";
     if (path.startsWith("/match")) return "match";
+    if (path.startsWith("/my-matches")) return "myMatches";
     return "home";
   };
 
@@ -58,6 +61,7 @@ function App() {
         <TournamentPage onBack={() => navigate("home", { replace: true })} />
       )}
       {currentPage === "lifetime" && <LifetimePage />}
+      {currentPage === "myMatches" && <MyMatchesPage />}
     </>
   );
 }

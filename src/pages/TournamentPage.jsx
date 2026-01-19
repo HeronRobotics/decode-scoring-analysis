@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowLeft, DownloadSimple, FloppyDisk } from "@phosphor-icons/react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Calendar, DownloadSimple, FloppyDisk } from "@phosphor-icons/react";
 import { useTournament } from "../data/TournamentContext";
 import TournamentLanding from "./TournamentLanding";
 import TournamentCreator from "./TournamentCreator";
@@ -16,6 +16,8 @@ import {
   teamStatsFromTournament,
 } from "../utils/stats";
 import { downloadCsv, toCsv } from "../utils/csv";
+import { useAuth } from "../contexts/AuthContext.jsx";
+import { listMatchesForCurrentUser } from "../api/matchesApi.js";
 
 function TournamentPage({ onBack }) {
   const {
@@ -28,11 +30,77 @@ function TournamentPage({ onBack }) {
   } = useTournament();
 
   const [isCreating, setIsCreating] = useState(false);
+  const { user, authLoading } = useAuth();
+  const [userMatches, setUserMatches] = useState([]);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [matchesError, setMatchesError] = useState("");
+  const [selectedTournamentName, setSelectedTournamentName] = useState("");
+
+  useEffect(() => {
+    if (!user) {
+      setUserMatches([]);
+      return;
+    }
+
+    const load = async () => {
+      setLoadingMatches(true);
+      setMatchesError("");
+      try {
+        const data = await listMatchesForCurrentUser();
+        setUserMatches(data);
+      } catch (err) {
+        setMatchesError(err.message || "Error loading matches");
+      } finally {
+        setLoadingMatches(false);
+      }
+    };
+
+    load();
+  }, [user]);
+
+  const tournamentNames = useMemo(() => {
+    const names = Array.from(
+      new Set(
+        userMatches
+          .map((m) => (m.tournamentName || "").trim())
+          .filter(Boolean),
+      ),
+    );
+    names.sort((a, b) => a.localeCompare(b));
+    return names;
+  }, [userMatches]);
 
   const handleCreateNew = () => setIsCreating(true);
   const handleTournamentCreated = (newTournament) => {
     setTournament(newTournament);
     setIsCreating(false);
+  };
+
+  const handleLoadFromMyMatches = () => {
+    if (!selectedTournamentName) return;
+    const matchesForTournament = userMatches.filter(
+      (m) => (m.tournamentName || "").trim() === selectedTournamentName,
+    );
+    if (!matchesForTournament.length) return;
+
+    const firstWithDate = matchesForTournament.find((m) => m.startTime);
+    const dateIso = firstWithDate
+      ? new Date(firstWithDate.startTime).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0];
+
+    setTournament({
+      name: selectedTournamentName,
+      date: dateIso,
+      matches: matchesForTournament,
+    });
+    setSelectedMatch(0);
+    setSelectedTeam("");
+  };
+
+  const handleBackFromTournament = () => {
+    setTournament(null);
+    setSelectedMatch(0);
+    setSelectedTeam("");
   };
 
   const saveTournament = () => {
@@ -161,12 +229,78 @@ function TournamentPage({ onBack }) {
   };
 
   if (!tournament) {
+    if (!user) {
+      return (
+        <TournamentLanding
+          onCreateNew={handleCreateNew}
+          onImportTournament={handleImportTournament}
+          onBack={onBack}
+        />
+      );
+    }
+
     return (
-      <TournamentLanding
-        onCreateNew={handleCreateNew}
-        onImportTournament={handleImportTournament}
-        onBack={onBack}
-      />
+      <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col gap-6">
+        <div className="my-6 sm:my-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-3xl sm:text-5xl font-bold">Tournament Analysis</h1>
+            <p className="text-sm text-[#666] mt-2">
+              Build a tournament from matches you have saved in <strong>My Matches</strong>,
+              grouped by their tournament tag.
+            </p>
+          </div>
+          <button onClick={onBack} className="btn w-full sm:w-auto justify-center">
+            <ArrowLeft size={20} weight="bold" />
+            Back to Home
+          </button>
+        </div>
+
+        <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6">
+          {authLoading || loadingMatches ? (
+            <p className="text-[#445f8b]">Loading your matches...</p>
+          ) : matchesError ? (
+            <p className="text-red-600 text-sm">{matchesError}</p>
+          ) : !tournamentNames.length ? (
+            <p className="text-sm text-[#666]">
+              No tournaments found. Add a <strong>tournament tag</strong> to your matches
+              on the My Matches page, then come back here to analyze them.
+            </p>
+          ) : (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                <label className="font-semibold text-sm">
+                  Select tournament tag:
+                </label>
+                <select
+                  value={selectedTournamentName}
+                  onChange={(e) => setSelectedTournamentName(e.target.value)}
+                  className="p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:min-w-56"
+                >
+                  <option value="">Choose a tournament...</option>
+                  {tournamentNames.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleLoadFromMyMatches}
+                disabled={!selectedTournamentName}
+                className="btn !py-3 !bg-[#445f8b] !text-white !px-6 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <Calendar weight="bold" size={20} />
+                Analyze Selected Tournament
+              </button>
+              <p className="text-xs text-[#666] mt-3">
+                Tournament tags are set when recording matches or editing them on the My
+                Matches page.
+              </p>
+            </>
+          )}
+        </div>
+      </div>
     );
   }
 
@@ -229,7 +363,7 @@ function TournamentPage({ onBack }) {
             Export CSV
           </button>
           <button
-            onClick={onBack}
+            onClick={handleBackFromTournament}
             className="btn w-full sm:w-auto justify-center"
           >
             <ArrowLeft size={20} weight="bold" />
@@ -315,6 +449,8 @@ function TournamentPage({ onBack }) {
           <div className="flex gap-3 flex-wrap">
             {filteredMatches.map((_, index) => {
               const matchStats = matchScoredOutOfTotal(filteredMatches[index]);
+              const match = filteredMatches[index];
+              const title = (match.title || '').trim();
               return (
                 <button
                   key={index}
@@ -325,8 +461,8 @@ function TournamentPage({ onBack }) {
                       : "border-[#ddd] bg-white hover:border-[#445f8b]"
                   }`}
                 >
-                  Match {index + 1} (
-                  {filteredMatches[index].teamNumber || "No Team"}){" "}
+                  {title || `Match ${index + 1}`} (
+                  {match.teamNumber || "No Team"}){" "}
                   <span
                     className={`ml-3 text-xs text-[#666] ${
                       selectedMatch == index ? "text-[#ddd]" : ""

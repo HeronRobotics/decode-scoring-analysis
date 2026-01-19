@@ -30,6 +30,11 @@ import { formatMatchText, formatPhaseMatchText } from "../../utils/matchFormat";
 import { downloadJson } from "../../utils/fileJson";
 import { matchRecorderConstants } from "../../hooks/useMatchRecorder";
 import { createPaste } from "../../utils/pasteService";
+import { useAuth } from "../../contexts/AuthContext.jsx";
+import {
+  createMatchForUser,
+  listMatchesForCurrentUser,
+} from "../../api/matchesApi.js";
 
 function MatchRecorderScreen({ recorder }) {
   const [showCycleModal, setShowCycleModal] = useState(false);
@@ -43,10 +48,16 @@ function MatchRecorderScreen({ recorder }) {
   const [copiedAutoUrl, setCopiedAutoUrl] = useState(false);
   const [copiedTeleopUrl, setCopiedTeleopUrl] = useState(false);
 
+  const [saveStatus, setSaveStatus] = useState("idle");
+  const [title, setTitle] = useState("");
+  const [tournamentName, setTournamentName] = useState("");
+  const [knownTournaments, setKnownTournaments] = useState([]);
+
   const posthog = usePostHog();
   const wasRecordingRef = useRef(false);
   const wasManualStopRef = useRef(false);
   const shareUrlCacheRef = useRef(new Map());
+  const { user } = useAuth();
 
   const {
     matchStartTime,
@@ -91,6 +102,29 @@ function MatchRecorderScreen({ recorder }) {
     return Math.round((totalScored / totalBalls) * 100);
   }, [totalScored, totalBalls]);
 
+  useEffect(() => {
+    if (!user) {
+      setKnownTournaments([]);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        const data = await listMatchesForCurrentUser();
+        const names = Array.from(
+          new Set(
+            data.map((m) => (m.tournamentName || "").trim()).filter(Boolean),
+          ),
+        ).sort((a, b) => a.localeCompare(b));
+        setKnownTournaments(names);
+      } catch {
+        // ignore
+      }
+    };
+
+    load();
+  }, [user]);
+
   // Track match finish with PostHog
   useEffect(() => {
     if (wasRecordingRef.current && !isRecording) {
@@ -120,7 +154,7 @@ function MatchRecorderScreen({ recorder }) {
         timerDuration,
         elapsedTime,
       }),
-    [events, notes, teamNumber, matchStartTime, timerDuration, elapsedTime]
+    [events, notes, teamNumber, matchStartTime, timerDuration, elapsedTime],
   );
 
   const autoText = useMemo(
@@ -146,7 +180,7 @@ function MatchRecorderScreen({ recorder }) {
       timerDuration,
       elapsedTime,
       mode,
-    ]
+    ],
   );
 
   const teleopText = useMemo(
@@ -172,7 +206,7 @@ function MatchRecorderScreen({ recorder }) {
       timerDuration,
       elapsedTime,
       mode,
-    ]
+    ],
   );
 
   const copyWithFeedback = (text, setCopied) => {
@@ -229,14 +263,18 @@ function MatchRecorderScreen({ recorder }) {
     }
   };
 
+  const buildMatchPayload = () => ({
+    startTime: matchStartTime,
+    duration: timerDuration,
+    teamNumber,
+    events,
+    notes: notes || "",
+    title: title || "",
+    tournamentName: tournamentName || "",
+  });
+
   const exportMatchJson = () => {
-    const data = {
-      startTime: matchStartTime,
-      duration: timerDuration,
-      teamNumber,
-      events,
-      notes: notes || "",
-    };
+    const data = buildMatchPayload();
 
     downloadJson(`match-${new Date().toISOString()}.json`, data);
 
@@ -245,6 +283,27 @@ function MatchRecorderScreen({ recorder }) {
       totalScored,
       totalBalls,
     });
+  };
+
+  const handleSaveToAccount = async () => {
+    if (!events.length) return;
+    if (!user) {
+      alert("Sign in (top right) to save matches to your account.");
+      return;
+    }
+
+    try {
+      setSaveStatus("saving");
+      const payload = buildMatchPayload();
+      await createMatchForUser(user.id, payload, "recorder");
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save match. Please try again.");
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    }
   };
 
   const confirmCycle = () => {
@@ -278,7 +337,10 @@ function MatchRecorderScreen({ recorder }) {
       case "teleop":
         return { text: "TELEOP", icon: <Crosshair size={18} weight="bold" /> };
       case "finished":
-        return { text: "COMPLETE", icon: <CheckCircle size={18} weight="bold" /> };
+        return {
+          text: "COMPLETE",
+          icon: <CheckCircle size={18} weight="bold" />,
+        };
       default:
         return { text: "RECORDING", icon: <Record size={18} weight="fill" /> };
     }
@@ -383,7 +445,11 @@ function MatchRecorderScreen({ recorder }) {
               className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-[#f8fafc] transition-colors text-sm"
             >
               <span className="flex items-center gap-2 text-[#666]">
-                <Keyboard size={16} weight="duotone" className="text-[#445f8b]" />
+                <Keyboard
+                  size={16}
+                  weight="duotone"
+                  className="text-[#445f8b]"
+                />
                 Keyboard shortcuts
               </span>
               <CaretRight
@@ -436,6 +502,19 @@ function MatchRecorderScreen({ recorder }) {
 
           <div className="bg-white p-4 border-2 border-[#445f8b]">
             <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+              Match Title (optional)
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Driver practice, match 3, etc."
+              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+            />
+          </div>
+
+          <div className="bg-white p-4 border-2 border-[#445f8b]">
+            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
               <Note size={16} weight="bold" className="text-[#445f8b]" />
               Match Notes
             </label>
@@ -445,6 +524,41 @@ function MatchRecorderScreen({ recorder }) {
               placeholder="Defense, robot issues, strategy..."
               className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none resize-none h-24 rounded transition-colors text-sm"
             />
+          </div>
+
+          <div className="bg-white p-4 border-2 border-[#445f8b]">
+            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+              Tournament Tag (optional)
+            </label>
+            <input
+              type="text"
+              value={tournamentName}
+              onChange={(e) => setTournamentName(e.target.value)}
+              placeholder="e.g. Play Space Qualifier, Regionals, etc."
+              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+            />
+            {knownTournaments.length > 0 && (
+              <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                <span className="text-xs text-[#666] font-semibold">
+                  Or pick from previous:
+                </span>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    setTournamentName(e.target.value);
+                  }}
+                  className="px-2 py-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded min-w-[10rem]"
+                >
+                  <option value="">Select tournament...</option>
+                  {knownTournaments.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -481,6 +595,8 @@ function MatchRecorderScreen({ recorder }) {
           }
           copiedTeleopUrl={copiedTeleopUrl}
           onExportJson={exportMatchJson}
+          onSaveToAccount={handleSaveToAccount}
+          saveStatus={saveStatus}
         />
       )}
 

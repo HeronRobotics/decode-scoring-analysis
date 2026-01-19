@@ -12,7 +12,7 @@ export function MatchRecorderProvider({ children }) {
     </MatchRecorderContext.Provider>
   );
 }
-
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMatchRecorderContext() {
   const ctx = useContext(MatchRecorderContext);
   if (!ctx) {

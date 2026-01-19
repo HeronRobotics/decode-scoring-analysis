@@ -1,27 +1,24 @@
-import { useEffect, useState } from 'react'
-import { UploadSimple, Plus, Trash, TrendUp, Calendar, LinkSimple } from '@phosphor-icons/react'
+import { useEffect, useMemo, useState } from 'react'
+import { TrendUp } from '@phosphor-icons/react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import Statistics from '../components/Statistics'
-import TextImportModal from '../components/home/modals/TextImportModal'
-import { parseLifetimeImportInput } from '../utils/importLifetime'
+import { useAuth } from '../contexts/AuthContext.jsx'
+import { listMatchesForCurrentUser } from '../api/matchesApi.js'
 
 const LIFETIME_STORAGE_KEY = 'heron_lifetime_stats_v1'
 
 function LifetimePage() {
-  const [tournaments, setTournaments] = useState([])
-  const [selectedTournament, setSelectedTournament] = useState(null)
+  const { user, authLoading } = useAuth()
+  const [matches, setMatches] = useState([])
   const [teamNumber, setTeamNumber] = useState("")
-  const [showTextImport, setShowTextImport] = useState(false)
-  const [textInput, setTextInput] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(LIFETIME_STORAGE_KEY)
       if (!raw) return
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed.tournaments)) {
-        setTournaments(parsed.tournaments)
-      }
       if (parsed.teamNumber) {
         setTeamNumber(parsed.teamNumber.toString())
       }
@@ -32,142 +29,53 @@ function LifetimePage() {
 
   useEffect(() => {
     try {
-      if (!tournaments.length && !teamNumber) {
+      if (!teamNumber) {
         window.localStorage.removeItem(LIFETIME_STORAGE_KEY)
         return
       }
       const payload = {
-        tournaments,
         teamNumber,
       }
       window.localStorage.setItem(LIFETIME_STORAGE_KEY, JSON.stringify(payload))
     } catch (e) {
       console.warn('Failed to save lifetime stats to localStorage', e)
     }
-  }, [tournaments, teamNumber])
+  }, [teamNumber])
 
-  const importTournament = (e) => {
-    const files = Array.from(e.target.files || [])
-    if (!files.length) return
+  useEffect(() => {
+    if (!user) {
+      setMatches([])
+      return
+    }
 
-    const tn = (teamNumber || "").toString().trim()
-    const imported = []
-    let loadedCount = 0
-    let skippedTournamentMissingTeam = 0
-
-    const finalize = () => {
-      if (!imported.length) {
-        if (skippedTournamentMissingTeam) {
-          alert('Please enter your team number above before importing tournament files.')
-        }
-        return
-      }
-
-      setTournaments(prev => [...prev, ...imported].sort((a, b) => new Date(a.date) - new Date(b.date)))
-
-      if (skippedTournamentMissingTeam) {
-        alert(`Skipped ${skippedTournamentMissingTeam} tournament file(s) because no team number was entered.`)
+    const load = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await listMatchesForCurrentUser()
+        setMatches(data)
+      } catch (err) {
+        setError(err.message || 'Error loading matches')
+      } finally {
+        setLoading(false)
       }
     }
 
-    files.forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        try {
-          const data = JSON.parse(event.target.result)
+    load()
+  }, [user])
 
-          // Check if it's a single match or a tournament
-          if (data.matches) {
-            // It's a tournament — filter to only your team's matches
-            if (!tn) {
-              skippedTournamentMissingTeam++
-            } else {
-              const filteredMatches = (data.matches || []).filter(m => ((m.teamNumber || "").toString().trim()) === tn)
-              if (filteredMatches.length) {
-                imported.push({ ...data, matches: filteredMatches })
-              }
-            }
-          } else if (data.events) {
-            // It's a single match - wrap it in a tournament structure
-            const matchDate = new Date(data.startTime).toISOString().split('T')[0]
-            imported.push({
-              name: `Match on ${new Date(data.startTime).toLocaleString()}`,
-              date: matchDate,
-              matches: [data]
-            })
-          } else {
-            // ignore invalid file
-          }
-        } catch {
-          // ignore invalid JSON
-        } finally {
-          loadedCount++
-          if (loadedCount === files.length) finalize()
-        }
-      }
-      reader.readAsText(file)
-    })
-  }
+  const teamMatches = useMemo(() => {
+    const tn = (teamNumber || '').toString().trim()
+    if (!tn) return matches
+    return matches.filter(
+      (m) => (m.teamNumber || '').toString().trim() === tn,
+    )
+  }, [matches, teamNumber])
 
-  const importFromText = async () => {
-    const tn = (teamNumber || "").toString().trim()
-
-    try {
-      const payloads = await parseLifetimeImportInput(textInput)
-      if (!payloads.length) {
-        alert('No valid matches or tournaments found in the pasted text or links.')
-        return
-      }
-
-      const next = [...tournaments]
-
-      for (const data of payloads) {
-        if (data.matches) {
-          if (!tn) {
-            alert('Please enter your team number above before importing a tournament.')
-            return
-          }
-          const filteredMatches = (data.matches || []).filter(m => ((m.teamNumber || "").toString().trim()) === tn)
-          if (!filteredMatches.length) continue
-          next.push({ ...data, matches: filteredMatches })
-        } else if (data.events) {
-          const matchDate = new Date(data.startTime).toISOString().split('T')[0]
-          next.push({
-            name: `Match on ${new Date(data.startTime).toLocaleString()}`,
-            date: matchDate,
-            matches: [data]
-          })
-        }
-      }
-
-      if (!next.length) {
-        alert('No valid matches for your team number were found in the pasted content.')
-        return
-      }
-
-      const sorted = next.sort((a, b) => new Date(a.date) - new Date(b.date))
-      setTournaments(sorted)
-      setShowTextImport(false)
-      setTextInput("")
-    } catch {
-      alert('Error importing from text. Please check your links or JSON.')
-    }
-  }
-
-  const removeTournament = (index) => {
-    if (confirm('Remove this tournament from lifetime statistics?')) {
-      setTournaments(prev => prev.filter((_, i) => i !== index))
-      if (selectedTournament === index) {
-        setSelectedTournament(null)
-      }
-    }
-  }
-
-  const allMatches = tournaments.flatMap(t => t.matches)
+  const allMatches = teamMatches
   
   // Extract individual matches for graphing
-  const matchStats = tournaments.flatMap(tournament => 
-    tournament.matches.map((match, matchIndex) => {
+  const matchStats = teamMatches.map((match, index) => {
       const cycleEvents = match.events.filter(e => e.type === 'cycle')
       const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0)
       const total = cycleEvents.reduce((sum, e) => sum + e.total, 0)
@@ -192,10 +100,8 @@ function LifetimePage() {
       const matchDate = new Date(match.startTime)
       
       return {
-        name: tournament.matches.length > 1 
-          ? `${tournament.name} - Match ${matchIndex + 1}`
-          : tournament.name,
-        tournamentName: tournament.name,
+        name: match.title || match.tournamentName || `Match ${index + 1}`,
+        tournamentName: match.tournamentName || 'Unlabeled',
         date: matchDate.toISOString(),
         scored,
         total,
@@ -203,43 +109,7 @@ function LifetimePage() {
         avgCycleTime
       }
     })
-  ).sort((a, b) => new Date(a.date) - new Date(b.date))
-  
-  // Also keep tournament-level stats for the list view
-  const tournamentStats = tournaments.map(tournament => {
-    const tEvents = tournament.matches.flatMap(m => m.events).filter(e => e.type === 'cycle')
-    const scored = tEvents.reduce((sum, e) => sum + e.scored, 0)
-    const total = tEvents.reduce((sum, e) => sum + e.total, 0)
-    
-    // Calculate cycle times correctly across all matches in tournament
-    const cycleTimes = []
-    tournament.matches.forEach(match => {
-      let lastEventTime = 0
-      match.events.forEach(event => {
-        if (event.type === 'cycle') {
-          const timeDiff = event.timestamp - lastEventTime;
-          if (timeDiff > 0) {
-            cycleTimes.push(timeDiff / 1000);
-          }
-        }
-        lastEventTime = event.timestamp;
-      })
-    })
-    
-    const avgCycleTime = cycleTimes.length > 0 
-      ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length
-      : 0
-    
-    return {
-      name: tournament.name,
-      date: tournament.date,
-      matchCount: tournament.matches.length,
-      scored,
-      total,
-      accuracy: total > 0 ? (scored / total * 100) : 0,
-      avgCycleTime
-    }
-  })
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
 
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
@@ -247,10 +117,9 @@ function LifetimePage() {
         <h1 className="text-3xl sm:text-5xl font-bold">Lifetime Statistics</h1>
       </div>
 
-      {/* Upload Section */}
       <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
-        <h2 className="text-2xl sm:text-3xl mb-4">Upload</h2>
-        <div className="flex flex-col sm:flex-row gap-4 items-center mb-4">
+        <h2 className="text-2xl sm:text-3xl mb-4">Filters</h2>
+        <div className="flex flex-col sm:flex-row gap-4 items-center mb-2">
           <label className="flex items-center gap-2 font-semibold">
             Your Team #:
             <input
@@ -263,30 +132,46 @@ function LifetimePage() {
             />
           </label>
         </div>
-        <label className="btn">
-          <Plus weight="bold" size={20} />
-          Upload Tournament or Match
-          <input type="file" accept=".json" multiple onChange={importTournament} className="hidden" />
-        </label>
-        <button
-          type="button"
-          className="btn ml-0 sm:ml-4 mt-3 sm:mt-0 flex items-center gap-2"
-          onClick={() => setShowTextImport(true)}
-        >
-          <LinkSimple weight="bold" size={20} />
-          Import text or links
-        </button>
-        <p className="text-sm text-[#666] mt-3">
-          Upload your tournament JSONs and we'll keep only the matches for your team number above. You can also upload single match files or paste match links and text.
+        <p className="text-sm text-[#666] mt-1">
+          Lifetime stats are computed from matches saved to your account on the
+          <strong> My Matches</strong> tab.
         </p>
       </div>
 
-      {tournaments.length === 0 ? (
-        <div className="bg-white border-2 border-[#445f8b] p-8 sm:p-16 text-center">
-          <UploadSimple size={64} weight="light" className="mx-auto mb-4 text-[#445f8b]" />
-          <p className="text-xl">No uploads yet. Upload your first tournament or match and it'll show up here 👀</p>
+      {authLoading && (
+        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
+          <p className="text-[#445f8b]">Loading account...</p>
         </div>
-      ) : (
+      )}
+
+      {!authLoading && !user && (
+        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
+          <p className="mb-2">
+            Sign in and save matches to see your lifetime statistics.
+          </p>
+          <p className="text-sm text-[#666]">
+            Use the <strong>Sign in / Sign up</strong> button in the top right, then
+            record matches or bulk import them on the My Matches tab.
+          </p>
+        </div>
+      )}
+
+      {!authLoading && user && !loading && !allMatches.length && !error && (
+        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
+          <p className="text-xl">
+            No saved matches yet. Record a match or bulk import them on the My
+            Matches tab.
+          </p>
+        </div>
+      )}
+
+      {!authLoading && user && error && (
+        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
+
+      {!authLoading && user && !error && allMatches.length > 0 && (
         <>
           {/* Career Summary */}
           <div className="mb-8">
@@ -401,69 +286,8 @@ function LifetimePage() {
               </div>
             </div>
           </div>
-
-          {/* Tournament List */}
-          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6">
-            <h2 className="text-3xl mb-5 flex items-center gap-3">
-              <Calendar weight="bold" size={32} />
-              Uploads ({tournaments.length})
-            </h2>
-            <div className="space-y-4">
-              {tournaments.map((tournament, index) => {
-                const stat = tournamentStats[index]
-                return (
-                  <div 
-                    key={index} 
-                    className={`border-2 p-4 cursor-pointer transition-colors ${
-                      selectedTournament === index 
-                        ? 'border-[#445f8b] bg-[#f0f5ff]' 
-                        : 'border-[#ddd] hover:border-[#445f8b]'
-                    }`}
-                    onClick={() => setSelectedTournament(selectedTournament === index ? null : index)}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                      <div>
-                        <h3 className="text-2xl font-bold">{tournament.name}</h3>
-                        <p className="text-[#666] mb-3">{new Date(tournament.date).toLocaleDateString()}</p>
-                        <div className="flex flex-wrap gap-3 text-xs sm:text-sm">
-                          <span><strong>{stat.matchCount}</strong> match{stat.matchCount !== 1 ? 'es' : ''}</span>
-                          <span><strong>{stat.scored}/{stat.total}</strong> scored</span>
-                          <span><strong>{stat.accuracy.toFixed(1)}%</strong> accuracy</span>
-                          <span><strong>{stat.avgCycleTime.toFixed(1)}s</strong> avg cycle</span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          removeTournament(index)
-                        }}
-                        className="btn error-btn py-1! px-3! text-sm!"
-                      >
-                        <Trash weight="bold" size={16} />
-                      </button>
-                    </div>
-                    
-                    {selectedTournament === index && (
-                      <div className="mt-6 pt-6 border-t-2 border-[#ddd]">
-                        <h4 className="text-xl font-semibold mb-4">Tournament Details</h4>
-                        <Statistics matches={tournament.matches} />
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
         </>
       )}
-
-      <TextImportModal
-        open={showTextImport}
-        textInput={textInput}
-        setTextInput={setTextInput}
-        onImport={importFromText}
-        onClose={() => setShowTextImport(false)}
-      />
     </div>
   )
 }

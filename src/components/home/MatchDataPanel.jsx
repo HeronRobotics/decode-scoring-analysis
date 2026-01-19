@@ -10,7 +10,16 @@ import {
   FloppyDisk,
 } from "@phosphor-icons/react";
 
-function ExportSection({ title, subtitle, text, onCopyText, copiedText, onShareLink, onCopyLink, copiedLink }) {
+function ExportSection({
+  title,
+  subtitle,
+  text,
+  onCopyText,
+  copiedText,
+  onShareLink,
+  onCopyLink,
+  copiedLink,
+}) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -27,8 +36,11 @@ function ExportSection({ title, subtitle, text, onCopyText, copiedText, onShareL
           onClick={() => setExpanded(!expanded)}
           className="text-xs text-[#445f8b] hover:underline flex items-center gap-1"
         >
-          {expanded ? 'Hide' : 'Show'} data
-          <CaretRight size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
+          {expanded ? "Hide" : "Show"} data
+          <CaretRight
+            size={12}
+            className={`transition-transform ${expanded ? "rotate-90" : ""}`}
+          />
         </button>
       </div>
 
@@ -95,10 +107,11 @@ function MatchDataPanel({
   onCopyTeleopUrl,
   copiedTeleopUrl,
   onExportJson,
+  onSaveToAccount,
+  saveStatus,
 }) {
   return (
     <div className="bg-white border-2 border-[#445f8b] overflow-hidden">
-      {/* Header */}
       <div className="bg-[#f8fafc] px-5 py-4 border-b border-[#e5e7eb]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -108,19 +121,33 @@ function MatchDataPanel({
               <p className="text-xs text-[#666]">Export your match data</p>
             </div>
           </div>
-          <button
-            onClick={onExportJson}
-            className="btn !py-2.5 !px-4 !bg-[#445f8b] !text-white !border-[#445f8b] hover:!bg-[#2d3e5c]"
-          >
-            <FloppyDisk size={18} weight="bold" />
-            Save JSON
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onExportJson}
+              className="btn !py-2.5 !px-4 !bg-[#445f8b] !text-white !border-[#445f8b] hover:!bg-[#2d3e5c]"
+            >
+              <FloppyDisk size={18} weight="bold" />
+              Save JSON
+            </button>
+            {onSaveToAccount && (
+              <button
+                onClick={onSaveToAccount}
+                className="btn !py-2.5 !px-4"
+                disabled={saveStatus === "saving"}
+              >
+                <FloppyDisk size={18} weight="bold" />
+                {saveStatus === "saving"
+                  ? "Saving..."
+                  : saveStatus === "saved"
+                    ? "Saved"
+                    : "Save to My Matches"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Export sections */}
       <div className="p-5 space-y-4">
-        {/* Full match */}
         <ExportSection
           title="Full Match"
           subtitle="Complete match data with all events"
@@ -132,7 +159,6 @@ function MatchDataPanel({
           copiedLink={copiedFullUrl}
         />
 
-        {/* Phase-specific exports for match mode */}
         {mode === "match" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#e5e7eb]">
             <ExportSection
@@ -158,11 +184,10 @@ function MatchDataPanel({
           </div>
         )}
 
-        {/* Help text */}
         <div className="text-xs text-[#888] pt-3 border-t border-[#e5e7eb]">
           <p>
-            <strong>Tip:</strong> Save as JSON to import into Tournament Analysis or Lifetime Stats later.
-            Share links let others view this match instantly.
+            <strong>Tip:</strong> Save as JSON to import into Tournament Analysis or
+            Lifetime Stats later. Share links let others view this match instantly.
           </p>
         </div>
       </div>
