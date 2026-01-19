@@ -5,9 +5,10 @@ import HomePage from "./pages/HomePage";
 import TournamentPage from "./pages/TournamentPage";
 import LifetimePage from "./pages/LifetimePage";
 import MatchPage from "./pages/MatchPage";
+import MyMatchesPage from "./pages/MyMatchesPage.jsx";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage.jsx";
 
 import { setPath } from "./utils/navigation";
-import MyMatchesPage from "./pages/MyMatchesPage.jsx";
 
 function App() {
   const pageToPath = useMemo(
@@ -17,6 +18,7 @@ function App() {
       lifetime: "/lifetime",
       match: "/match",
       myMatches: "/my-matches",
+      privacy: "/privacy",
     }),
     [],
   );
@@ -30,6 +32,7 @@ function App() {
     if (path.startsWith("/lifetime")) return "lifetime";
     if (path.startsWith("/match")) return "match";
     if (path.startsWith("/my-matches")) return "myMatches";
+    if (path.startsWith("/privacy")) return "privacy";
     return "home";
   };
 
@@ -62,6 +65,7 @@ function App() {
       )}
       {currentPage === "lifetime" && <LifetimePage />}
       {currentPage === "myMatches" && <MyMatchesPage />}
+      {currentPage === "privacy" && <PrivacyPolicyPage />}
     </>
   );
 }

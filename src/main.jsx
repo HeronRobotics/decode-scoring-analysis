@@ -41,6 +41,9 @@ createRoot(document.getElementById("root")).render(
               Contribute on GitHub
             </a>
             !
+            <a href="/privacy" className="block mt-1 underline">
+              Privacy Policy
+            </a>
           </footer>
         </MatchRecorderProvider>
       </TournamentProvider>
