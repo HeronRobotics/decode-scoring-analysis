@@ -192,13 +192,9 @@ function MatchRecorderScreen({ recorder }) {
     let url;
     try {
       const key = await createPaste(encoded);
-      url = `${window.location.origin}${
-        window.location.pathname
-      }?p=${encodeURIComponent(key)}`;
+      url = `${window.location.origin}/?p=${encodeURIComponent(key)}`;
     } catch {
-      url = `${window.location.origin}${
-        window.location.pathname
-      }?mt=${encodeURIComponent(encoded)}`;
+      url = `${window.location.origin}/?mt=${encodeURIComponent(encoded)}`;
     }
 
     shareUrlCacheRef.current.set(text, url);
@@ -333,95 +329,94 @@ function MatchRecorderScreen({ recorder }) {
         </div>
       </div>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left column - Timer & Actions */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Action Buttons */}
-          {isRecording ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <button
-                onClick={() => setShowCycleModal(true)}
-                className="col-span-2 py-4 px-4 text-base font-bold bg-[#445f8b] text-white border-2 border-[#445f8b] hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-2 shadow-md"
-              >
-                <Record size={24} weight="fill" />
-                Record Cycle
-                <span className="hidden sm:flex items-center gap-1 text-xs font-normal opacity-70 ml-2">
-                  <span className="kbd bg-white/20! border-white/30! text-white! shadow-none! text-[10px]!">1-3</span>
-                </span>
-              </button>
-
-              <button
-                onClick={() => recorder.addGate()}
-                className="btn py-3! justify-center"
-              >
-                <DoorOpen size={20} weight="bold" />
-                <span className="hidden sm:inline">Gate</span>
-                <span className="sm:hidden">Gate</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  wasManualStopRef.current = true;
-                  recorder.stopMatch();
-                }}
-                className="col-span-2 sm:col-span-3 error-btn py-2.5! justify-center text-sm!"
-              >
-                <Stop size={18} weight="fill" />
-                Stop Match
-              </button>
-            </div>
-          ) : (
+      <div className="space-y-4">
+        {/* Action Buttons (Full width) */}
+        {isRecording ? (
+          <div className="space-y-2">
             <button
-              onClick={() => recorder.resetMatch()}
+              onClick={() => setShowCycleModal(true)}
+              className="w-full py-4 px-4 text-base font-bold bg-[#445f8b] text-white border-2 border-[#445f8b] hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-2 shadow-md"
+            >
+              <Record size={24} weight="fill" />
+              Record Cycle
+              <span className="hidden sm:flex items-center gap-1 text-xs font-normal opacity-70 ml-2">
+                <span className="kbd bg-white/20! border-white/30! text-white! shadow-none! text-[10px]!">
+                  1-3
+                </span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => recorder.addGate()}
               className="btn w-full py-3! justify-center"
             >
-              <ArrowClockwise size={20} weight="bold" />
-              Start New Match
+              <DoorOpen size={20} weight="bold" />
+              Gate
             </button>
-          )}
 
-          {/* Quick Guide - Inline when recording */}
-          {isRecording && (
-            <div className="bg-white border border-[#ddd] rounded-lg overflow-hidden">
-              <button
-                onClick={() => setShowQuickGuide(!showQuickGuide)}
-                className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-[#f8fafc] transition-colors text-sm"
-              >
-                <span className="flex items-center gap-2 text-[#666]">
-                  <Keyboard size={16} weight="duotone" className="text-[#445f8b]" />
-                  Keyboard shortcuts
-                </span>
-                <CaretRight
-                  size={14}
-                  weight="bold"
-                  className={`text-[#445f8b] transition-transform ${showQuickGuide ? 'rotate-90' : ''}`}
-                />
-              </button>
+            <button
+              onClick={() => {
+                wasManualStopRef.current = true;
+                recorder.stopMatch();
+              }}
+              className="error-btn w-full py-3! justify-center"
+            >
+              <Stop size={18} weight="fill" />
+              Stop Match
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => recorder.resetMatch()}
+            className="btn w-full py-3! justify-center"
+          >
+            <ArrowClockwise size={20} weight="bold" />
+            Start New Match
+          </button>
+        )}
 
-              {showQuickGuide && (
-                <div className="px-4 pb-3 pt-1 border-t border-[#eee]">
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#555]">
-                    <span className="kbd">1</span>
-                    <span className="kbd">2</span>
-                    <span className="kbd">3</span>
-                    <span className="text-[#888]">=attempted</span>
-                    <ArrowFatLineRight size={12} className="text-[#445f8b]" />
-                    <span className="kbd">0</span>-<span className="kbd">3</span>
-                    <span className="text-[#888]">=scored</span>
-                    <ArrowFatLineRight size={12} className="text-[#445f8b]" />
-                    <span className="kbd">Enter</span>
-                    <span className="text-[#888] ml-2">|</span>
-                    <span className="kbd ml-2">G</span>
-                    <span className="text-[#888]">=gate</span>
-                  </div>
+        {/* Quick Guide - Inline when recording */}
+        {isRecording && (
+          <div className="bg-white border border-[#ddd] rounded-lg overflow-hidden">
+            <button
+              onClick={() => setShowQuickGuide(!showQuickGuide)}
+              className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-[#f8fafc] transition-colors text-sm"
+            >
+              <span className="flex items-center gap-2 text-[#666]">
+                <Keyboard size={16} weight="duotone" className="text-[#445f8b]" />
+                Keyboard shortcuts
+              </span>
+              <CaretRight
+                size={14}
+                weight="bold"
+                className={`text-[#445f8b] transition-transform ${
+                  showQuickGuide ? "rotate-90" : ""
+                }`}
+              />
+            </button>
+
+            {showQuickGuide && (
+              <div className="px-4 pb-3 pt-1 border-t border-[#eee]">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-[#555]">
+                  <span className="kbd">1</span>
+                  <span className="kbd">2</span>
+                  <span className="kbd">3</span>
+                  <span className="text-[#888]">=attempted</span>
+                  <ArrowFatLineRight size={12} className="text-[#445f8b]" />
+                  <span className="kbd">0</span>-<span className="kbd">3</span>
+                  <span className="text-[#888]">=scored</span>
+                  <ArrowFatLineRight size={12} className="text-[#445f8b]" />
+                  <span className="kbd">Enter</span>
+                  <span className="text-[#888] ml-2">|</span>
+                  <span className="kbd ml-2">G</span>
+                  <span className="text-[#888]">=gate</span>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* Right column - Team & Notes */}
+        {/* Team & Notes (Stacked) */}
         <div className="space-y-4">
           <div className="bg-white p-4 border-2 border-[#445f8b]">
             <label className="flex items-center gap-2 text-sm font-semibold mb-2">

@@ -1,8 +1,18 @@
 import { KeyboardIcon } from "@phosphor-icons/react";
 
+let keyboardShortcutsDidAnimate = false;
+
 const KeyboardShortcuts = () => {
+    const shouldAnimate = !keyboardShortcutsDidAnimate;
+    if (!keyboardShortcutsDidAnimate) keyboardShortcutsDidAnimate = true;
+
     return (
-        <div className="bg-[#f7f9ff] border-2 border-[#445f8b]/30 p-4 sm:p-5 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        <div
+          className={`bg-[#f7f9ff] border-2 border-[#445f8b]/30 p-4 sm:p-5 ${
+            shouldAnimate ? "animate-slide-up" : ""
+          }`}
+          style={shouldAnimate ? { animationDelay: "0.4s" } : undefined}
+        >
           <div className="flex items-center gap-2 mb-3">
             <KeyboardIcon size={20} weight="duotone" className="text-[#445f8b]" />
             <span className="font-semibold text-sm">Keyboard Shortcuts (During Recording)</span>

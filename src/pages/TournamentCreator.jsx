@@ -4,6 +4,7 @@ import { logEvent } from 'firebase/analytics'
 import { analytics } from '../firebase'
 import { parseMatchText } from '../utils/matchFormat'
 import { readPaste } from '../utils/pasteService'
+import { extractShareParams, splitLines, tryParseUrlish } from '../utils/shareImport'
 
 function TournamentCreator({ onCancel, onTournamentCreated }) {
   const [tournamentName, setTournamentName] = useState('')
@@ -42,7 +43,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
   const importFromText = async () => {
     try {
       // Split by newlines to handle multiple match codes
-      const lines = textInput.split('\n').map(line => line.trim()).filter(line => line)
+      const lines = splitLines(textInput)
       
       if (lines.length === 0) {
         alert("No valid match data found. Please check the format.")
@@ -53,12 +54,10 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
       for (const line of lines) {
         let parsedData = null
 
-        if (line.startsWith('http://') || line.startsWith('https://')) {
+        // URLs (with or without scheme) and query-only strings like `?p=...`.
+        if (tryParseUrlish(line)) {
+          const { pasteKey, mt } = extractShareParams(line)
           try {
-            const url = new URL(line)
-            const pasteKey = url.searchParams.get('p')
-            const mt = url.searchParams.get('mt')
-
             if (pasteKey) {
               const b64Payload = await readPaste(pasteKey)
               const decodedText = atob(b64Payload)
@@ -70,10 +69,23 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           } catch (e) {
             console.warn('Failed to import match from URL', e)
           }
-        }
-
-        if (!parsedData && line && !line.startsWith('http://') && !line.startsWith('https://')) {
-          parsedData = parseMatchText(line)
+        } else {
+          // Non-URL lines: try raw match text first.
+          try {
+            parsedData = parseMatchText(line)
+          } catch {
+            // If it isn't match text, treat it as a bare paste key.
+            const { pasteKey } = extractShareParams(line)
+            if (pasteKey) {
+              try {
+                const b64Payload = await readPaste(pasteKey)
+                const decodedText = atob(b64Payload)
+                parsedData = parseMatchText(decodedText)
+              } catch (e) {
+                console.warn('Failed to import match from paste key', e)
+              }
+            }
+          }
         }
 
         if (!parsedData || !parsedData.events || parsedData.events.length === 0) {
@@ -175,7 +187,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           <div>
             <label className="block font-semibold mb-2">Upload Match Files ({uploadedMatches.length} uploaded)</label>
             <div className="flex gap-3 flex-wrap">
-              <label className="btn !py-3 w-full sm:w-auto justify-center">
+              <label className="btn py-3! w-full sm:w-auto justify-center">
                 <UploadSimple weight="bold" size={20} />
                 Upload Match JSON Files
                 <input
@@ -186,7 +198,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                   className="hidden"
                 />
               </label>
-              <button onClick={() => setShowTextImport(true)} className="btn !py-3 w-full sm:w-auto justify-center">
+              <button onClick={() => setShowTextImport(true)} className="btn py-3! w-full sm:w-auto justify-center">
                 <ClipboardTextIcon weight="bold" size={20} />
                 Paste Match Codes
               </button>
@@ -211,7 +223,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                       </div>
                       <button
                         onClick={() => removeMatch(index)}
-                        className="error-btn !py-1 !px-3 !text-sm"
+                        className="error-btn py-1! px-3! text-sm!"
                       >
                         Remove
                       </button>
@@ -225,7 +237,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
 
         <button
           onClick={createTournament}
-          className="btn !py-3 !bg-[#445f8b] !text-white !px-6 w-full sm:w-auto justify-center"
+          className="btn py-3! bg-[#445f8b]! text-white! px-6! w-full sm:w-auto justify-center"
         >
           <FloppyDisk weight="bold" size={20} />
           Create Tournament

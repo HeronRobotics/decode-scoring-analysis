@@ -47,46 +47,66 @@ function LifetimePage() {
   }, [tournaments, teamNumber])
 
   const importTournament = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target.result)
-        
-        // Check if it's a single match or a tournament
-        if (data.matches) {
-          // It's a tournament — filter to only your team's matches
-          const tn = (teamNumber || "").toString().trim()
-          if (!tn) {
-            alert('Please enter your team number above before importing a tournament file.')
-            return
-          }
-          const filteredMatches = (data.matches || []).filter(m => ((m.teamNumber || "").toString().trim()) === tn)
-          if (filteredMatches.length === 0) {
-            alert('No matches found for your team number in this tournament file.')
-            return
-          }
-          const filteredTournament = { ...data, matches: filteredMatches }
-          setTournaments(prev => [...prev, filteredTournament].sort((a, b) => new Date(a.date) - new Date(b.date)))
-        } else if (data.events) {
-          // It's a single match - wrap it in a tournament structure
-          const matchDate = new Date(data.startTime).toISOString().split('T')[0]
-          const tournament = {
-            name: `Match on ${new Date(data.startTime).toLocaleString()}`,
-            date: matchDate,
-            matches: [data]
-          }
-          setTournaments(prev => [...prev, tournament].sort((a, b) => new Date(a.date) - new Date(b.date)))
-        } else {
-          alert('Invalid file format. Please upload a tournament or match JSON file.')
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+
+    const tn = (teamNumber || "").toString().trim()
+    const imported = []
+    let loadedCount = 0
+    let skippedTournamentMissingTeam = 0
+
+    const finalize = () => {
+      if (!imported.length) {
+        if (skippedTournamentMissingTeam) {
+          alert('Please enter your team number above before importing tournament files.')
         }
-      } catch {
-        alert('Error loading file. Please ensure it is a valid JSON file.')
+        return
+      }
+
+      setTournaments(prev => [...prev, ...imported].sort((a, b) => new Date(a.date) - new Date(b.date)))
+
+      if (skippedTournamentMissingTeam) {
+        alert(`Skipped ${skippedTournamentMissingTeam} tournament file(s) because no team number was entered.`)
       }
     }
-    reader.readAsText(file)
+
+    files.forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result)
+
+          // Check if it's a single match or a tournament
+          if (data.matches) {
+            // It's a tournament — filter to only your team's matches
+            if (!tn) {
+              skippedTournamentMissingTeam++
+            } else {
+              const filteredMatches = (data.matches || []).filter(m => ((m.teamNumber || "").toString().trim()) === tn)
+              if (filteredMatches.length) {
+                imported.push({ ...data, matches: filteredMatches })
+              }
+            }
+          } else if (data.events) {
+            // It's a single match - wrap it in a tournament structure
+            const matchDate = new Date(data.startTime).toISOString().split('T')[0]
+            imported.push({
+              name: `Match on ${new Date(data.startTime).toLocaleString()}`,
+              date: matchDate,
+              matches: [data]
+            })
+          } else {
+            // ignore invalid file
+          }
+        } catch {
+          // ignore invalid JSON
+        } finally {
+          loadedCount++
+          if (loadedCount === files.length) finalize()
+        }
+      }
+      reader.readAsText(file)
+    })
   }
 
   const importFromText = async () => {
@@ -246,7 +266,7 @@ function LifetimePage() {
         <label className="btn">
           <Plus weight="bold" size={20} />
           Upload Tournament or Match
-          <input type="file" accept=".json" onChange={importTournament} className="hidden" />
+          <input type="file" accept=".json" multiple onChange={importTournament} className="hidden" />
         </label>
         <button
           type="button"
@@ -417,7 +437,7 @@ function LifetimePage() {
                           e.stopPropagation()
                           removeTournament(index)
                         }}
-                        className="btn error-btn !py-1 !px-3 !text-sm"
+                        className="btn error-btn py-1! px-3! text-sm!"
                       >
                         <Trash weight="bold" size={16} />
                       </button>

@@ -24,6 +24,7 @@ import { usePostHog } from "posthog-js/react";
 import { analytics } from "../../firebase";
 import { matchRecorderConstants } from "../../hooks/useMatchRecorder";
 import KeyboardShortcuts from "../../components/home/KeyboardShortcuts";
+import { setPath } from "../../utils/navigation";
 
 function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
   const { startMatch } = recorder;
@@ -47,10 +48,10 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
       <KeyboardShortcuts />
 
       {/* Quick Start - Primary Action */}
-      <div className="bg-gradient-to-br from-[#445f8b] to-[#2d3e5c] border-2 border-[#445f8b] p-6 sm:p-8 text-white animate-slide-up">
+      <div className="bg-linear-to-br from-[#445f8b] to-[#2d3e5c] border-2 border-[#445f8b] p-6 sm:p-8 text-white animate-slide-up">
         <div className="flex items-center gap-3 mb-4">
           <Rocket size={28} weight="duotone" />
-          <h3 className="text-xl sm:text-2xl font-bold !text-white">Start</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-white!">Start</h3>
         </div>
 
         <div className="bg-white/10 backdrop-blur rounded-lg p-4 mb-6">
@@ -74,6 +75,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         <button
           onClick={() => {
             startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match");
+            setPath("/match");
             logEvent(analytics, "start_match_mode");
             posthog.capture("start_match", {
               mode: "match",
@@ -117,7 +119,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
           <div className="p-4 sm:p-6 border-t-2 border-[#445f8b]/20 bg-[#f7f9ff] space-y-6">
             {/* Step 1 */}
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <NumberCircleOne size={40} weight="duotone" className="text-[#445f8b]" />
               </div>
               <div>
@@ -131,7 +133,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
 
             {/* Step 2 */}
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <NumberCircleTwo size={40} weight="duotone" className="text-[#445f8b]" />
               </div>
               <div>
@@ -161,7 +163,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
 
             {/* Step 3 */}
             <div className="flex gap-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <NumberCircleThree size={40} weight="duotone" className="text-[#445f8b]" />
               </div>
               <div>
@@ -181,15 +183,15 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               </div>
               <ul className="text-sm text-[#555] space-y-1.5">
                 <li className="flex items-start gap-2">
-                  <CaretRight size={14} className="text-[#445f8b] mt-1 flex-shrink-0" />
+                  <CaretRight size={14} className="text-[#445f8b] mt-1 shrink-0" />
                   Use keyboard shortcuts for faster recording during live matches
                 </li>
                 <li className="flex items-start gap-2">
-                  <CaretRight size={14} className="text-[#445f8b] mt-1 flex-shrink-0" />
+                  <CaretRight size={14} className="text-[#445f8b] mt-1 shrink-0" />
                   Add match notes for context (defensive play, robot issues, etc.)
                 </li>
                 <li className="flex items-start gap-2">
-                  <CaretRight size={14} className="text-[#445f8b] mt-1 flex-shrink-0" />
+                  <CaretRight size={14} className="text-[#445f8b] mt-1 shrink-0" />
                   Share matches via URL links for easy team collaboration
                 </li>
               </ul>
@@ -242,6 +244,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             <button
               onClick={() => {
                 startMatch(null, "free");
+                setPath("/match");
                 logEvent(analytics, "start_no_timer");
                 posthog.capture("start_match", {
                   mode: "free",
@@ -249,7 +252,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                   teamNumber: recorder.teamNumber,
                 });
               }}
-              className="btn !py-2.5 !px-4"
+              className="btn py-2.5! px-4!"
             >
               <Play size={18} weight="fill" />
               No Timer
@@ -257,6 +260,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             <button
               onClick={() => {
                 startMatch(30, "free");
+                setPath("/match");
                 logEvent(analytics, "start_30sec_timer");
                 posthog.capture("start_match", {
                   mode: "free",
@@ -264,7 +268,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                   teamNumber: recorder.teamNumber,
                 });
               }}
-              className="btn !py-2.5 !px-4"
+              className="btn py-2.5! px-4!"
             >
               <Play size={18} weight="fill" />
               0:30 Auto
@@ -272,6 +276,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             <button
               onClick={() => {
                 startMatch(120, "free");
+                setPath("/match");
                 logEvent(analytics, "start_2min_timer");
                 posthog.capture("start_match", {
                   mode: "free",
@@ -279,7 +284,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                   teamNumber: recorder.teamNumber,
                 });
               }}
-              className="btn !py-2.5 !px-4"
+              className="btn py-2.5! px-4!"
             >
               <Play size={18} weight="fill" />
               2:00 TeleOp
@@ -294,7 +299,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             Import existing match data:
           </p>
           <div className="flex flex-wrap gap-2">
-            <label className="btn !py-2.5 !px-4 cursor-pointer">
+            <label className="btn py-2.5! px-4! cursor-pointer">
               <UploadSimple size={18} weight="bold" />
               Import JSON
               <input
@@ -304,10 +309,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                 className="hidden"
               />
             </label>
-            <button
-              onClick={onOpenTextImport}
-              className="btn !py-2.5 !px-4"
-            >
+            <button onClick={onOpenTextImport} className="btn py-2.5! px-4!">
               <ClipboardText size={18} weight="bold" />
               From Text
             </button>

@@ -4,7 +4,7 @@ import { formatTime } from "../utils/format";
 
 import { matchRecorderConstants } from "../hooks/useMatchRecorder";
 
-const SECONDS_PER_VIEWPORT = 30; // ~30s of match fits one visible timeline width
+const SECONDS_PER_VIEWPORT = 45; // ~45s of match fits one visible timeline width (~50% more condensed)
 const MIN_TIMELINE_WIDTH = 600;
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -37,7 +37,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
     setIsExpanded(true);
   }, []);
 
-  // Track the visible (scroll container) width so we can scale time to ~30s/viewport
+  // Track the visible (scroll container) width so we can scale time to ~45s/viewport
   useEffect(() => {
     if (!scrollRef.current) return;
     const el = scrollRef.current;
@@ -325,6 +325,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
             {safeEvents.map((event, index) => {
               const timestamp = Number(event.timestamp) || 0;
               const position = (timestamp / maxTimeMs) * 100;
+              const markerDelayMs = Math.min(index * 15, 180);
 
               if (event.type === "cycle") {
                 const colorClass = getEventColor(event);
@@ -336,7 +337,10 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                       key={i}
                       size={20}
                       weight="fill"
-                      className={isScored ? "text-[#2D6C3E]" : "text-[#94a3b8]"}
+                      className={`timeline-ball-enter ${
+                        isScored ? "text-[#2D6C3E]" : "text-[#94a3b8]"
+                      }`}
+                      style={{ animationDelay: `${markerDelayMs + i * 70}ms` }}
                     />
                   );
                 }
@@ -344,8 +348,8 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                 return (
                   <div
                     key={`${timestamp}-${index}`}
-                    className="timeline-marker timeline-marker-cycle absolute bottom-0 -translate-x-1/2 flex flex-col items-center cursor-pointer group"
-                    style={{ left: `${position}%` }}
+                    className="timeline-marker timeline-marker-cycle timeline-marker-enter absolute bottom-0 -translate-x-1/2 flex flex-col items-center cursor-pointer group"
+                    style={{ left: `${position}%`, animationDelay: `${markerDelayMs}ms` }}
                     title={`${event.scored}/${event.total} scored at ${formatTime(timestamp)}`}
                   >
                     {/* Tooltip */}
@@ -370,8 +374,8 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                 return (
                   <div
                     key={`${timestamp}-gate-${index}`}
-                    className="timeline-marker timeline-marker-gate absolute top-0 h-full -translate-x-1/2 cursor-pointer group"
-                    style={{ left: `${position}%` }}
+                    className="timeline-marker timeline-marker-gate timeline-marker-enter absolute top-0 h-full -translate-x-1/2 cursor-pointer group"
+                    style={{ left: `${position}%`, animationDelay: `${markerDelayMs}ms` }}
                     title={`Gate opened at ${formatTime(timestamp)}`}
                   >
                     {/* Tooltip */}

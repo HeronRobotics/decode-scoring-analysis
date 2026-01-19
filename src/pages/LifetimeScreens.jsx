@@ -7,7 +7,7 @@ function LifetimeUpload({ onImportTournament }) {
       <label className="btn">
         <Plus weight="bold" size={20} />
         Upload Tournament or Match
-        <input type="file" accept=".json" onChange={onImportTournament} className="hidden" />
+        <input type="file" accept=".json" multiple onChange={onImportTournament} className="hidden" />
       </label>
       <p className="text-sm text-[#666] mt-3">
         Upload all of your tournament and match JSON files here to see your lifetime statistics!

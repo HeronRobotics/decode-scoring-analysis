@@ -315,6 +315,57 @@ button:active::after {
   background: #2d3e5c;
 }
 
+/* Timeline marker interactions + spawn animations */
+@keyframes timeline-marker-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes timeline-ball-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.timeline-marker-enter {
+  animation: timeline-marker-pop 220ms ease-out both;
+}
+
+.timeline-ball-enter {
+  animation: timeline-ball-pop 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.timeline-marker {
+  transition: transform 0.15s ease;
+}
+
+/* No hover scaling for cycles (better readability) */
+.timeline-marker-cycle {
+  transition: none;
+}
+
+.timeline-marker-cycle:hover {
+  transform: none;
+  z-index: 10;
+}
+
+/* Keep a subtle hover affordance for gates */
+.timeline-marker-gate:hover {
+  transform: scale(1.03);
+  z-index: 10;
+}
+
 /* Phase colors - softer, on-brand */
 .phase-auto {
   background: linear-gradient(135deg, #6b8cae 0%, #445f8b 100%);

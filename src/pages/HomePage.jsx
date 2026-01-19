@@ -3,16 +3,16 @@ import { logEvent } from "firebase/analytics";
 import { analytics } from "../firebase";
 
 import SplashScreen from "./home/SplashScreen";
-import MatchRecorderScreen from "./home/MatchRecorderScreen";
 import TextImportModal from "../components/home/modals/TextImportModal";
 import LoadingSplash from "../components/home/LoadingSplash";
-import useMatchRecorder from "../hooks/useMatchRecorder";
+import { useMatchRecorderContext } from "../data/MatchRecorderContext";
 import { parseMatchText } from "../utils/matchFormat";
 import { readJsonFile } from "../utils/fileJson";
 import { readPaste } from "../utils/pasteService";
+import { setPath } from "../utils/navigation";
 
 function HomePage() {
-  const recorder = useMatchRecorder();
+  const recorder = useMatchRecorderContext();
   const { applyParsedMatchData } = recorder;
   const [showTextImport, setShowTextImport] = useState(false);
   const [textInput, setTextInput] = useState("");
@@ -107,6 +107,9 @@ function HomePage() {
             analytics,
             pasteKey ? "import_match_text_paste" : "import_match_text_url"
           );
+
+          // Switch to the match recorder page and clear query params.
+          setPath("/match", { replace: true });
         }
       } catch (e) {
         console.warn("Failed to import match from URL", e);
@@ -125,8 +128,6 @@ function HomePage() {
     };
   }, [applyParsedMatchData]);
 
-  const showRecorder = recorder.isRecording || recorder.matchStartTime !== null;
-
   // Show loading splash when loading from URL
   if (isLoadingFromUrl) {
     return <LoadingSplash message={loadingMessage} />;
@@ -135,27 +136,23 @@ function HomePage() {
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 sm:gap-12">
 
-      {!showRecorder ? (
-        <>
-          <SplashScreen
-            recorder={recorder}
-            onImportJson={importMatchFromJson}
-            onOpenTextImport={() => setShowTextImport(true)}
-          />
-          <TextImportModal
-            open={showTextImport}
-            textInput={textInput}
-            setTextInput={setTextInput}
-            onImport={importFromText}
-            onClose={() => {
-              setShowTextImport(false);
-              setTextInput("");
-            }}
-          />
-        </>
-      ) : (
-        <MatchRecorderScreen recorder={recorder} />
-      )}
+      <>
+        <SplashScreen
+          recorder={recorder}
+          onImportJson={importMatchFromJson}
+          onOpenTextImport={() => setShowTextImport(true)}
+        />
+        <TextImportModal
+          open={showTextImport}
+          textInput={textInput}
+          setTextInput={setTextInput}
+          onImport={importFromText}
+          onClose={() => {
+            setShowTextImport(false);
+            setTextInput("");
+          }}
+        />
+      </>
     </div>
   );
 }
