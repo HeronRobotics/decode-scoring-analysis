@@ -67,7 +67,7 @@ function NavigationBar({ currentPage, navigate }) {
           <Trophy weight="bold" size={20} />
           My Matches
         </button>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center justify-center gap-2">
           <h2 className="hidden md:block text-lg font-bold">Heron Scout</h2>
           {authLoading ? (
             <span className="text-xs text-[#666] ml-1">Loading...</span>

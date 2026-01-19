@@ -1,5 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { Trash, UploadSimple, LinkSimple, ArrowSquareOut } from "@phosphor-icons/react";
+import {
+  Trash,
+  UploadSimple,
+  LinkSimple,
+  ArrowSquareOut,
+  Target,
+  Clock,
+  ListNumbers,
+  CalendarBlank,
+  Users,
+  PencilSimple,
+  CaretRight,
+  Info,
+} from "@phosphor-icons/react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import {
   listMatchesForCurrentUser,
@@ -7,10 +20,30 @@ import {
   updateMatch,
   createMatchForUser,
 } from "../api/matchesApi.js";
-import Statistics from "../components/Statistics.jsx";
-import Timeline from "../components/Timeline.jsx";
 import TextImportModal from "../components/home/modals/TextImportModal.jsx";
 import { parseLifetimeImportInput } from "../utils/importLifetime.js";
+import { formatStat } from "../utils/format.js";
+import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
+
+// Helper to compute condensed stats for a match
+function getMatchStats(events) {
+  const cycleEvents = (events || []).filter((e) => e.type === "cycle");
+  if (cycleEvents.length === 0) {
+    return { cycles: 0, scored: 0, total: 0, accuracy: 0, avgCycleTime: null };
+  }
+  const scored = cycleEvents.reduce((sum, e) => sum + (e.scored || 0), 0);
+  const total = cycleEvents.reduce((sum, e) => sum + (e.total || 0), 0);
+  const accuracy = total > 0 ? (scored / total) * 100 : 0;
+  const cycleTimes = calculateCycleTimes(events);
+  const timeStats = calculateStats(cycleTimes);
+  return {
+    cycles: cycleEvents.length,
+    scored,
+    total,
+    accuracy,
+    avgCycleTime: timeStats.avg,
+  };
+}
 
 function MyMatchesPage() {
   const { user, authLoading } = useAuth();
@@ -22,6 +55,11 @@ function MyMatchesPage() {
   const [showTextImport, setShowTextImport] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [importing, setImporting] = useState(false);
+  const [showImportSection, setShowImportSection] = useState(false);
+
+  // Editing state for detail panel
+  const [editTitle, setEditTitle] = useState("");
+  const [editTournament, setEditTournament] = useState("");
   const [editTeamNumber, setEditTeamNumber] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
@@ -95,33 +133,19 @@ function MyMatchesPage() {
 
   useEffect(() => {
     if (!selectedMatch) {
+      setEditTitle("");
+      setEditTournament("");
       setEditTeamNumber("");
       setEditNotes("");
       setDetailsError("");
       return;
     }
+    setEditTitle(selectedMatch.title || "");
+    setEditTournament(selectedMatch.tournamentName || "");
     setEditTeamNumber(selectedMatch.teamNumber || "");
     setEditNotes(selectedMatch.notes || "");
     setDetailsError("");
   }, [selectedMatch]);
-
-  const handleTitleChange = async (id, nextTitle) => {
-    try {
-      const updated = await updateMatch(id, { title: nextTitle });
-      setMatches((prev) => prev.map((m) => (m.id === id ? updated : m)));
-    } catch (err) {
-      alert(err.message || "Failed to update title");
-    }
-  };
-
-  const handleTournamentNameChange = async (id, nextName) => {
-    try {
-      const updated = await updateMatch(id, { tournamentName: nextName });
-      setMatches((prev) => prev.map((m) => (m.id === id ? updated : m)));
-    } catch (err) {
-      alert(err.message || "Failed to update tournament name");
-    }
-  };
 
   const handleSaveDetails = async () => {
     if (!selectedMatch) return;
@@ -129,6 +153,8 @@ function MyMatchesPage() {
       setSavingDetails(true);
       setDetailsError("");
       const updated = await updateMatch(selectedMatch.id, {
+        title: editTitle,
+        tournamentName: editTournament,
         teamNumber: editTeamNumber,
         notes: editNotes,
       });
@@ -253,6 +279,9 @@ function MyMatchesPage() {
     }
   };
 
+  // Compute stats for selected match
+  const selectedStats = selectedMatch ? getMatchStats(selectedMatch.events) : null;
+
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
       <div className="my-6 sm:my-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -276,169 +305,230 @@ function MyMatchesPage() {
       )}
 
       {!authLoading && user && (
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_minmax(0,1.5fr)] items-start">
-          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 space-y-4">
-            <div className="border-b border-[#eee] pb-4 mb-2">
-              <h2 className="text-xl font-semibold mb-2">
-                Bulk import matches
-              </h2>
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-3">
-                <label className="flex items-center gap-2 text-sm">
-                  <span className="font-semibold">
-                    Tournament tag (optional):
+        <div className="grid gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] items-start">
+          {/* Left Column - Match List */}
+          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6">
+            {/* Import Section - Collapsible */}
+            <div className="mb-5">
+              <button
+                type="button"
+                onClick={() => setShowImportSection(!showImportSection)}
+                className="w-full flex items-center justify-between text-left group"
+              >
+                <div className="flex items-center gap-2">
+                  <UploadSimple
+                    size={20}
+                    weight="bold"
+                    className="text-[#445f8b]"
+                  />
+                  <span className="font-semibold text-[#445f8b]">
+                    Import Matches
                   </span>
-                  <input
-                    type="text"
-                    value={bulkTournamentName}
-                    onChange={(e) => setBulkTournamentName(e.target.value)}
-                    placeholder="Play Space Qualifier, Regionals, etc."
-                    className="px-2 py-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded"
-                  />
-                </label>
-                {tournamentTags.length > 0 && (
-                  <label className="flex items-center gap-2 text-xs">
-                    <span className="font-semibold">Or pick existing:</span>
-                    <select
-                      value={bulkTournamentName}
-                      onChange={(e) => setBulkTournamentName(e.target.value)}
-                      className="px-2 py-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded min-w-[10rem]"
+                </div>
+                <CaretRight
+                  size={18}
+                  weight="bold"
+                  className={`text-[#445f8b] transition-transform ${
+                    showImportSection ? "rotate-90" : ""
+                  }`}
+                />
+              </button>
+
+              {showImportSection && (
+                <div className="mt-4 p-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg">
+                  <div className="flex items-start gap-2 mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+                    <Info size={18} className="flex-shrink-0 mt-0.5" />
+                    <span>
+                      Import matches from JSON files or paste links. Matches
+                      will appear in Tournament Analysis and Lifetime Stats.
+                    </span>
+                  </div>
+
+                  {/* Tournament Tag */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-[#444] mb-2">
+                      Tournament Tag (optional)
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={bulkTournamentName}
+                        onChange={(e) => setBulkTournamentName(e.target.value)}
+                        placeholder="e.g. Regionals, Worlds"
+                        className="flex-1 px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                      />
+                      {tournamentTags.length > 0 && (
+                        <select
+                          value={bulkTournamentName}
+                          onChange={(e) => setBulkTournamentName(e.target.value)}
+                          className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                        >
+                          <option value="">Use existing...</option>
+                          {tournamentTags.map((name) => (
+                            <option key={name} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Import Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <label className="btn flex-1 !py-2.5 justify-center cursor-pointer">
+                      <UploadSimple size={18} weight="bold" />
+                      Upload JSON
+                      <input
+                        type="file"
+                        accept=".json"
+                        multiple
+                        onChange={handleImportFiles}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowTextImport(true)}
+                      className="btn flex-1 !py-2.5 justify-center"
                     >
-                      <option value="">(none)</option>
-                      {tournamentTags.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-3 items-center">
-                <label className="btn !py-2 !px-3 text-xs sm:text-sm">
-                  <UploadSimple size={16} weight="bold" />
-                  Upload JSON files
-                  <input
-                    type="file"
-                    accept=".json"
-                    multiple
-                    onChange={handleImportFiles}
-                    className="hidden"
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowTextImport(true)}
-                  className="btn !py-2 !px-3 text-xs sm:text-sm flex items-center gap-2"
-                >
-                  <LinkSimple size={16} weight="bold" />
-                  Paste text or links
-                </button>
-                {importing && (
-                  <span className="text-xs text-[#666]">Importing...</span>
-                )}
-              </div>
-              <p className="text-xs text-[#666] mt-2">
-                Imported matches are saved to your account and will appear here,
-                in Tournament Analysis, and in Lifetime Stats.
-              </p>
+                      <LinkSimple size={18} weight="bold" />
+                      Paste Links
+                    </button>
+                  </div>
+
+                  {importing && (
+                    <div className="mt-3 text-sm text-[#445f8b] flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-[#445f8b] border-t-transparent rounded-full animate-spin" />
+                      Importing matches...
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <h2 className="text-xl font-semibold mb-4">Saved Matches</h2>
+            {/* Saved Matches Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Saved Matches</h2>
+              <span className="text-sm text-[#666]">
+                {matches.length} {matches.length === 1 ? "match" : "matches"}
+              </span>
+            </div>
 
-            {loading && <p>Loading matches...</p>}
+            {loading && <p className="text-[#666]">Loading matches...</p>}
             {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
 
             {!loading && matches.length === 0 && !error && (
-              <p className="text-sm text-[#666]">
-                You do not have any saved matches yet. Record a match and use
-                <span className="font-semibold"> Save to My Matches</span> to
-                store it here.
-              </p>
+              <div className="text-center py-8 text-[#666]">
+                <Target size={48} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm">No saved matches yet.</p>
+                <p className="text-xs mt-1">
+                  Record a match and use{" "}
+                  <span className="font-semibold">Save to My Matches</span>
+                </p>
+              </div>
             )}
 
-            <div className="space-y-2 mt-2 max-h-[420px] overflow-y-auto">
+            {/* Match List */}
+            <div className="space-y-2 max-h-[calc(100vh-380px)] min-h-[300px] overflow-y-auto pr-1">
               {matches.map((m) => {
                 const date = m.startTime
                   ? new Date(m.startTime)
                   : m.createdAt
                     ? new Date(m.createdAt)
                     : null;
-                const dateLabel = date ? date.toLocaleString() : "Unknown date";
-                const cycleEvents = m.events.filter((e) => e.type === "cycle");
-                const scored = cycleEvents.reduce(
-                  (sum, e) => sum + (e.scored || 0),
-                  0,
-                );
-                const total = cycleEvents.reduce(
-                  (sum, e) => sum + (e.total || 0),
-                  0,
-                );
+                const dateStr = date
+                  ? date.toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "Unknown date";
+                const stats = getMatchStats(m.events);
+                const isSelected = selectedMatchId === m.id;
 
                 return (
                   <button
                     key={m.id}
                     type="button"
                     onClick={() => setSelectedMatchId(m.id)}
-                    className={`w-full text-left border-2 p-3 flex items-center justify-between gap-3 transition-colors ${
-                      selectedMatchId === m.id
-                        ? "border-[#445f8b] bg-[#f0f5ff]"
-                        : "border-[#ddd] bg-white hover:border-[#445f8b]"
+                    className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
+                      isSelected
+                        ? "border-[#445f8b] bg-[#f0f5ff] shadow-sm"
+                        : "border-[#e5e7eb] bg-white hover:border-[#445f8b] hover:bg-[#fafbfc]"
                     }`}
                   >
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold">
-                        <input
-                          type="text"
-                          className="w-full px-1 py-0.5 border border-[#ddd] text-[12px] rounded"
-                          value={m.title || ""}
-                          onChange={(e) =>
-                            handleTitleChange(m.id, e.target.value)
-                          }
-                          placeholder="Optional match title"
-                        />
+                    {/* Match Header */}
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-[#1a1a1a] truncate">
+                          {m.title || `Team ${m.teamNumber || "?"} Match`}
+                        </div>
+                        {m.tournamentName && (
+                          <div className="text-xs text-[#445f8b] font-medium mt-0.5">
+                            {m.tournamentName}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <a
+                          href={`/match?match=${encodeURIComponent(m.id)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 text-[#666] hover:text-[#445f8b] hover:bg-[#e8eef8] rounded transition-colors"
+                          title="Open in new tab"
+                        >
+                          <ArrowSquareOut size={16} weight="bold" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(m.id);
+                          }}
+                          className="p-1.5 text-[#666] hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Delete match"
+                        >
+                          <Trash size={16} weight="bold" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Match Stats Row */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#555]">
+                      <span className="flex items-center gap-1.5">
+                        <Users size={14} className="text-[#888]" />
+                        Team {m.teamNumber || "?"}
                       </span>
-                      <span className="text-xs text-[#666]">
-                        Team {m.teamNumber || "Unknown"}
-                      </span>
-                      <span className="text-xs text-[#666]">{dateLabel}</span>
-                      <span className="text-xs text-[#666]">
-                        {scored}/{total} balls scored
-                      </span>
-                      <span className="text-xs text-[#666] mt-1">
-                        <span className="font-semibold">Tournament:</span>{" "}
-                        <input
-                          type="text"
-                          className="inline-block px-1 py-0.5 border border-[#ddd] text-[11px] ml-1"
-                          value={m.tournamentName || ""}
-                          onChange={(e) =>
-                            handleTournamentNameChange(m.id, e.target.value)
-                          }
-                          placeholder="optional"
-                        />
+                      <span className="flex items-center gap-1.5">
+                        <CalendarBlank size={14} className="text-[#888]" />
+                        {dateStr}
                       </span>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(m.id);
-                        }}
-                        className="error-btn !py-1 !px-2 flex items-center gap-1 text-xs"
-                      >
-                        <Trash size={14} weight="bold" />
-                        Delete
-                      </button>
-                      <a
-                        href={`/match?match=${encodeURIComponent(m.id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-[10px] text-[#445f8b] underline flex items-center gap-1"
-                      >
-                        <ArrowSquareOut size={10} weight="bold" />
-                        Open in new tab
-                      </a>
+
+                    {/* Score Summary */}
+                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#eee]">
+                      <div className="flex items-center gap-1.5">
+                        <Target size={16} className="text-[#445f8b]" />
+                        <span className="font-semibold text-[#1a1a1a]">
+                          {stats.scored}/{stats.total}
+                        </span>
+                        <span className="text-xs text-[#888]">scored</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <ListNumbers size={16} className="text-[#445f8b]" />
+                        <span className="font-semibold text-[#1a1a1a]">
+                          {stats.cycles}
+                        </span>
+                        <span className="text-xs text-[#888]">cycles</span>
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-semibold text-[#1a1a1a]">
+                          {formatStat(stats.accuracy, 0)}%
+                        </span>
+                        <span className="text-xs text-[#888] ml-1">acc</span>
+                      </div>
                     </div>
                   </button>
                 );
@@ -446,72 +536,168 @@ function MyMatchesPage() {
             </div>
           </div>
 
-          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 min-h-[260px]">
+          {/* Right Column - Match Preview */}
+          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6 min-h-[400px]">
             {selectedMatch ? (
               <>
-                <h2 className="text-xl font-semibold mb-4">Match Details</h2>
-                <div className="mb-4 text-sm text-[#444]">
-                  <p>
-                    <strong>Title:</strong> {selectedMatch.title || "None"}
-                  </p>
-                  <p className="mt-2">
-                    <strong>Team:</strong>{" "}
-                    <input
-                      type="number"
-                      value={editTeamNumber}
-                      onChange={(e) => setEditTeamNumber(e.target.value)}
-                      className="px-2 py-1 ml-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded w-24 text-center"
-                      min="1"
+                {/* Header with title and actions */}
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#1a1a1a]">
+                      {selectedMatch.title ||
+                        `Team ${selectedMatch.teamNumber || "?"} Match`}
+                    </h2>
+                    {selectedMatch.tournamentName && (
+                      <p className="text-[#445f8b] font-medium mt-1">
+                        {selectedMatch.tournamentName}
+                      </p>
+                    )}
+                  </div>
+                  <a
+                    href={`/match?match=${encodeURIComponent(selectedMatch.id)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn !py-2 !px-3 text-sm flex items-center gap-2 flex-shrink-0"
+                  >
+                    <ArrowSquareOut size={16} weight="bold" />
+                    Full Details
+                  </a>
+                </div>
+
+                {/* Condensed Stats Summary */}
+                {selectedStats && selectedStats.cycles > 0 && (
+                  <div className="bg-[#445f8b] rounded-lg p-5 mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl sm:text-3xl font-bold text-white">
+                          {selectedStats.cycles}
+                        </div>
+                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <ListNumbers size={14} />
+                          Cycles
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl sm:text-3xl font-bold text-white">
+                          {selectedStats.scored}
+                          <span className="text-lg text-white/60">
+                            /{selectedStats.total}
+                          </span>
+                        </div>
+                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <Target size={14} />
+                          Scored
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl sm:text-3xl font-bold text-white">
+                          {formatStat(selectedStats.accuracy, 0)}%
+                        </div>
+                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <Target size={14} weight="fill" />
+                          Accuracy
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl sm:text-3xl font-bold text-white">
+                          {selectedStats.avgCycleTime
+                            ? `${formatStat(selectedStats.avgCycleTime, 1)}s`
+                            : "—"}
+                        </div>
+                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <Clock size={14} />
+                          Avg Cycle
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Edit Section */}
+                <div className="border-t border-[#eee] pt-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <PencilSimple size={18} className="text-[#445f8b]" />
+                    <h3 className="font-semibold text-[#444]">Edit Match Info</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#555] mb-1">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        placeholder="e.g. Quals 15, Finals 2"
+                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#555] mb-1">
+                        Tournament
+                      </label>
+                      <input
+                        type="text"
+                        value={editTournament}
+                        onChange={(e) => setEditTournament(e.target.value)}
+                        placeholder="e.g. Regionals"
+                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#555] mb-1">
+                        Team Number
+                      </label>
+                      <input
+                        type="number"
+                        value={editTeamNumber}
+                        onChange={(e) => setEditTeamNumber(e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                        min="1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-[#555] mb-1">
+                      Notes
+                    </label>
+                    <textarea
+                      value={editNotes}
+                      onChange={(e) => setEditNotes(e.target.value)}
+                      className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded min-h-[80px] resize-y"
+                      placeholder="Defense played, robot issues, strategy notes..."
                     />
-                  </p>
-                  <p className="mt-2">
-                    <strong>Notes:</strong>
-                  </p>
-                  <textarea
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    className="mt-1 w-full px-2 py-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded min-h-[80px]"
-                    placeholder="Defense, robot issues, strategy..."
-                  />
+                  </div>
+
                   {detailsError && (
-                    <p className="mt-2 text-xs text-red-600">{detailsError}</p>
+                    <p className="mb-3 text-sm text-red-600">{detailsError}</p>
                   )}
+
                   <button
                     type="button"
                     onClick={handleSaveDetails}
                     disabled={savingDetails}
-                    className="mt-3 btn !py-1.5 !px-3 text-xs"
+                    className="btn !py-2 !px-4"
                   >
-                    {savingDetails ? "Saving..." : "Save changes"}
+                    {savingDetails ? "Saving..." : "Save Changes"}
                   </button>
                 </div>
-                <Timeline
-                  events={selectedMatch.events}
-                  currentTime={
-                    selectedMatch.events.length > 0
-                      ? selectedMatch.events[selectedMatch.events.length - 1]
-                          .timestamp
-                      : 0
-                  }
-                />
-                {selectedMatch.events.length > 0 && (
-                  <div className="mt-4">
-                    <Statistics
-                      events={selectedMatch.events}
-                      teamNumber={selectedMatch.teamNumber}
-                      notes={selectedMatch.notes}
-                    />
-                  </div>
-                )}
               </>
             ) : (
-              <p className="text-sm text-[#666]">
-                Select a match from the list to view details.
-              </p>
+              <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-[#666]">
+                <Target size={64} className="mb-4 opacity-20" />
+                <p className="text-lg font-medium">No match selected</p>
+                <p className="text-sm mt-1">
+                  Select a match from the list to view details
+                </p>
+              </div>
             )}
           </div>
         </div>
       )}
+
       <TextImportModal
         open={showTextImport}
         textInput={textInput}
