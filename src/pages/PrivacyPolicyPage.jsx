@@ -72,17 +72,18 @@ function PrivacyPolicyPage() {
             5. Third-party services
           </h2>
           <p>
-            This app uses third-party services such as authentication providers
-            and hosting platforms (for example, Github, Firebase or Supabase) to
-            manage accounts, store data, and deliver the application. These
-            services process data in accordance with their own privacy policies.
+            Heronscout uses third-party services such as authentication
+            providers and hosting platforms (for example, Github, Firebase or
+            Supabase) to manage accounts, store data, and deliver the
+            application. These services process data in accordance with their
+            own privacy policies.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold mb-2">6. Analytics</h2>
           <p>
-            The app may use analytics tools, such as Firebase Analytics or
+            Heronscout uses analytics tools, such as Firebase Analytics or
             Posthog to collect aggregated information about how the app is used
             (for example, which screens are visited). This helps guide
             improvements and does not include the contents of your match notes.
@@ -109,8 +110,8 @@ function PrivacyPolicyPage() {
         <section>
           <h2 className="text-xl font-semibold mb-2">8. Contact</h2>
           <p>
-            If you have questions about this Privacy Policy or how your data is
-            handled, please contact us at heronroboticsteam@gmail.com
+            Contact heronroboticsteam@gmail.com for any privacy related issues
+            (bugs, account deletion, etc.)
           </p>
         </section>
       </div>
