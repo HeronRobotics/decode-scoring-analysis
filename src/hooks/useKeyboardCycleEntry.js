@@ -12,7 +12,7 @@ export default function useKeyboardCycleEntry({
   const [keyEntry, setKeyEntry] = useState({ total: null, scored: null });
   const [keyEntryVisible, setKeyEntryVisible] = useState(false);
   const [keyEntryExpiresAt, setKeyEntryExpiresAt] = useState(null);
-  const [cooldownUntil, setCooldownUntil] = useState(null);
+
   const expireTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function useKeyboardCycleEntry({
         setKeyEntry({ total: null, scored: null });
         setKeyEntryVisible(false);
         setKeyEntryExpiresAt(null);
-        setCooldownUntil(Date.now() + 5000);
+        // setCooldownUntil(Date.now() + 5000);
       }, ms);
     }
     return () => {
@@ -56,11 +56,14 @@ export default function useKeyboardCycleEntry({
 
       if (!keyEntryVisible) {
         if (e.key && e.key.toLowerCase() === "g") {
-          onAddGate?.({ timestamp: elapsedTime, phase: mode === "match" ? phase : undefined });
+          onAddGate?.({
+            timestamp: elapsedTime,
+            phase: mode === "match" ? phase : undefined,
+          });
           e.preventDefault();
           return;
         }
-        if (cooldownUntil && now < cooldownUntil) return;
+
         if (e.key >= "1" && e.key <= "3") {
           setKeyEntry({ total: parseInt(e.key, 10), scored: null });
           setKeyEntryVisible(true);
@@ -74,7 +77,6 @@ export default function useKeyboardCycleEntry({
         setKeyEntry({ total: null, scored: null });
         setKeyEntryVisible(false);
         setKeyEntryExpiresAt(null);
-        setCooldownUntil(Date.now() + 5000);
         e.preventDefault();
         return;
       }
@@ -115,7 +117,7 @@ export default function useKeyboardCycleEntry({
     keyEntryVisible,
     keyEntry,
     elapsedTime,
-    cooldownUntil,
+
     mode,
     phase,
     onAddCycle,

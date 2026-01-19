@@ -30,7 +30,7 @@ export const formatMatchText = ({
   } else {
     prefix += `/0`;
   }
-  console.log(teamNumber);
+  //   console.log(teamNumber);
 
   let notesEncoded = "";
   if (notes && notes.trim()) {
@@ -52,7 +52,7 @@ export const formatMatchText = ({
   events.forEach((event) => {
     if (event.type === "cycle") {
       output += ` ${event.scored}/${event.total} at ${formatTime(
-        event.timestamp
+        event.timestamp,
       )};`;
     } else if (event.type === "gate") {
       output += ` gate at ${formatTime(event.timestamp)};`;
@@ -90,7 +90,7 @@ export const formatPhaseMatchText = ({
   } else {
     prefix += `/0`;
   }
-  console.log(teamNumber);
+  //   console.log(teamNumber);
 
   let notesEncoded = "";
   if (notes && notes.trim()) {
@@ -122,7 +122,7 @@ export const formatPhaseMatchText = ({
   phaseEvents.forEach((event) => {
     if (event.type === "cycle") {
       output += ` ${event.scored}/${event.total} at ${formatTime(
-        event.timestamp
+        event.timestamp,
       )};`;
     } else if (event.type === "gate") {
       output += ` gate at ${formatTime(event.timestamp)};`;
@@ -209,7 +209,7 @@ export const parseMatchText = (text) => {
     }
 
     const cycleMatch = part.match(
-      /(\d+)\/(\d+)\s+at\s+(\d+:\d+(?:\.\d{1,3})?)/i
+      /(\d+)\/(\d+)\s+at\s+(\d+:\d+(?:\.\d{1,3})?)/i,
     );
     if (cycleMatch) {
       const scored = parseInt(cycleMatch[1], 10);
