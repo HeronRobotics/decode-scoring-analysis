@@ -22,7 +22,7 @@ const sumScoredInRange = (events, startMs, endMs) =>
 function Timeline({ events = [], currentTime = 0, mode = null }) {
   const scrollRef = useRef(null);
   const pendingScrollToMsRef = useRef(null);
-  const safeEvents = events || [];
+  const safeEvents = useMemo(() => events || [], [events]);
   const safeCurrent = Number(currentTime) || 0;
 
   const [isExpanded, setIsExpanded] = useState(mode !== "match");

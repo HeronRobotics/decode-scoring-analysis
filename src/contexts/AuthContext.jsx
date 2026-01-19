@@ -70,6 +70,19 @@ const AuthProviderInner = ({ children }) => {
       }
       return { data, error }
     },
+    async signInWithGitHub() {
+      const redirectTo = window.location.origin
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo,
+        },
+      })
+      if (error) {
+        console.error('Error starting GitHub sign-in', error)
+      }
+      return { data, error }
+    },
     async signUp({ email, password }) {
       const { data, error } = await supabase.auth.signUp({
         email,

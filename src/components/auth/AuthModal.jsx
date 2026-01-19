@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { GithubLogo } from "@phosphor-icons/react";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 
 function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGitHub } = useAuth();
   const [mode, setMode] = useState(defaultMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +47,22 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
     setError("");
   };
 
+  const handleGitHubSignIn = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const { error: authError } = await signInWithGitHub();
+      if (authError) {
+        setError(authError.message || "GitHub sign-in failed");
+        setLoading(false);
+      }
+      // On success, Supabase will redirect the user and auth state will update.
+    } catch (err) {
+      setError(err.message || "GitHub sign-in failed");
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
@@ -85,6 +102,23 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
         </div>
 
         {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
+
+        <div className="flex flex-col gap-3 mb-4 items-center">
+          <button
+            type="button"
+            onClick={handleGitHubSignIn}
+            className="btn w-fit !bg-white !text-black hover:!bg-[#eee] flex items-center justify-center gap-2 !border-2 !border-black"
+            disabled={loading}
+          >
+            <GithubLogo weight="fill" size={18} />
+            <span>Continue with GitHub</span>
+          </button>
+          <div className="flex items-center gap-2 text-xs text-[#666]">
+            <div className="flex-1 h-px bg-[#ddd]" />
+            <span>or</span>
+            <div className="flex-1 h-px bg-[#ddd]" />
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm">
