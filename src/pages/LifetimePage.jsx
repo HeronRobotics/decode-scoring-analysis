@@ -101,9 +101,12 @@ function LifetimePage() {
   const matchStats = useMemo(() => {
     return teamMatches
       .map((match, index) => {
-        const cycleEvents = (match.events || []).filter(
-          (e) => e.type === "cycle",
-        );
+        const cycleEvents = (match.events || [])
+          .filter((e) => e.type === "cycle")
+          .slice()
+          .sort(
+            (a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0),
+          );
         const scored = cycleEvents.reduce((sum, e) => sum + (e.scored || 0), 0);
         const total = cycleEvents.reduce((sum, e) => sum + (e.total || 0), 0);
 
@@ -125,6 +128,19 @@ function LifetimePage() {
             ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length
             : 0;
 
+        let ballsPerTwoMinutes = null;
+        if (cycleEvents.length > 1) {
+          const firstTs = Number(cycleEvents[0].timestamp) || 0;
+          const lastTs =
+            Number(cycleEvents[cycleEvents.length - 1].timestamp) || 0;
+          const durationMs = lastTs - firstTs;
+          if (durationMs > 0) {
+            const durationSeconds = durationMs / 1000;
+            const perSecond = scored / durationSeconds;
+            ballsPerTwoMinutes = perSecond * 120;
+          }
+        }
+
         const matchDate = match.startTime
           ? new Date(match.startTime)
           : match.createdAt
@@ -141,6 +157,7 @@ function LifetimePage() {
           cycles: cycleEvents.length,
           accuracy: total > 0 ? (scored / total) * 100 : 0,
           avgCycleTime,
+          ballsPerTwoMinutes,
         };
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
