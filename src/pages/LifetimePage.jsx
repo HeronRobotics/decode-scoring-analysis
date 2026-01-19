@@ -1,115 +1,126 @@
-import { useEffect, useMemo, useState } from 'react'
-import { TrendUp } from '@phosphor-icons/react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import Statistics from '../components/Statistics'
-import { useAuth } from '../contexts/AuthContext.jsx'
-import { listMatchesForCurrentUser } from '../api/matchesApi.js'
+import { useEffect, useMemo, useState } from "react";
+import { TrendUp } from "@phosphor-icons/react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import Statistics from "../components/Statistics";
+import { useAuth } from "../contexts/AuthContext.jsx";
+import { listMatchesForCurrentUser } from "../api/matchesApi.js";
 
-const LIFETIME_STORAGE_KEY = 'heron_lifetime_stats_v1'
+const LIFETIME_STORAGE_KEY = "heron_lifetime_stats_v1";
 
 function LifetimePage() {
-  const { user, authLoading } = useAuth()
-  const [matches, setMatches] = useState([])
-  const [teamNumber, setTeamNumber] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const { user, authLoading } = useAuth();
+  const [matches, setMatches] = useState([]);
+  const [teamNumber, setTeamNumber] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(LIFETIME_STORAGE_KEY)
-      if (!raw) return
-      const parsed = JSON.parse(raw)
+      const raw = window.localStorage.getItem(LIFETIME_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
       if (parsed.teamNumber) {
-        setTeamNumber(parsed.teamNumber.toString())
+        setTeamNumber(parsed.teamNumber.toString());
       }
     } catch (e) {
-      console.warn('Failed to load lifetime stats from localStorage', e)
+      console.warn("Failed to load lifetime stats from localStorage", e);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     try {
       if (!teamNumber) {
-        window.localStorage.removeItem(LIFETIME_STORAGE_KEY)
-        return
+        window.localStorage.removeItem(LIFETIME_STORAGE_KEY);
+        return;
       }
       const payload = {
         teamNumber,
-      }
-      window.localStorage.setItem(LIFETIME_STORAGE_KEY, JSON.stringify(payload))
+      };
+      window.localStorage.setItem(
+        LIFETIME_STORAGE_KEY,
+        JSON.stringify(payload),
+      );
     } catch (e) {
-      console.warn('Failed to save lifetime stats to localStorage', e)
+      console.warn("Failed to save lifetime stats to localStorage", e);
     }
-  }, [teamNumber])
+  }, [teamNumber]);
 
   useEffect(() => {
     if (!user) {
-      setMatches([])
-      return
+      setMatches([]);
+      return;
     }
 
     const load = async () => {
-      setLoading(true)
-      setError('')
+      setLoading(true);
+      setError("");
       try {
-        const data = await listMatchesForCurrentUser()
-        setMatches(data)
+        const data = await listMatchesForCurrentUser();
+        setMatches(data);
       } catch (err) {
-        setError(err.message || 'Error loading matches')
+        setError(err.message || "Error loading matches");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    load()
-  }, [user])
+    load();
+  }, [user]);
 
   const teamMatches = useMemo(() => {
-    const tn = (teamNumber || '').toString().trim()
-    if (!tn) return matches
-    return matches.filter(
-      (m) => (m.teamNumber || '').toString().trim() === tn,
-    )
-  }, [matches, teamNumber])
+    const tn = (teamNumber || "").toString().trim();
+    if (!tn) return matches;
+    return matches.filter((m) => (m.teamNumber || "").toString().trim() === tn);
+  }, [matches, teamNumber]);
 
-  const allMatches = teamMatches
-  
+  const allMatches = teamMatches;
+
   // Extract individual matches for graphing
-  const matchStats = teamMatches.map((match, index) => {
-      const cycleEvents = match.events.filter(e => e.type === 'cycle')
-      const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0)
-      const total = cycleEvents.reduce((sum, e) => sum + e.total, 0)
-      
+  const matchStats = teamMatches
+    .map((match, index) => {
+      const cycleEvents = match.events.filter((e) => e.type === "cycle");
+      const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0);
+      const total = cycleEvents.reduce((sum, e) => sum + e.total, 0);
+
       // Calculate cycle times for this match
-      const cycleTimes = []
-      let lastEventTime = 0
-      match.events.forEach(event => {
-        if (event.type === 'cycle') {
-          const timeDiff = event.timestamp - lastEventTime
+      const cycleTimes = [];
+      let lastEventTime = 0;
+      match.events.forEach((event) => {
+        if (event.type === "cycle") {
+          const timeDiff = event.timestamp - lastEventTime;
           if (timeDiff > 0) {
-            cycleTimes.push(timeDiff / 1000)
+            cycleTimes.push(timeDiff / 1000);
           }
         }
-        lastEventTime = event.timestamp
-      })
-      
-      const avgCycleTime = cycleTimes.length > 0 
-        ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length
-        : 0
-      
-      const matchDate = new Date(match.startTime)
-      
+        lastEventTime = event.timestamp;
+      });
+
+      const avgCycleTime =
+        cycleTimes.length > 0
+          ? cycleTimes.reduce((sum, t) => sum + t, 0) / cycleTimes.length
+          : 0;
+
+      const matchDate = new Date(match.startTime);
+
       return {
         name: match.title || match.tournamentName || `Match ${index + 1}`,
-        tournamentName: match.tournamentName || 'Unlabeled',
+        tournamentName: match.tournamentName || "Unlabeled",
         date: matchDate.toISOString(),
         scored,
         total,
-        accuracy: total > 0 ? (scored / total * 100) : 0,
-        avgCycleTime
-      }
+        accuracy: total > 0 ? (scored / total) * 100 : 0,
+        avgCycleTime,
+      };
     })
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
@@ -150,8 +161,8 @@ function LifetimePage() {
             Sign in and save matches to see your lifetime statistics.
           </p>
           <p className="text-sm text-[#666]">
-            Use the <strong>Sign in / Sign up</strong> button in the top right, then
-            record matches or bulk import them on the My Matches tab.
+            Use the <strong>Sign in / Sign up</strong> button in the top right,
+            then record matches or bulk import them on the My Matches tab.
           </p>
         </div>
       )}
@@ -173,10 +184,10 @@ function LifetimePage() {
 
       {!authLoading && user && !error && allMatches.length > 0 && (
         <>
-          {/* Career Summary */}
+          {/* Career Summary
           <div className="mb-8">
             <Statistics matches={allMatches} />
-          </div>
+          </div> */}
 
           {/* Progression Chart */}
           <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
@@ -189,46 +200,51 @@ function LifetimePage() {
               <h3 className="text-xl font-semibold mb-3">Accuracy Over Time</h3>
               <div className="h-80 border-2 border-[#ddd] bg-white">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart 
+                  <LineChart
                     data={matchStats.map((stat, i) => ({
                       ...stat,
                       index: i,
-                      dateLabel: new Date(stat.date).toLocaleString('en-US')
+                      dateLabel: new Date(stat.date).toLocaleString("en-US"),
                     }))}
                     margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                   >
                     <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
-                    <XAxis 
-                      dataKey="dateLabel" 
+                    <XAxis
+                      dataKey="dateLabel"
                       stroke="#666"
-                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                       interval="preserveStartEnd"
                       minTickGap={20}
                       angle={-35}
                       textAnchor="end"
                       height={60}
                     />
-                    <YAxis 
+                    <YAxis
                       domain={[0, 100]}
                       stroke="#666"
-                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                       tickFormatter={(val) => `${val}%`}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '2px solid #445f8b',
-                        fontFamily: 'League Spartan'
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "2px solid #445f8b",
+                        fontFamily: "League Spartan",
                       }}
-                      formatter={(value) => [`${value.toFixed(1)}%`, 'Accuracy']}
-                      labelFormatter={(label, payload) => payload[0]?.payload.name}
+                      formatter={(value) => [
+                        `${value.toFixed(1)}%`,
+                        "Accuracy",
+                      ]}
+                      labelFormatter={(label, payload) =>
+                        payload[0]?.payload.name
+                      }
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="accuracy" 
-                      stroke="#445f8b" 
+                    <Line
+                      type="monotone"
+                      dataKey="accuracy"
+                      stroke="#445f8b"
                       strokeWidth={2}
-                      dot={{ fill: '#445f8b', r: 4 }}
+                      dot={{ fill: "#445f8b", r: 4 }}
                       activeDot={{ r: 6 }}
                     />
                   </LineChart>
@@ -237,48 +253,55 @@ function LifetimePage() {
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold mb-3">Average Cycle Time Over Time</h3>
+              <h3 className="text-xl font-semibold mb-3">
+                Average Cycle Time Over Time
+              </h3>
               <div className="h-80 border-2 border-[#ddd] bg-white">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart 
+                  <LineChart
                     data={matchStats.map((stat, i) => ({
                       ...stat,
                       index: i,
-                      dateLabel: new Date(stat.date).toLocaleString()
+                      dateLabel: new Date(stat.date).toLocaleString(),
                     }))}
                     margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                   >
                     <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
-                    <XAxis 
-                      dataKey="dateLabel" 
+                    <XAxis
+                      dataKey="dateLabel"
                       stroke="#666"
-                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                       interval="preserveStartEnd"
                       minTickGap={20}
                       angle={-35}
                       textAnchor="end"
                       height={60}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="#666"
-                      style={{ fontSize: '12px', fontFamily: 'League Spartan' }}
+                      style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                       tickFormatter={(val) => `${val}s`}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '2px solid #445f8b',
-                        fontFamily: 'League Spartan'
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "2px solid #445f8b",
+                        fontFamily: "League Spartan",
                       }}
-                      formatter={(value) => [`${value.toFixed(1)}s`, 'Avg Cycle Time']}
-                      labelFormatter={(label, payload) => payload[0]?.payload.name}
+                      formatter={(value) => [
+                        `${value.toFixed(1)}s`,
+                        "Avg Cycle Time",
+                      ]}
+                      labelFormatter={(label, payload) =>
+                        payload[0]?.payload.name
+                      }
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="avgCycleTime" 
-                      stroke="#445f8b" 
+                    <Line
+                      type="monotone"
+                      dataKey="avgCycleTime"
+                      stroke="#445f8b"
                       strokeWidth={2}
-                      dot={{ fill: '#445f8b', r: 4 }}
+                      dot={{ fill: "#445f8b", r: 4 }}
                       activeDot={{ r: 6 }}
                     />
                   </LineChart>
@@ -289,7 +312,7 @@ function LifetimePage() {
         </>
       )}
     </div>
-  )
+  );
 }
 
-export default LifetimePage
+export default LifetimePage;
