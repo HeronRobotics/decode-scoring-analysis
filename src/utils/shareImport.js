@@ -6,11 +6,6 @@
 // Intentionally does NOT depend on any React/runtime state.
 
 function looksLikeHostishToken(token) {
-  // Examples:
-  // - heronscout.me/?p=abc
-  // - localhost:5173/?p=abc
-  // - 127.0.0.1:5173/?p=abc
-  // - my.site/path?mt=...
   return (
     token.includes("localhost") ||
     token.includes("127.0.0.1") ||
@@ -37,7 +32,6 @@ export function tryParseUrlish(input) {
     }
   }
 
-  // Allow users to paste `heronscout.me/...` or `localhost:5173/...` without protocol.
   if (looksLikeHostishToken(raw)) {
     try {
       return new URL(`https://${raw}`);

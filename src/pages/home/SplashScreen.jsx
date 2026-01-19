@@ -18,6 +18,7 @@ import {
   Confetti,
   Trophy,
   Bird,
+  HashIcon,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -50,14 +51,13 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
       {/* Quick Start - Primary Action */}
       <div className="bg-linear-to-br from-[#445f8b] to-[#2d3e5c] border-2 border-[#445f8b] p-6 sm:p-8 text-white animate-slide-up">
         <div className="flex items-center gap-3 mb-4">
-          <Rocket size={28} weight="duotone" />
-          <h3 className="text-xl sm:text-2xl font-bold text-white!">Start</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-white!">Start Recording</h3>
         </div>
 
         <div className="bg-white/10 backdrop-blur rounded-lg p-4 mb-6">
           <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
             <span className="text-white/90 font-medium flex items-center gap-2">
-              <Target size={20} weight="bold" />
+              <HashIcon size={20} weight="bold" />
               Team Number:
             </span>
             <input
@@ -65,7 +65,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               value={recorder.teamNumber}
               onChange={(e) => recorder.setTeamNumber(e.target.value)}
               placeholder="Enter team #"
-              className="px-4 py-3 border-2 border-white/30 bg-white/10 focus:border-white focus:bg-white/20 outline-none w-full sm:w-40 text-center font-mono text-white placeholder-white/50 rounded-lg transition-all"
+              className="px-4 py-1 border border-white/30 min-w-48 bg-white/10 focus:border-white focus:bg-white/20 outline-none sm:w-40 text-center font-mono text-white placeholder-white/50 rounded-lg transition-all"
               min="1"
               max="99999"
             />
@@ -95,7 +95,6 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         </div>
       </div>
 
-      {/* How It Works - Tutorial */}
       <div className="bg-white border-2 border-[#445f8b] overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <button
           onClick={() => setShowTutorial(!showTutorial)}
@@ -117,7 +116,6 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
 
         {showTutorial && (
           <div className="p-4 sm:p-6 border-t-2 border-[#445f8b]/20 bg-[#f7f9ff] space-y-6">
-            {/* Step 1 */}
             <div className="flex gap-4">
               <div className="shrink-0">
                 <NumberCircleOne size={40} weight="duotone" className="text-[#445f8b]" />
