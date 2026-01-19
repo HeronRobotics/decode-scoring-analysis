@@ -89,15 +89,19 @@ const AuthProviderInner = ({ children }) => {
         password,
       })
       if (!error) {
-        setSession(data.session)
-        setUser(data.session?.user ?? null)
+        // Supabase may return a user without a session when email confirmation is required
+        const sessionUser = data.session?.user ?? data.user ?? null
 
-        if (posthog && data.session?.user) {
-          const u = data.session.user
-          posthog.identify(u.id, {
-            email: u.email ?? undefined,
+        setSession(data.session ?? null)
+        setUser(sessionUser)
+
+        if (posthog && sessionUser) {
+          posthog.identify(sessionUser.id, {
+            email: sessionUser.email ?? undefined,
           })
-          posthog.capture('signed_up')
+          posthog.capture('signed_up', {
+            method: 'email',
+          })
         }
       }
       return { data, error }
