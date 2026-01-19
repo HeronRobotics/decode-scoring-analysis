@@ -106,6 +106,22 @@ export async function listMatchesForCurrentUser() {
   return (data || []).map(mapDbMatchToAppMatch)
 }
 
+export async function getMatchForCurrentUser(matchId) {
+  const { data, error } = await supabase
+    .from('matches')
+    .select(
+      'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
+    )
+    .eq('id', matchId)
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return mapDbMatchToAppMatch(data)
+}
+
 export async function updateMatch(matchId, changes) {
   const payload = {}
   if (Object.prototype.hasOwnProperty.call(changes, 'tournamentName')) {
@@ -114,6 +130,12 @@ export async function updateMatch(matchId, changes) {
   if (Object.prototype.hasOwnProperty.call(changes, 'title')) {
     payload.title = changes.title || null
   }
+   if (Object.prototype.hasOwnProperty.call(changes, 'teamNumber')) {
+     payload.team_number = changes.teamNumber || null
+   }
+   if (Object.prototype.hasOwnProperty.call(changes, 'notes')) {
+     payload.notes = changes.notes || ''
+   }
 
   const { data, error } = await supabase
     .from('matches')
@@ -122,6 +144,70 @@ export async function updateMatch(matchId, changes) {
     .select(
       'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
     )
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return mapDbMatchToAppMatch(data)
+}
+
+export async function saveMatchEdits(matchId, rawMatch) {
+  const { startTime, duration, teamNumber, notes, title, tournamentName, events } = rawMatch
+
+  const meta = {
+    team_number: teamNumber || null,
+    start_time: startTime ? new Date(startTime).toISOString() : null,
+    duration_seconds: duration ?? null,
+    notes: notes || '',
+    title: title || null,
+    tournament_name: tournamentName || null,
+  }
+
+  const { error: matchError } = await supabase
+    .from('matches')
+    .update(meta)
+    .eq('id', matchId)
+
+  if (matchError) {
+    throw matchError
+  }
+
+  const eventRows = (events || []).map((e) => ({
+    type: e.type,
+    timestamp_ms: e.timestamp ?? 0,
+    total: e.type === 'cycle' ? e.total ?? 0 : null,
+    scored: e.type === 'cycle' ? e.scored ?? 0 : null,
+    phase: e.phase ?? null,
+    match_id: matchId,
+  }))
+
+  const { error: delError } = await supabase
+    .from('match_events')
+    .delete()
+    .eq('match_id', matchId)
+
+  if (delError) {
+    throw delError
+  }
+
+  if (eventRows.length > 0) {
+    const { error: insError } = await supabase
+      .from('match_events')
+      .insert(eventRows)
+
+    if (insError) {
+      throw insError
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('matches')
+    .select(
+      'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
+    )
+    .eq('id', matchId)
     .single()
 
   if (error) {

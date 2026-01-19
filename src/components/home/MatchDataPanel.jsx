@@ -117,17 +117,37 @@ function MatchDataPanel({
           <div className="flex items-center gap-3">
             <Export size={24} weight="duotone" className="text-[#445f8b]" />
             <div>
-              <h3 className="text-lg font-semibold text-[#445f8b]">Save & Share</h3>
+              <h3 className="text-lg font-semibold text-[#445f8b]">
+                Save & Share
+              </h3>
               <p className="text-xs text-[#666]">Export your match data</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {onExportJson && (
+              <button
+                onClick={onExportJson}
+                className="btn !py-2.5 !px-3 text-xs sm:text-sm"
+              >
+                <FileText size={16} weight="bold" />
+                Save JSON
+              </button>
+            )}
             <button
-              onClick={onExportJson}
+              onClick={onCopyFullUrl}
               className="btn !py-2.5 !px-4 !bg-[#445f8b] !text-white !border-[#445f8b] hover:!bg-[#2d3e5c]"
             >
-              <FloppyDisk size={18} weight="bold" />
-              Save JSON
+              {copiedFullUrl ? (
+                <>
+                  <Check size={16} weight="bold" className="text-green-200" />
+                  Link copied!
+                </>
+              ) : (
+                <>
+                  <Link size={18} weight="bold" />
+                  Copy Link
+                </>
+              )}
             </button>
             {onSaveToAccount && (
               <button
@@ -186,8 +206,9 @@ function MatchDataPanel({
 
         <div className="text-xs text-[#888] pt-3 border-t border-[#e5e7eb]">
           <p>
-            <strong>Tip:</strong> Save as JSON to import into Tournament Analysis or
-            Lifetime Stats later. Share links let others view this match instantly.
+            <strong>Tip:</strong> Save as JSON to import into Tournament
+            Analysis or Lifetime Stats later. Share links let others view this
+            match instantly.
           </p>
         </div>
       </div>

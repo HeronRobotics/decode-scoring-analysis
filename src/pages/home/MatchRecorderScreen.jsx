@@ -34,9 +34,15 @@ import { useAuth } from "../../contexts/AuthContext.jsx";
 import {
   createMatchForUser,
   listMatchesForCurrentUser,
+  saveMatchEdits,
 } from "../../api/matchesApi.js";
 
-function MatchRecorderScreen({ recorder }) {
+function MatchRecorderScreen({
+  recorder,
+  loadedMatchId,
+  initialTitle,
+  initialTournamentName,
+}) {
   const [showCycleModal, setShowCycleModal] = useState(false);
   const [cycleData, setCycleData] = useState({ total: 1, scored: 0 });
   const [showQuickGuide, setShowQuickGuide] = useState(false);
@@ -101,6 +107,18 @@ function MatchRecorderScreen({ recorder }) {
     if (totalBalls === 0) return 0;
     return Math.round((totalScored / totalBalls) * 100);
   }, [totalScored, totalBalls]);
+
+  useEffect(() => {
+    if (initialTitle !== undefined && initialTitle !== null) {
+      setTitle(initialTitle);
+    }
+  }, [initialTitle]);
+
+  useEffect(() => {
+    if (initialTournamentName !== undefined && initialTournamentName !== null) {
+      setTournamentName(initialTournamentName);
+    }
+  }, [initialTournamentName]);
 
   useEffect(() => {
     if (!user) {
@@ -295,7 +313,11 @@ function MatchRecorderScreen({ recorder }) {
     try {
       setSaveStatus("saving");
       const payload = buildMatchPayload();
-      await createMatchForUser(user.id, payload, "recorder");
+      if (loadedMatchId) {
+        await saveMatchEdits(loadedMatchId, payload);
+      } else {
+        await createMatchForUser(user.id, payload, "recorder");
+      }
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (error) {
@@ -402,7 +424,7 @@ function MatchRecorderScreen({ recorder }) {
               <Record size={24} weight="fill" />
               Record Cycle
               <span className="hidden sm:flex items-center gap-1 text-xs font-normal opacity-70 ml-2">
-                <span className="kbd bg-white/20! border-white/30! text-white! shadow-none! text-[10px]!">
+                <span className="kbd border-white/30! shadow-none! text-[12px]!">
                   1-3
                 </span>
               </span>

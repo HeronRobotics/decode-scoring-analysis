@@ -545,6 +545,7 @@ function Statistics({ events, matches, teamNumber, notes }) {
                     stroke="#445f8b"
                     strokeWidth={2.5}
                     dot={false}
+                    isAnimationActive={false}
                   />
                 </LineChart>
               </ResponsiveContainer>

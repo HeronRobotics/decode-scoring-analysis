@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Trash, UploadSimple, LinkSimple } from "@phosphor-icons/react";
+import { Trash, UploadSimple, LinkSimple, ArrowSquareOut } from "@phosphor-icons/react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import {
   listMatchesForCurrentUser,
@@ -22,6 +22,10 @@ function MyMatchesPage() {
   const [showTextImport, setShowTextImport] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [importing, setImporting] = useState(false);
+  const [editTeamNumber, setEditTeamNumber] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [savingDetails, setSavingDetails] = useState(false);
+  const [detailsError, setDetailsError] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -33,7 +37,13 @@ function MyMatchesPage() {
         const data = await listMatchesForCurrentUser();
         setMatches(data);
         if (data.length > 0) {
-          setSelectedMatchId(data[0].id);
+          const params = new URLSearchParams(window.location.search);
+          const matchId = params.get("match");
+          if (matchId && data.some((m) => m.id === matchId)) {
+            setSelectedMatchId(matchId);
+          } else {
+            setSelectedMatchId(data[0].id);
+          }
         }
       } catch (err) {
         setError(err.message || "Error loading matches");
@@ -44,6 +54,15 @@ function MyMatchesPage() {
 
     load();
   }, [user]);
+
+  useEffect(() => {
+    if (!matches.length) return;
+    const params = new URLSearchParams(window.location.search);
+    const matchId = params.get("match");
+    if (matchId && matches.some((m) => m.id === matchId)) {
+      setSelectedMatchId(matchId);
+    }
+  }, [matches]);
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
@@ -74,6 +93,18 @@ function MyMatchesPage() {
 
   const selectedMatch = matches.find((m) => m.id === selectedMatchId) || null;
 
+  useEffect(() => {
+    if (!selectedMatch) {
+      setEditTeamNumber("");
+      setEditNotes("");
+      setDetailsError("");
+      return;
+    }
+    setEditTeamNumber(selectedMatch.teamNumber || "");
+    setEditNotes(selectedMatch.notes || "");
+    setDetailsError("");
+  }, [selectedMatch]);
+
   const handleTitleChange = async (id, nextTitle) => {
     try {
       const updated = await updateMatch(id, { title: nextTitle });
@@ -89,6 +120,23 @@ function MyMatchesPage() {
       setMatches((prev) => prev.map((m) => (m.id === id ? updated : m)));
     } catch (err) {
       alert(err.message || "Failed to update tournament name");
+    }
+  };
+
+  const handleSaveDetails = async () => {
+    if (!selectedMatch) return;
+    try {
+      setSavingDetails(true);
+      setDetailsError("");
+      const updated = await updateMatch(selectedMatch.id, {
+        teamNumber: editTeamNumber,
+        notes: editNotes,
+      });
+      setMatches((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+    } catch (err) {
+      setDetailsError(err.message || "Failed to save changes");
+    } finally {
+      setSavingDetails(false);
     }
   };
 
@@ -369,17 +417,29 @@ function MyMatchesPage() {
                         />
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(m.id);
-                      }}
-                      className="error-btn !py-1 !px-2 flex items-center gap-1 text-xs"
-                    >
-                      <Trash size={14} weight="bold" />
-                      Delete
-                    </button>
+                    <div className="flex flex-col items-end gap-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(m.id);
+                        }}
+                        className="error-btn !py-1 !px-2 flex items-center gap-1 text-xs"
+                      >
+                        <Trash size={14} weight="bold" />
+                        Delete
+                      </button>
+                      <a
+                        href={`/match?match=${encodeURIComponent(m.id)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-[10px] text-[#445f8b] underline flex items-center gap-1"
+                      >
+                        <ArrowSquareOut size={10} weight="bold" />
+                        Open in new tab
+                      </a>
+                    </div>
                   </button>
                 );
               })}
@@ -394,13 +454,36 @@ function MyMatchesPage() {
                   <p>
                     <strong>Title:</strong> {selectedMatch.title || "None"}
                   </p>
-                  <p>
-                    <strong>Team:</strong> {selectedMatch.teamNumber || "N/A"}
+                  <p className="mt-2">
+                    <strong>Team:</strong>{" "}
+                    <input
+                      type="number"
+                      value={editTeamNumber}
+                      onChange={(e) => setEditTeamNumber(e.target.value)}
+                      className="px-2 py-1 ml-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded w-24 text-center"
+                      min="1"
+                    />
                   </p>
-                  <p>
-                    <strong>Notes:</strong>{" "}
-                    {selectedMatch.notes ? selectedMatch.notes : "None"}
+                  <p className="mt-2">
+                    <strong>Notes:</strong>
                   </p>
+                  <textarea
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    className="mt-1 w-full px-2 py-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded min-h-[80px]"
+                    placeholder="Defense, robot issues, strategy..."
+                  />
+                  {detailsError && (
+                    <p className="mt-2 text-xs text-red-600">{detailsError}</p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSaveDetails}
+                    disabled={savingDetails}
+                    className="mt-3 btn !py-1.5 !px-3 text-xs"
+                  >
+                    {savingDetails ? "Saving..." : "Save changes"}
+                  </button>
                 </div>
                 <Timeline
                   events={selectedMatch.events}

@@ -1,19 +1,58 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Play, Target } from "@phosphor-icons/react";
 
 import MatchRecorderScreen from "./home/MatchRecorderScreen";
 import { matchRecorderConstants } from "../hooks/useMatchRecorder";
 import { useMatchRecorderContext } from "../data/MatchRecorderContext";
+import { useAuth } from "../contexts/AuthContext.jsx";
+import { getMatchForCurrentUser } from "../api/matchesApi.js";
 
 function MatchPage() {
   const recorder = useMatchRecorderContext();
+  const { user } = useAuth();
+  const [initialMeta, setInitialMeta] = useState(null);
+  const [loadingMatch, setLoadingMatch] = useState(false);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const matchId = params.get("match");
+    if (!matchId || !user) return;
+
+    let cancelled = false;
+    const load = async () => {
+      setLoadingMatch(true);
+      setLoadError("");
+      try {
+        const match = await getMatchForCurrentUser(matchId);
+        if (cancelled) return;
+        recorder.applyParsedMatchData(match);
+        setInitialMeta({
+          id: match.id,
+          title: match.title || "",
+          tournamentName: match.tournamentName || "",
+        });
+      } catch (err) {
+        if (!cancelled) {
+          setLoadError(err.message || "Error loading match");
+        }
+      } finally {
+        if (!cancelled) setLoadingMatch(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, recorder]);
 
   const hasSession = useMemo(
     () => recorder.isRecording || recorder.matchStartTime !== null,
     [recorder.isRecording, recorder.matchStartTime]
   );
 
-  if (!hasSession) {
+  if (!hasSession && !loadingMatch) {
     return (
       <div className="min-h-screen p-3 sm:p-5 max-w-5xl mx-auto flex flex-col items-center gap-6">
         <div className="w-full bg-white border-2 border-[#445f8b] p-6 sm:p-8">
@@ -60,7 +99,20 @@ function MatchPage() {
 
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col items-center gap-6 sm:gap-12">
-      <MatchRecorderScreen recorder={recorder} />
+      {loadingMatch && (
+        <p className="text-sm text-[#445f8b] mb-2 self-start">
+          Loading saved match...
+        </p>
+      )}
+      {loadError && (
+        <p className="text-sm text-red-600 mb-2 self-start">{loadError}</p>
+      )}
+      <MatchRecorderScreen
+        recorder={recorder}
+        loadedMatchId={initialMeta?.id}
+        initialTitle={initialMeta?.title}
+        initialTournamentName={initialMeta?.tournamentName}
+      />
     </div>
   );
 }
