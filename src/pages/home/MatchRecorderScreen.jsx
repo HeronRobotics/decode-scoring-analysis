@@ -1,9 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowClockwise,
-  CricketIcon,
   Record,
   Stop,
+  Target,
+  Clock,
+  Keyboard,
+  Note,
+  Timer,
+  CheckCircle,
+  Crosshair,
+  CaretRight,
+  ArrowFatLineRight,
+  DoorOpen,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -25,6 +34,7 @@ import { createPaste } from "../../utils/pasteService";
 function MatchRecorderScreen({ recorder }) {
   const [showCycleModal, setShowCycleModal] = useState(false);
   const [cycleData, setCycleData] = useState({ total: 1, scored: 0 });
+  const [showQuickGuide, setShowQuickGuide] = useState(false);
 
   const [copiedFull, setCopiedFull] = useState(false);
   const [copiedAuto, setCopiedAuto] = useState(false);
@@ -71,6 +81,15 @@ function MatchRecorderScreen({ recorder }) {
       .filter((e) => e.type === "cycle")
       .reduce((sum, e) => sum + e.total, 0);
   }, [events]);
+
+  const cycleCount = useMemo(() => {
+    return events.filter((e) => e.type === "cycle").length;
+  }, [events]);
+
+  const accuracy = useMemo(() => {
+    if (totalBalls === 0) return 0;
+    return Math.round((totalScored / totalBalls) * 100);
+  }, [totalScored, totalBalls]);
 
   // Track match finish with PostHog
   useEffect(() => {
@@ -238,138 +257,209 @@ function MatchRecorderScreen({ recorder }) {
     setCycleData({ total: 1, scored: 0 });
   };
 
+  // Softer, on-brand phase colors with good contrast
+  const getPhaseClass = () => {
+    switch (phase) {
+      case "auto":
+        return "phase-auto";
+      case "buffer":
+        return "phase-buffer";
+      case "teleop":
+        return "phase-teleop";
+      case "finished":
+        return "phase-finished";
+      default:
+        return "phase-default";
+    }
+  };
+
+  const getPhaseLabel = () => {
+    switch (phase) {
+      case "auto":
+        return { text: "AUTO", icon: <Timer size={18} weight="bold" /> };
+      case "buffer":
+        return { text: "BUFFER", icon: <Clock size={18} weight="bold" /> };
+      case "teleop":
+        return { text: "TELEOP", icon: <Crosshair size={18} weight="bold" /> };
+      case "finished":
+        return { text: "COMPLETE", icon: <CheckCircle size={18} weight="bold" /> };
+      default:
+        return { text: "RECORDING", icon: <Record size={18} weight="fill" /> };
+    }
+  };
+
+  const phaseInfo = getPhaseLabel();
+
   return (
-    <>
-      <div className="bg-white p-4 sm:p-8 text-center border-2 border-[#445f8b] flex flex-col items-center justify-center w-full gap-2">
-        <h2 className="text-5xl sm:text-6xl font-mono">
-          {formatTime(elapsedTime)}
-        </h2>
-        {mode === "match" && (
-          <div className="mt-2 text-lg font-semibold">
-            {phase === "auto" && "Auto Phase"}
-            {phase === "buffer" && "Auto Wrap-up (8s buffer)"}
-            {phase === "teleop" && "TeleOp Phase"}
-            {phase === "finished" && "Match Complete"}
+    <div className="w-full max-w-5xl space-y-4">
+      {/* Timeline - Full width anchor at top */}
+      <Timeline events={events} currentTime={elapsedTime} mode={mode} />
+
+      {/* Timer Display - Full width */}
+      <div
+        className={`${getPhaseClass()} text-white p-5 sm:p-6 border-2 border-[#445f8b] shadow-md`}
+      >
+        <div className="flex items-center justify-between mb-3">
+          {/* Phase badge */}
+          {mode === "match" && (
+            <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
+              {phaseInfo.icon}
+              <span className="text-xs font-bold tracking-wider">
+                {phaseInfo.text}
+              </span>
+            </div>
+          )}
+          {/* Live stats */}
+          <div className="flex items-center gap-3 text-sm">
+            <span className="flex items-center gap-1.5">
+              <Target size={16} weight="bold" />
+              <span className="font-mono font-bold">
+                {totalScored}/{totalBalls}
+              </span>
+            </span>
+            <span className="opacity-60">|</span>
+            <span className="font-mono">{accuracy}%</span>
           </div>
-        )}
-        <div className="text-sm sm:text-base px-2">
-          Scored&nbsp;
-          <span className="font-bold">
-            {totalScored}/{totalBalls}
-          </span>
-          . Scroll down for instructions.
+        </div>
+
+        {/* Main timer */}
+        <div className="text-center">
+          <h2 className="text-5xl sm:text-6xl font-mono font-bold tracking-tight text-white!">
+            {formatTime(elapsedTime)}
+          </h2>
+          <p className="text-sm opacity-80 mt-1">
+            {cycleCount} cycle{cycleCount !== 1 ? "s" : ""} recorded
+          </p>
         </div>
       </div>
 
-      <div className="bg-white p-4 sm:p-6 border-2 border-[#445f8b] w-full">
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between flex-wrap mb-4">
-          <label className="flex flex-col sm:flex-row sm:items-center gap-2 text-lg font-semibold w-full sm:w-auto">
-            <span>Team Number:</span>
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left column - Timer & Actions */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Action Buttons */}
+          {isRecording ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button
+                onClick={() => setShowCycleModal(true)}
+                className="col-span-2 py-4 px-4 text-base font-bold bg-[#445f8b] text-white border-2 border-[#445f8b] hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-2 shadow-md"
+              >
+                <Record size={24} weight="fill" />
+                Record Cycle
+                <span className="hidden sm:flex items-center gap-1 text-xs font-normal opacity-70 ml-2">
+                  <span className="kbd bg-white/20! border-white/30! text-white! shadow-none! text-[10px]!">1-3</span>
+                </span>
+              </button>
+
+              <button
+                onClick={() => recorder.addGate()}
+                className="btn py-3! justify-center"
+              >
+                <DoorOpen size={20} weight="bold" />
+                <span className="hidden sm:inline">Gate</span>
+                <span className="sm:hidden">Gate</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  wasManualStopRef.current = true;
+                  recorder.stopMatch();
+                }}
+                className="col-span-2 sm:col-span-3 error-btn py-2.5! justify-center text-sm!"
+              >
+                <Stop size={18} weight="fill" />
+                Stop Match
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => recorder.resetMatch()}
+              className="btn w-full py-3! justify-center"
+            >
+              <ArrowClockwise size={20} weight="bold" />
+              Start New Match
+            </button>
+          )}
+
+          {/* Quick Guide - Inline when recording */}
+          {isRecording && (
+            <div className="bg-white border border-[#ddd] rounded-lg overflow-hidden">
+              <button
+                onClick={() => setShowQuickGuide(!showQuickGuide)}
+                className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-[#f8fafc] transition-colors text-sm"
+              >
+                <span className="flex items-center gap-2 text-[#666]">
+                  <Keyboard size={16} weight="duotone" className="text-[#445f8b]" />
+                  Keyboard shortcuts
+                </span>
+                <CaretRight
+                  size={14}
+                  weight="bold"
+                  className={`text-[#445f8b] transition-transform ${showQuickGuide ? 'rotate-90' : ''}`}
+                />
+              </button>
+
+              {showQuickGuide && (
+                <div className="px-4 pb-3 pt-1 border-t border-[#eee]">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#555]">
+                    <span className="kbd">1</span>
+                    <span className="kbd">2</span>
+                    <span className="kbd">3</span>
+                    <span className="text-[#888]">=attempted</span>
+                    <ArrowFatLineRight size={12} className="text-[#445f8b]" />
+                    <span className="kbd">0</span>-<span className="kbd">3</span>
+                    <span className="text-[#888]">=scored</span>
+                    <ArrowFatLineRight size={12} className="text-[#445f8b]" />
+                    <span className="kbd">Enter</span>
+                    <span className="text-[#888] ml-2">|</span>
+                    <span className="kbd ml-2">G</span>
+                    <span className="text-[#888]">=gate</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right column - Team & Notes */}
+        <div className="space-y-4">
+          <div className="bg-white p-4 border-2 border-[#445f8b]">
+            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+              <Target size={16} weight="bold" className="text-[#445f8b]" />
+              Team Number
+            </label>
             <input
               type="number"
               value={teamNumber}
               onChange={(e) => recorder.setTeamNumber(e.target.value)}
-              placeholder="1234"
-              className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:w-48 text-center font-mono"
+              placeholder="Enter team #"
+              className="w-full px-4 py-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-center font-mono text-xl rounded transition-colors"
               min="1"
               max="99999"
             />
-          </label>
-          <div className="text-xs sm:text-sm text-[#666]">
-            <strong>PRO TIP:</strong> Use your keyboard to record cycles! See
-            instructions below.
+          </div>
+
+          <div className="bg-white p-4 border-2 border-[#445f8b]">
+            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+              <Note size={16} weight="bold" className="text-[#445f8b]" />
+              Match Notes
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => recorder.setNotes(e.target.value)}
+              placeholder="Defense, robot issues, strategy..."
+              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none resize-none h-24 rounded transition-colors text-sm"
+            />
           </div>
         </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="flex items-center gap-2 text-sm font-semibold">
-            Match Notes (optional):
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => recorder.setNotes(e.target.value)}
-            placeholder="Add any observations about this match..."
-            className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none resize-vertical min-h-[60px]"
-            rows="2"
-          />
-        </div>
-
-        <p className="mt-4">
-          Set the team number and add notes for this match. Put together all of
-          your scouting on the Tournament Analysis page later to compare teams!
-        </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center flex-wrap w-full">
-        {isRecording ? (
-          <>
-            <button
-              onClick={() => setShowCycleModal(true)}
-              className="w-full sm:w-auto px-4 py-3 sm:px-8 sm:py-4 text-base sm:text-lg border-2 border-[#445f8b] bg-[#445f8b] text-white hover:bg-white hover:text-[#2d3e5c] transition-colors font-semibold flex items-center justify-center gap-2"
-            >
-              <Record size={24} weight="fill" />
-              Record Cycle
-            </button>
-            <button
-              onClick={() => recorder.addGate()}
-              className="btn w-full sm:w-auto justify-center"
-            >
-              <CricketIcon size={24} weight="bold" />
-              Gate Open
-            </button>
-            <button
-              onClick={() => {
-                wasManualStopRef.current = true;
-                recorder.stopMatch();
-              }}
-              className="error-btn w-full sm:w-auto justify-center"
-            >
-              <Stop size={24} weight="fill" />
-              Stop Match
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => recorder.resetMatch()}
-            className="btn !px-6 !py-3"
-          >
-            <ArrowClockwise size={24} weight="bold" />
-            New Match
-          </button>
-        )}
-      </div>
-
-      <Timeline events={events} currentTime={elapsedTime} />
-
-      <div className="w-full">
-        <p>
-          <strong>Instructions:</strong>
-          <br />
-          - To record a shooting cycle, press the "Record Cycle" button and
-          select how many balls were shot and how many were successfully scored.
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Keyboard Users:</strong> Type the
-          total number of balls (1-3) attempted, followed by the number scored
-          (0-total), then press Enter. Esc to cancel.
-          <br />
-          - Record gate openings by pressing the "Gate Open" button.
-          <br />
-          - Events will appear on the timeline above as they are recorded.
-          <br />
-          - Export the Match and save it somewhere! The "Lifetime Stats" and
-          "Tournament Analysis" pages can import your saved Matches and give you
-          a lot more insight into your performance over time.
-          <br />
-          &nbsp;&nbsp;&nbsp;&nbsp;- <strong>Text export:</strong> You can export
-          matches in a readable text format if you just want to share a match
-          with your friends. Use JSON for advanced Heron Scout analysis!
-        </p>
-      </div>
-
+      {/* Statistics */}
       {events.length > 0 && (
         <Statistics events={events} teamNumber={teamNumber} notes={notes} />
       )}
 
+      {/* Export Panel */}
       {!isRecording && events.length > 0 && (
         <MatchDataPanel
           mode={mode}
@@ -407,7 +497,7 @@ function MatchRecorderScreen({ recorder }) {
         onConfirm={confirmCycle}
         onClose={() => setShowCycleModal(false)}
       />
-    </>
+    </div>
   );
 }
 

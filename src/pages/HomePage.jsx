@@ -5,6 +5,7 @@ import { analytics } from "../firebase";
 import SplashScreen from "./home/SplashScreen";
 import MatchRecorderScreen from "./home/MatchRecorderScreen";
 import TextImportModal from "../components/home/modals/TextImportModal";
+import LoadingSplash from "../components/home/LoadingSplash";
 import useMatchRecorder from "../hooks/useMatchRecorder";
 import { parseMatchText } from "../utils/matchFormat";
 import { readJsonFile } from "../utils/fileJson";
@@ -15,6 +16,8 @@ function HomePage() {
   const { applyParsedMatchData } = recorder;
   const [showTextImport, setShowTextImport] = useState(false);
   const [textInput, setTextInput] = useState("");
+  const [isLoadingFromUrl, setIsLoadingFromUrl] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Loading match data...");
 
   const importFromText = () => {
     try {
@@ -70,10 +73,18 @@ function HomePage() {
 
       if (!pasteKey && !encoded) return;
 
+      // Show loading splash
+      setIsLoadingFromUrl(true);
+      setLoadingMessage(pasteKey ? "Fetching shared match..." : "Decoding match data...");
+
+      // Add a minimum delay for the animation to be visible
+      const minDelay = new Promise(resolve => setTimeout(resolve, 1500));
+
       try {
         let decoded;
 
         if (pasteKey) {
+          setLoadingMessage("Fetching shared match...");
           const b64Payload = await readPaste(pasteKey);
           decoded = atob(b64Payload);
         } else {
@@ -82,7 +93,14 @@ function HomePage() {
 
         if (cancelled) return;
 
+        setLoadingMessage("Processing match data...");
         const parsedData = parseMatchText(decoded);
+
+        // Wait for minimum animation time
+        await minDelay;
+
+        if (cancelled) return;
+
         const success = applyParsedMatchData(parsedData);
         if (success) {
           logEvent(
@@ -92,6 +110,11 @@ function HomePage() {
         }
       } catch (e) {
         console.warn("Failed to import match from URL", e);
+        await minDelay;
+      } finally {
+        if (!cancelled) {
+          setIsLoadingFromUrl(false);
+        }
       }
     };
 
@@ -104,14 +127,13 @@ function HomePage() {
 
   const showRecorder = recorder.isRecording || recorder.matchStartTime !== null;
 
+  // Show loading splash when loading from URL
+  if (isLoadingFromUrl) {
+    return <LoadingSplash message={loadingMessage} />;
+  }
+
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 sm:gap-12">
-      <header className="text-center mt-4 sm:mt-8 px-2">
-        <h1 className="text-3xl sm:text-5xl font-bold">Heron Scout</h1>
-        <p className="text-base sm:text-lg">
-          Heron's Match Analysis for DECODE
-        </p>
-      </header>
 
       {!showRecorder ? (
         <>

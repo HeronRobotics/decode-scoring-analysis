@@ -1,5 +1,78 @@
-import { DownloadSimple } from "@phosphor-icons/react";
-import PhaseExportPanel from "./matchData/PhaseExportPanel";
+import { useState } from "react";
+import {
+  Copy,
+  Check,
+  ShareNetwork,
+  Link,
+  FileText,
+  CaretRight,
+  Export,
+  FloppyDisk,
+} from "@phosphor-icons/react";
+
+function ExportSection({ title, subtitle, text, onCopyText, copiedText, onShareLink, onCopyLink, copiedLink }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="export-card">
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div>
+          <h4 className="font-semibold text-[#2d3e5c] flex items-center gap-2">
+            <FileText size={16} weight="duotone" className="text-[#445f8b]" />
+            {title}
+          </h4>
+          {subtitle && <p className="text-xs text-[#888] mt-0.5">{subtitle}</p>}
+        </div>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-[#445f8b] hover:underline flex items-center gap-1"
+        >
+          {expanded ? 'Hide' : 'Show'} data
+          <CaretRight size={12} className={`transition-transform ${expanded ? 'rotate-90' : ''}`} />
+        </button>
+      </div>
+
+      {expanded && (
+        <pre className="bg-white p-3 mb-3 font-mono text-[10px] leading-relaxed border border-[#e5e7eb] rounded whitespace-pre-wrap break-words max-h-32 overflow-auto">
+          {text}
+        </pre>
+      )}
+
+      <div className="action-btn-group">
+        <button onClick={onCopyLink} className="btn !py-2 !px-3 !text-xs">
+          {copiedLink ? (
+            <>
+              <Check size={14} weight="bold" className="text-green-600" />
+              Link copied!
+            </>
+          ) : (
+            <>
+              <Link size={14} weight="bold" />
+              Copy Link
+            </>
+          )}
+        </button>
+        <button onClick={onCopyText} className="btn !py-2 !px-3 !text-xs">
+          {copiedText ? (
+            <>
+              <Check size={14} weight="bold" className="text-green-600" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <Copy size={14} weight="bold" />
+              Copy Text
+            </>
+          )}
+        </button>
+        <button onClick={onShareLink} className="btn !py-2 !px-3 !text-xs">
+          <ShareNetwork size={14} weight="bold" />
+          Share
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function MatchDataPanel({
   mode,
@@ -24,70 +97,74 @@ function MatchDataPanel({
   onExportJson,
 }) {
   return (
-    <div className="bg-white p-4 sm:p-8 mt-8 border-2 border-[#445f8b] flex flex-col justif-center items-center gap-6 w-full">
-      <div className="w-full">
-        <h3 className="text-xl mb-2">Match Data:</h3>
-        <p className="mb-2">
-          Export this Match as JSON so you can analyze it with Heron Scout
-          later!
-        </p>
+    <div className="bg-white border-2 border-[#445f8b] overflow-hidden">
+      {/* Header */}
+      <div className="bg-[#f8fafc] px-5 py-4 border-b border-[#e5e7eb]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Export size={24} weight="duotone" className="text-[#445f8b]" />
+            <div>
+              <h3 className="text-lg font-semibold text-[#445f8b]">Save & Share</h3>
+              <p className="text-xs text-[#666]">Export your match data</p>
+            </div>
+          </div>
+          <button
+            onClick={onExportJson}
+            className="btn !py-2.5 !px-4 !bg-[#445f8b] !text-white !border-[#445f8b] hover:!bg-[#2d3e5c]"
+          >
+            <FloppyDisk size={18} weight="bold" />
+            Save JSON
+          </button>
+        </div>
+      </div>
 
-        <PhaseExportPanel
-          title={null}
+      {/* Export sections */}
+      <div className="p-5 space-y-4">
+        {/* Full match */}
+        <ExportSection
+          title="Full Match"
+          subtitle="Complete match data with all events"
           text={matchText}
           onCopyText={onCopyFullText}
           copiedText={copiedFull}
-          copyTextLabel="Copy Text"
-          shareRowLabel="Share URL"
           onShareLink={onShareFull}
           onCopyLink={onCopyFullUrl}
           copiedLink={copiedFullUrl}
-          shareLabel="share link"
-          copyLinkLabel="copy link"
         />
 
+        {/* Phase-specific exports for match mode */}
         {mode === "match" && (
-          <div className="w-full mt-6 flex flex-col gap-4">
-            <PhaseExportPanel
-              title="Auto-only Text:"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#e5e7eb]">
+            <ExportSection
+              title="Auto Only"
+              subtitle="Autonomous period (0:00-0:30)"
               text={autoText}
               onCopyText={onCopyAutoText}
               copiedText={copiedAuto}
-              copyTextLabel="Copy Auto Text"
-              shareRowLabel="Auto URL"
               onShareLink={onShareAuto}
               onCopyLink={onCopyAutoUrl}
               copiedLink={copiedAutoUrl}
-              shareLabel="share auto link"
-              copyLinkLabel="copy auto link"
             />
-
-            <PhaseExportPanel
-              title="TeleOp-only Text:"
+            <ExportSection
+              title="TeleOp Only"
+              subtitle="TeleOp period (0:38-2:38)"
               text={teleopText}
               onCopyText={onCopyTeleopText}
               copiedText={copiedTeleop}
-              copyTextLabel="Copy TeleOp Text"
-              shareRowLabel="TeleOp URL"
               onShareLink={onShareTeleop}
               onCopyLink={onCopyTeleopUrl}
               copiedLink={copiedTeleopUrl}
-              shareLabel="share teleop link"
-              copyLinkLabel="copy teleop link"
             />
           </div>
         )}
-      </div>
 
-      <div className="w-full flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-6">
-        <p>
-          Send the above text to your friends, or export as JSON to analyze it
-          with Heron Scout later!
-        </p>
-        <button onClick={onExportJson} className="btn">
-          <DownloadSimple size={20} weight="bold" />
-          Save JSON
-        </button>
+        {/* Help text */}
+        <div className="text-xs text-[#888] pt-3 border-t border-[#e5e7eb]">
+          <p>
+            <strong>Tip:</strong> Save as JSON to import into Tournament Analysis or Lifetime Stats later.
+            Share links let others view this match instantly.
+          </p>
+        </div>
       </div>
     </div>
   );
