@@ -1,48 +1,50 @@
-import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext.jsx'
+import { useState } from "react";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
-function AuthModal({ open, onClose, defaultMode = 'signin', onAuthSuccess }) {
-  const { signIn, signUp } = useAuth()
-  const [mode, setMode] = useState(defaultMode)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
+  const { signIn, signUp } = useAuth();
+  const [mode, setMode] = useState(defaultMode);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  if (!open) return null
+  if (!open) return null;
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      const fn = mode === 'signin' ? signIn : signUp
-      const { error: authError } = await fn({ email, password })
+      const fn = mode === "signin" ? signIn : signUp;
+      const { error: authError } = await fn({ email, password });
       if (authError) {
-        setError(authError.message || 'Authentication failed')
-        setLoading(false)
-        return
+        setError(authError.message || "Authentication failed");
+        setLoading(false);
+        return;
       }
 
-      if (mode === 'signup') {
-        alert('Check your email for a confirmation link to finish creating your account.')
+      if (mode === "signup") {
+        alert(
+          "Check your email for a confirmation link to finish creating your account.",
+        );
       }
 
       if (onAuthSuccess) {
-        onAuthSuccess()
+        onAuthSuccess();
       }
-      onClose()
+      onClose();
     } catch (err) {
-      setError(err.message || 'Authentication failed')
-      setLoading(false)
+      setError(err.message || "Authentication failed");
+      setLoading(false);
     }
-  }
+  };
 
   const switchMode = (nextMode) => {
-    setMode(nextMode)
-    setError('')
-  }
+    setMode(nextMode);
+    setError("");
+  };
 
   return (
     <div
@@ -54,43 +56,42 @@ function AuthModal({ open, onClose, defaultMode = 'signin', onAuthSuccess }) {
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-2xl mb-5 text-center">
-          {mode === 'signin' ? 'Sign In' : 'Create Account'}
+          {mode === "signin" ? "Sign In" : "Create Account"}
         </h3>
 
         <div className="flex mb-4 border-b border-[#ddd]">
           <button
             type="button"
-            onClick={() => switchMode('signin')}
+            onClick={() => switchMode("signin")}
             className={`flex-1 py-2 text-sm font-semibold ${
-              mode === 'signin'
-                ? 'border-b-2 border-[#445f8b] text-[#445f8b]'
-                : 'text-[#666]'
+              mode === "signin"
+                ? "border-b-2 border-[#445f8b] text-[#445f8b]"
+                : "text-[#666]"
             }`}
           >
             Sign In
           </button>
           <button
             type="button"
-            onClick={() => switchMode('signup')}
+            onClick={() => switchMode("signup")}
             className={`flex-1 py-2 text-sm font-semibold ${
-              mode === 'signup'
-                ? 'border-b-2 border-[#445f8b] text-[#445f8b]'
-                : 'text-[#666]'
+              mode === "signup"
+                ? "border-b-2 border-[#445f8b] text-[#445f8b]"
+                : "text-[#666]"
             }`}
           >
             Sign Up
           </button>
         </div>
 
-        {error && (
-          <div className="mb-3 text-sm text-red-600">{error}</div>
-        )}
+        {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm">
             Email
             <input
               type="email"
+              placeholder="Your team email here"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none"
@@ -122,18 +123,18 @@ function AuthModal({ open, onClose, defaultMode = 'signin', onAuthSuccess }) {
               disabled={loading}
             >
               {loading
-                ? mode === 'signin'
-                  ? 'Signing in...'
-                  : 'Signing up...'
-                : mode === 'signin'
-                  ? 'Sign In'
-                  : 'Sign Up'}
+                ? mode === "signin"
+                  ? "Signing in..."
+                  : "Signing up..."
+                : mode === "signin"
+                  ? "Sign In"
+                  : "Sign Up"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default AuthModal
+export default AuthModal;
