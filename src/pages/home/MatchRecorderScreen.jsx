@@ -13,6 +13,10 @@ import {
   CaretRight,
   ArrowFatLineRight,
   DoorOpen,
+  Palette,
+  CaretDown,
+  Car,
+  Flag,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -23,6 +27,8 @@ import Statistics from "../../components/Statistics";
 import CycleModal from "../../components/home/modals/CycleModal";
 import KeyboardEntryToast from "../../components/home/KeyboardEntryToast";
 import MatchDataPanel from "../../components/home/MatchDataPanel";
+import PatternInput from "../../components/home/PatternInput";
+import { calculateTotalPoints } from "../../utils/scoring";
 
 import useKeyboardCycleEntry from "../../hooks/useKeyboardCycleEntry";
 import { formatTime } from "../../utils/format";
@@ -75,6 +81,12 @@ function MatchRecorderScreen({
     teamNumber,
     mode,
     phase,
+    // Scoring state
+    motif,
+    autoPattern,
+    teleopPattern,
+    autoLeave,
+    teleopPark,
   } = recorder;
 
   const { keyEntry, keyEntryVisible } = useKeyboardCycleEntry({
@@ -107,6 +119,19 @@ function MatchRecorderScreen({
     if (totalBalls === 0) return 0;
     return Math.round((totalScored / totalBalls) * 100);
   }, [totalScored, totalBalls]);
+
+  const pointsBreakdown = useMemo(() => {
+    return calculateTotalPoints({
+      events,
+      motif,
+      autoPattern,
+      teleopPattern,
+      autoLeave,
+      teleopPark,
+    });
+  }, [events, motif, autoPattern, teleopPattern, autoLeave, teleopPark]);
+
+  const [showPointsEntry, setShowPointsEntry] = useState(true);
 
   useEffect(() => {
     if (initialTitle !== undefined && initialTitle !== null) {
@@ -289,6 +314,12 @@ function MatchRecorderScreen({
     notes: notes || "",
     title: title || "",
     tournamentName: tournamentName || "",
+    // Scoring fields
+    motif: motif || null,
+    autoPattern: autoPattern || "",
+    teleopPattern: teleopPattern || "",
+    autoLeave: autoLeave ?? false,
+    teleopPark: teleopPark || "none",
   });
 
   const exportMatchJson = () => {
@@ -416,7 +447,7 @@ function MatchRecorderScreen({
       <div className="space-y-4">
         {/* Action Buttons (Full width) */}
         {isRecording ? (
-          <div className="space-y-2">
+          <div className="flex flex-row items-center justify-center space-x-2">
             <button
               onClick={() => setShowCycleModal(true)}
               className="w-full py-4 px-4 text-base font-bold bg-[#445f8b] text-white border-2 border-[#445f8b] hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-2 shadow-md"
@@ -504,6 +535,133 @@ function MatchRecorderScreen({
           </div>
         )}
 
+        {/* Points Entry - Show after match stops */}
+      {(
+        <div className="bg-white border-2 border-[#445f8b] overflow-hidden">
+          <button
+            onClick={() => setShowPointsEntry(!showPointsEntry)}
+            className="w-full p-4 flex items-center justify-between hover:bg-[#f7f9ff] transition-colors text-left"
+          >
+            <div className="flex items-center gap-3">
+              <Palette size={24} weight="duotone" className="text-[#445f8b]" />
+              <span className="text-lg font-semibold">Points Entry</span>
+              <span className="text-sm bg-[#445f8b] text-white px-2 py-0.5 rounded-full font-bold">
+                {pointsBreakdown.total} pts
+              </span>
+            </div>
+            <CaretDown
+              size={20}
+              weight="bold"
+              className={`text-[#445f8b] transition-transform ${showPointsEntry ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {showPointsEntry && (
+            <div className="p-4 border-t-2 border-[#445f8b]/20 space-y-5">
+              {/* Motif Selector */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                  <Palette size={16} weight="bold" className="text-[#445f8b]" />
+                  Motif Pattern
+                </label>
+                <select
+                  value={motif || ""}
+                  onChange={(e) => recorder.setMotif(e.target.value || null)}
+                  className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+                >
+                  <option value="">Not set</option>
+                  <option value="GPP">GPP — Green Purple Purple</option>
+                  <option value="PGP">PGP — Purple Green Purple</option>
+                  <option value="PPG">PPG — Purple Purple Green</option>
+                </select>
+              </div>
+
+              {/* Pattern Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <PatternInput
+                  label="Auto Pattern (end of auto)"
+                  value={autoPattern}
+                  onChange={recorder.setAutoPattern}
+                  motif={motif}
+                  disabled={!motif}
+                />
+                <PatternInput
+                  label="Teleop Pattern (end of teleop)"
+                  value={teleopPattern}
+                  onChange={recorder.setTeleopPattern}
+                  motif={motif}
+                  disabled={!motif}
+                />
+              </div>
+
+              {/* Auto Leave & Teleop Park */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                    <Car size={16} weight="bold" className="text-[#445f8b]" />
+                    Auto Leave
+                  </label>
+                  <label className="flex items-center gap-3 p-3 border-2 border-[#ddd] rounded cursor-pointer hover:border-[#445f8b] transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={autoLeave}
+                      onChange={(e) => recorder.setAutoLeave(e.target.checked)}
+                      className="w-5 h-5 accent-[#445f8b]"
+                    />
+                    <span className="text-sm">Robot left launch line (+3 pts)</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                    <Flag size={16} weight="bold" className="text-[#445f8b]" />
+                    Teleop Park
+                  </label>
+                  <select
+                    value={teleopPark}
+                    onChange={(e) => recorder.setTeleopPark(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+                  >
+                    <option value="none">None (0 pts)</option>
+                    <option value="partial">Partial (5 pts)</option>
+                    <option value="full">Full (10 pts)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Points Summary */}
+              <div className="bg-[#f7f9ff] border border-[#445f8b]/30 rounded-lg p-4">
+                <h4 className="font-semibold text-sm mb-3 text-[#445f8b]">Points Breakdown</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                  <div className="text-center p-2 bg-white rounded border border-[#ddd]">
+                    <div className="text-2xl font-bold text-[#445f8b]">{pointsBreakdown.artifact}</div>
+                    <div className="text-xs text-gray-500">Artifact ({totalScored}×3)</div>
+                  </div>
+                  <div className="text-center p-2 bg-white rounded border border-[#ddd]">
+                    <div className="text-2xl font-bold text-[#445f8b]">{pointsBreakdown.motif.total}</div>
+                    <div className="text-xs text-gray-500">
+                      Motif ({pointsBreakdown.motif.auto}+{pointsBreakdown.motif.teleop})
+                    </div>
+                  </div>
+                  <div className="text-center p-2 bg-white rounded border border-[#ddd]">
+                    <div className="text-2xl font-bold text-[#445f8b]">{pointsBreakdown.leave}</div>
+                    <div className="text-xs text-gray-500">Leave</div>
+                  </div>
+                  <div className="text-center p-2 bg-white rounded border border-[#ddd]">
+                    <div className="text-2xl font-bold text-[#445f8b]">{pointsBreakdown.park}</div>
+                    <div className="text-xs text-gray-500">Park</div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-[#445f8b]/20 text-center">
+                  <span className="text-sm text-gray-600">Total Points:</span>
+                  <span className="text-3xl font-bold text-[#445f8b] ml-2">{pointsBreakdown.total}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
         {/* Team & Notes (Stacked) */}
         <div className="space-y-4">
           <div className="bg-white p-4 border-2 border-[#445f8b]">
@@ -585,9 +743,20 @@ function MatchRecorderScreen({
         </div>
       </div>
 
+      
+
       {/* Statistics */}
       {events.length > 0 && (
-        <Statistics events={events} teamNumber={teamNumber} notes={notes} />
+        <Statistics
+          events={events}
+          teamNumber={teamNumber}
+          notes={notes}
+          motif={motif}
+          autoPattern={autoPattern}
+          teleopPattern={teleopPattern}
+          autoLeave={autoLeave}
+          teleopPark={teleopPark}
+        />
       )}
 
       {/* Export Panel */}

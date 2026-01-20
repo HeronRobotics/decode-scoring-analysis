@@ -19,6 +19,7 @@ import {
   Trophy,
   Bird,
   HashIcon,
+  Palette,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -31,6 +32,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
   const { startMatch } = recorder;
   const posthog = usePostHog();
   const [showTutorial, setShowTutorial] = useState(false);
+  const [selectedMotif, setSelectedMotif] = useState("");
 
   return (
     <div className="w-full max-w-4xl space-y-6 sm:space-y-8">
@@ -54,7 +56,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
           <h3 className="text-xl sm:text-2xl font-bold text-white!">Start Recording</h3>
         </div>
 
-        <div className="bg-white/10 backdrop-blur rounded-lg p-4 mb-6">
+        <div className="bg-white/10 backdrop-blur rounded-lg p-4 mb-6 space-y-3">
           <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
             <span className="text-white/90 font-medium flex items-center gap-2">
               <HashIcon size={20} weight="bold" />
@@ -70,17 +72,34 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               max="99999"
             />
           </label>
+          <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+            <span className="text-white/90 font-medium flex items-center gap-2">
+              <Palette size={20} weight="bold" />
+              Motif Pattern:
+            </span>
+            <select
+              value={selectedMotif}
+              onChange={(e) => setSelectedMotif(e.target.value)}
+              className="px-4 py-1 border border-white/30 min-w-48 bg-white/10 focus:border-white focus:bg-white/20 outline-none sm:w-40 text-center font-mono text-white rounded-lg transition-all appearance-none cursor-pointer"
+            >
+              <option value="" className="text-gray-800">Not set</option>
+              <option value="GPP" className="text-gray-800">GPP (Green-Purple-Purple)</option>
+              <option value="PGP" className="text-gray-800">PGP (Purple-Green-Purple)</option>
+              <option value="PPG" className="text-gray-800">PPG (Purple-Purple-Green)</option>
+            </select>
+          </label>
         </div>
 
         <button
           onClick={() => {
-            startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match");
+            startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match", selectedMotif || null);
             setPath("/match");
             logEvent(analytics, "start_match_mode");
             posthog.capture("start_match", {
               mode: "match",
               duration: matchRecorderConstants.MATCH_TOTAL_DURATION,
               teamNumber: recorder.teamNumber,
+              motif: selectedMotif || null,
             });
           }}
           className="w-full py-4 px-6 bg-white text-[#445f8b] font-bold text-lg rounded-lg hover:bg-white/90 transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"

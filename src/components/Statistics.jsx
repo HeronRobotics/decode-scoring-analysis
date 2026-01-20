@@ -4,9 +4,11 @@ import {
   Clock,
   ListNumbers,
   Crosshair,
+  Star,
 } from "@phosphor-icons/react";
 import { formatStat } from "../utils/format";
 import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
+import { calculateTotalPoints } from "../utils/scoring.js";
 
 const TWO_MIN_WINDOW_MS = 120_000;
 
@@ -85,7 +87,17 @@ const computeBallsPerTwoMinutes = (cycleEvents, valueKey = "total") => {
   return latest;
 };
 
-function Statistics({ events, matches, teamNumber, notes }) {
+function Statistics({
+  events,
+  matches,
+  teamNumber,
+  notes,
+  motif,
+  autoPattern,
+  teleopPattern,
+  autoLeave,
+  teleopPark,
+}) {
   const allEvents =
     (matches ? matches.flatMap((m) => m.events || []) : events) || [];
   const cycleEvents = allEvents.filter((e) => e.type === "cycle");
@@ -124,6 +136,17 @@ function Statistics({ events, matches, teamNumber, notes }) {
     timelineCycleEvents,
     "total"
   );
+
+  // Calculate points if scoring data is available
+  const hasPointsData = motif || autoLeave || teleopPark !== "none";
+  const pointsBreakdown = calculateTotalPoints({
+    events: allEvents,
+    motif,
+    autoPattern,
+    teleopPattern,
+    autoLeave,
+    teleopPark,
+  });
 
   return (
     <div className="mb-8 w-full">
@@ -214,6 +237,58 @@ function Statistics({ events, matches, teamNumber, notes }) {
           </div>
         </div>
       </div>
+
+      {/* Points Summary */}
+      {(hasPointsData || pointsBreakdown.artifact > 0) && (
+        <div className="bg-gradient-to-br from-amber-500 to-orange-600 border-2 border-amber-600 p-4 sm:p-8 mb-5">
+          <div className="flex items-center gap-3 mb-6 -ml-4 -mt-4">
+            <Star size={32} weight="fill" className="text-white" />
+            <h4 className="text-2xl text-white">Points Summary</h4>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="text-center bg-white/10 rounded-lg p-3">
+              <div className="text-3xl sm:text-4xl font-bold text-white">
+                {pointsBreakdown.artifact}
+              </div>
+              <div className="text-white/70 text-xs mt-1">
+                Artifact
+                <div className="text-white/50">({totalBallsScored}×3)</div>
+              </div>
+            </div>
+            <div className="text-center bg-white/10 rounded-lg p-3">
+              <div className="text-3xl sm:text-4xl font-bold text-white">
+                {pointsBreakdown.motif.total}
+              </div>
+              <div className="text-white/70 text-xs mt-1">
+                Motif
+                {motif && (
+                  <div className="text-white/50">
+                    ({pointsBreakdown.motif.auto}+{pointsBreakdown.motif.teleop})
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="text-center bg-white/10 rounded-lg p-3">
+              <div className="text-3xl sm:text-4xl font-bold text-white">
+                {pointsBreakdown.leave}
+              </div>
+              <div className="text-white/70 text-xs mt-1">Leave</div>
+            </div>
+            <div className="text-center bg-white/10 rounded-lg p-3">
+              <div className="text-3xl sm:text-4xl font-bold text-white">
+                {pointsBreakdown.park}
+              </div>
+              <div className="text-white/70 text-xs mt-1">Park</div>
+            </div>
+            <div className="text-center bg-white/20 rounded-lg p-3 border-2 border-white/30">
+              <div className="text-3xl sm:text-4xl font-bold text-white">
+                {pointsBreakdown.total}
+              </div>
+              <div className="text-white/90 text-xs font-semibold mt-1">TOTAL</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Detailed Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

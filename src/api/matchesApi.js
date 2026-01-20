@@ -1,5 +1,43 @@
 import { supabase } from '../supabaseClient'
 
+// Base columns that always exist
+const BASE_SELECT = 'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name'
+const BASE_SELECT_WITH_EVENTS = `${BASE_SELECT}, events:match_events(type, timestamp_ms, total, scored, phase)`
+
+// Scoring columns (may not exist in older databases)
+const SCORING_COLUMNS = ['motif', 'auto_pattern', 'teleop_pattern', 'auto_leave', 'teleop_park']
+
+// Cache for whether scoring columns exist
+let scoringColumnsExist = null
+
+async function checkScoringColumnsExist() {
+  if (scoringColumnsExist !== null) return scoringColumnsExist
+
+  try {
+    // Try to select one of the scoring columns
+    const { error } = await supabase
+      .from('matches')
+      .select('motif')
+      .limit(1)
+
+    scoringColumnsExist = !error
+  } catch {
+    scoringColumnsExist = false
+  }
+
+  return scoringColumnsExist
+}
+
+function getSelectQuery(includeEvents = true) {
+  if (scoringColumnsExist) {
+    const scoring = SCORING_COLUMNS.join(', ')
+    return includeEvents
+      ? `${BASE_SELECT}, ${scoring}, events:match_events(type, timestamp_ms, total, scored, phase)`
+      : `${BASE_SELECT}, ${scoring}`
+  }
+  return includeEvents ? BASE_SELECT_WITH_EVENTS : BASE_SELECT
+}
+
 const mapDbMatchToAppMatch = (row) => {
   const events = (row.events || []).map((e) => ({
     type: e.type,
@@ -19,11 +57,30 @@ const mapDbMatchToAppMatch = (row) => {
     title: row.title || '',
     tournamentName: row.tournament_name || '',
     events,
+    // Scoring fields (defaults if columns don't exist)
+    motif: row.motif || null,
+    autoPattern: row.auto_pattern || '',
+    teleopPattern: row.teleop_pattern || '',
+    autoLeave: row.auto_leave ?? false,
+    teleopPark: row.teleop_park || 'none',
   }
 }
 
-const buildMatchInsertPayload = (userId, rawMatch, source = 'recorder') => {
-  const { startTime, duration, teamNumber, notes, events, tournamentName, title } = rawMatch
+const buildMatchInsertPayload = (userId, rawMatch, source = 'recorder', includeScoringFields = false) => {
+  const {
+    startTime,
+    duration,
+    teamNumber,
+    notes,
+    events,
+    tournamentName,
+    title,
+    motif,
+    autoPattern,
+    teleopPattern,
+    autoLeave,
+    teleopPark,
+  } = rawMatch
 
   const match = {
     user_id: userId,
@@ -34,6 +91,15 @@ const buildMatchInsertPayload = (userId, rawMatch, source = 'recorder') => {
     title: title || null,
     tournament_name: tournamentName || null,
     source,
+  }
+
+  // Only include scoring fields if the columns exist
+  if (includeScoringFields) {
+    match.motif = motif || null
+    match.auto_pattern = autoPattern || ''
+    match.teleop_pattern = teleopPattern || ''
+    match.auto_leave = autoLeave ?? false
+    match.teleop_park = teleopPark || 'none'
   }
 
   const eventRows = (events || []).map((e) => ({
@@ -48,12 +114,13 @@ const buildMatchInsertPayload = (userId, rawMatch, source = 'recorder') => {
 }
 
 export async function createMatchForUser(userId, rawMatch, source = 'recorder') {
-  const { match, eventRows } = buildMatchInsertPayload(userId, rawMatch, source)
+  const hasScoring = await checkScoringColumnsExist()
+  const { match, eventRows } = buildMatchInsertPayload(userId, rawMatch, source, hasScoring)
 
   const { data: matchData, error: matchError } = await supabase
     .from('matches')
     .insert(match)
-    .select('id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name')
+    .select(getSelectQuery(false))
     .single()
 
   if (matchError) {
@@ -78,9 +145,7 @@ export async function createMatchForUser(userId, rawMatch, source = 'recorder') 
 
   const { data: fullMatch, error: fetchError } = await supabase
     .from('matches')
-    .select(
-      'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
-    )
+    .select(getSelectQuery(true))
     .eq('id', matchData.id)
     .single()
 
@@ -92,11 +157,11 @@ export async function createMatchForUser(userId, rawMatch, source = 'recorder') 
 }
 
 export async function listMatchesForCurrentUser() {
+  await checkScoringColumnsExist()
+
   const { data, error } = await supabase
     .from('matches')
-    .select(
-      'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
-    )
+    .select(getSelectQuery(true))
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -107,11 +172,11 @@ export async function listMatchesForCurrentUser() {
 }
 
 export async function getMatchForCurrentUser(matchId) {
+  await checkScoringColumnsExist()
+
   const { data, error } = await supabase
     .from('matches')
-    .select(
-      'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
-    )
+    .select(getSelectQuery(true))
     .eq('id', matchId)
     .single()
 
@@ -123,6 +188,8 @@ export async function getMatchForCurrentUser(matchId) {
 }
 
 export async function updateMatch(matchId, changes) {
+  const hasScoring = await checkScoringColumnsExist()
+
   const payload = {}
   if (Object.prototype.hasOwnProperty.call(changes, 'tournamentName')) {
     payload.tournament_name = changes.tournamentName || null
@@ -130,20 +197,37 @@ export async function updateMatch(matchId, changes) {
   if (Object.prototype.hasOwnProperty.call(changes, 'title')) {
     payload.title = changes.title || null
   }
-   if (Object.prototype.hasOwnProperty.call(changes, 'teamNumber')) {
-     payload.team_number = changes.teamNumber || null
-   }
-   if (Object.prototype.hasOwnProperty.call(changes, 'notes')) {
-     payload.notes = changes.notes || ''
-   }
+  if (Object.prototype.hasOwnProperty.call(changes, 'teamNumber')) {
+    payload.team_number = changes.teamNumber || null
+  }
+  if (Object.prototype.hasOwnProperty.call(changes, 'notes')) {
+    payload.notes = changes.notes || ''
+  }
+
+  // Scoring fields (only if columns exist)
+  if (hasScoring) {
+    if (Object.prototype.hasOwnProperty.call(changes, 'motif')) {
+      payload.motif = changes.motif || null
+    }
+    if (Object.prototype.hasOwnProperty.call(changes, 'autoPattern')) {
+      payload.auto_pattern = changes.autoPattern || ''
+    }
+    if (Object.prototype.hasOwnProperty.call(changes, 'teleopPattern')) {
+      payload.teleop_pattern = changes.teleopPattern || ''
+    }
+    if (Object.prototype.hasOwnProperty.call(changes, 'autoLeave')) {
+      payload.auto_leave = changes.autoLeave ?? false
+    }
+    if (Object.prototype.hasOwnProperty.call(changes, 'teleopPark')) {
+      payload.teleop_park = changes.teleopPark || 'none'
+    }
+  }
 
   const { data, error } = await supabase
     .from('matches')
     .update(payload)
     .eq('id', matchId)
-    .select(
-      'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
-    )
+    .select(getSelectQuery(true))
     .single()
 
   if (error) {
@@ -154,7 +238,22 @@ export async function updateMatch(matchId, changes) {
 }
 
 export async function saveMatchEdits(matchId, rawMatch) {
-  const { startTime, duration, teamNumber, notes, title, tournamentName, events } = rawMatch
+  const hasScoring = await checkScoringColumnsExist()
+
+  const {
+    startTime,
+    duration,
+    teamNumber,
+    notes,
+    title,
+    tournamentName,
+    events,
+    motif,
+    autoPattern,
+    teleopPattern,
+    autoLeave,
+    teleopPark,
+  } = rawMatch
 
   const meta = {
     team_number: teamNumber || null,
@@ -163,6 +262,15 @@ export async function saveMatchEdits(matchId, rawMatch) {
     notes: notes || '',
     title: title || null,
     tournament_name: tournamentName || null,
+  }
+
+  // Scoring fields (only if columns exist)
+  if (hasScoring) {
+    meta.motif = motif || null
+    meta.auto_pattern = autoPattern || ''
+    meta.teleop_pattern = teleopPattern || ''
+    meta.auto_leave = autoLeave ?? false
+    meta.teleop_park = teleopPark || 'none'
   }
 
   const { error: matchError } = await supabase
@@ -204,9 +312,7 @@ export async function saveMatchEdits(matchId, rawMatch) {
 
   const { data, error } = await supabase
     .from('matches')
-    .select(
-      'id, created_at, team_number, start_time, duration_seconds, notes, title, tournament_name, events:match_events(type, timestamp_ms, total, scored, phase)',
-    )
+    .select(getSelectQuery(true))
     .eq('id', matchId)
     .single()
 
@@ -223,3 +329,6 @@ export async function deleteMatch(matchId) {
     throw error
   }
 }
+
+// Export for testing/debugging
+export { checkScoringColumnsExist }

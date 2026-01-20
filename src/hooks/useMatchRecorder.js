@@ -23,6 +23,13 @@ export default function useMatchRecorder() {
   const [mode, setMode] = useState("free"); // "free" | "match"
   const [phase, setPhase] = useState("idle"); // "idle" | "auto" | "buffer" | "teleop" | "finished"
 
+  // Scoring state
+  const [motif, setMotif] = useState(null); // "GPP", "PGP", or "PPG"
+  const [autoPattern, setAutoPattern] = useState(""); // P/G pattern at end of auto
+  const [teleopPattern, setTeleopPattern] = useState(""); // P/G pattern at end of teleop
+  const [autoLeave, setAutoLeave] = useState(false); // Did robot leave in auto?
+  const [teleopPark, setTeleopPark] = useState("none"); // "none", "partial", or "full"
+
   const intervalRef = useRef(null);
 
   useEffect(() => {
@@ -64,7 +71,7 @@ export default function useMatchRecorder() {
     };
   }, [isRecording, matchStartTime, timerDuration, mode]);
 
-  const startMatch = (duration, newMode = "free") => {
+  const startMatch = (duration, newMode = "free", initialMotif = null) => {
     const now = Date.now();
     setMatchStartTime(now);
     setTimerDuration(duration);
@@ -74,6 +81,12 @@ export default function useMatchRecorder() {
     setIsRecording(true);
     setMode(newMode);
     setPhase(newMode === "match" ? "auto" : "idle");
+    // Initialize scoring state
+    setMotif(initialMotif);
+    setAutoPattern("");
+    setTeleopPattern("");
+    setAutoLeave(false);
+    setTeleopPark("none");
   };
 
   const stopMatch = () => {
@@ -92,6 +105,12 @@ export default function useMatchRecorder() {
     setPhase("idle");
     setIsRecording(false);
     setTimerDuration(null);
+    // Reset scoring state
+    setMotif(null);
+    setAutoPattern("");
+    setTeleopPattern("");
+    setAutoLeave(false);
+    setTeleopPark("none");
   };
 
   const addCycle = ({ total, scored }) => {
@@ -133,6 +152,12 @@ export default function useMatchRecorder() {
     setTeamNumber(parsedData.teamNumber || "");
     setMode("free");
     setPhase("idle");
+    // Load scoring state
+    setMotif(parsedData.motif || null);
+    setAutoPattern(parsedData.autoPattern || "");
+    setTeleopPattern(parsedData.teleopPattern || "");
+    setAutoLeave(parsedData.autoLeave ?? false);
+    setTeleopPark(parsedData.teleopPark || "none");
 
     return true;
   }, []);
@@ -148,8 +173,22 @@ export default function useMatchRecorder() {
     mode,
     phase,
 
+    // Scoring state
+    motif,
+    autoPattern,
+    teleopPattern,
+    autoLeave,
+    teleopPark,
+
     setNotes,
     setTeamNumber,
+
+    // Scoring setters
+    setMotif,
+    setAutoPattern,
+    setTeleopPattern,
+    setAutoLeave,
+    setTeleopPark,
 
     startMatch,
     stopMatch,
