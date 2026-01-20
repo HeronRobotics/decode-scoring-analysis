@@ -26,6 +26,9 @@ import TextImportModal from "../components/home/modals/TextImportModal.jsx";
 import { parseLifetimeImportInput } from "../utils/importLifetime.js";
 import { formatStat } from "../utils/format.js";
 import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
+import { calculateTotalPoints } from "../utils/scoring.js";
+import { useTeamNames } from "../contexts/TeamNamesContext.jsx";
+import TeamName from "../components/TeamName.jsx";
 
 // Helper to compute condensed stats for a match
 function getMatchStats(events) {
@@ -49,6 +52,7 @@ function getMatchStats(events) {
 
 function MyMatchesPage() {
   const { user, authLoading } = useAuth();
+  const { loadTeamNames, getTeamName } = useTeamNames();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -150,6 +154,14 @@ function MyMatchesPage() {
     return teams;
   }, [matches]);
 
+  // Load team names for all teams in matches
+  const teamNumbersKey = teamNumbers.join(',');
+  useEffect(() => {
+    if (teamNumbers.length > 0) {
+      loadTeamNames(teamNumbers);
+    }
+  }, [teamNumbersKey, teamNumbers, loadTeamNames]);
+
   // Filter matches based on search and filters
   const filteredMatches = useMemo(() => {
     return matches.filter((m) => {
@@ -196,7 +208,7 @@ function MyMatchesPage() {
         label = m.tournamentName || "No Tournament";
       } else if (groupBy === "team") {
         key = (m.teamNumber || "").toString() || "__none__";
-        label = m.teamNumber ? `Team ${m.teamNumber}` : "No Team";
+        label = m.teamNumber ? `${getTeamName(m.teamNumber)} (${m.teamNumber})` : "No Team";
       } else if (groupBy === "date") {
         const date = m.startTime
           ? new Date(m.startTime)
@@ -237,7 +249,7 @@ function MyMatchesPage() {
     });
 
     return sortedKeys.map((k) => groups[k]);
-  }, [filteredMatches, groupBy]);
+  }, [filteredMatches, groupBy, getTeamName]);
 
   const toggleGroup = (key) => {
     setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -578,7 +590,7 @@ function MyMatchesPage() {
                         <option value="">All Teams</option>
                         {teamNumbers.map((num) => (
                           <option key={num} value={num}>
-                            Team {num}
+                            {getTeamName(num)} ({num})
                           </option>
                         ))}
                       </select>
@@ -698,7 +710,8 @@ function MyMatchesPage() {
                               })
                             : "Unknown date";
                           const stats = getMatchStats(m.events);
-                          const isSelected = selectedMatchId === m.id;
+                          const points = calculateTotalPoints(m);
+                        const isSelected = selectedMatchId === m.id;
 
                           return (
                             <div
@@ -723,7 +736,7 @@ function MyMatchesPage() {
                                 <div className="flex-1 min-w-0">
                                   <div className="font-semibold text-[#1a1a1a] truncate">
                                     {m.title ||
-                                      `Team ${m.teamNumber || "?"} Match`}
+                                      (m.teamNumber ? `${getTeamName(m.teamNumber)} Match` : "Match")}
                                   </div>
                                   {m.tournamentName &&
                                     groupBy !== "tournament" && (
@@ -762,7 +775,7 @@ function MyMatchesPage() {
                                 {groupBy !== "team" && (
                                   <span className="flex items-center gap-1.5">
                                     <Users size={14} className="text-[#888]" />
-                                    Team {m.teamNumber || "?"}
+                                    {m.teamNumber ? `${getTeamName(m.teamNumber)} (${m.teamNumber})` : "No Team"}
                                   </span>
                                 )}
                                 {groupBy !== "date" && (
@@ -774,7 +787,12 @@ function MyMatchesPage() {
                                     {dateStr}
                                   </span>
                                 )}
-                              </div>
+                                <span className="flex items-center gap-1.5">
+                                <Target size={14} className="text-[#888]" />
+                                <span className="font-semibold text-[#1a1a1a]">{formatStat(points.total, 0)}</span>
+                                <span className="text-xs text-[#888]">pts</span>
+                              </span>
+                            </div>
 
                               {/* Score Summary */}
                               <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-3 pt-3 border-t border-[#eee]">
@@ -829,8 +847,7 @@ function MyMatchesPage() {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-[#1a1a1a]">
-                        {selectedMatch.title ||
-                          `Team ${selectedMatch.teamNumber || "?"} Match`}
+                        {selectedMatch.title || (selectedMatch.teamNumber ? <><TeamName teamNumber={selectedMatch.teamNumber} /> Match</> : "Match")}
                       </h2>
                       {selectedMatch.tournamentName && (
                         <p className="text-[#445f8b] font-medium mt-1">

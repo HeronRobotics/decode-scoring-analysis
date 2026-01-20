@@ -18,6 +18,8 @@ import {
 import { downloadCsv, toCsv } from "../utils/csv";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { listMatchesForCurrentUser } from "../api/matchesApi.js";
+import { calculateTotalPoints } from "../utils/scoring.js";
+import { useTeamNames } from "../contexts/TeamNamesContext.jsx";
 
 function TournamentPage({ onBack }) {
   const {
@@ -31,6 +33,7 @@ function TournamentPage({ onBack }) {
 
   const [isCreating, setIsCreating] = useState(false);
   const { user, authLoading } = useAuth();
+  const { loadTeamNames, getTeamName } = useTeamNames();
   const [userMatches, setUserMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [matchesError, setMatchesError] = useState("");
@@ -57,6 +60,26 @@ function TournamentPage({ onBack }) {
 
     load();
   }, [user]);
+
+  // Teams from tournament (computed early so hook is always called)
+  const teams = useMemo(() => {
+    if (!tournament?.matches) return [];
+    return Array.from(
+      new Set(
+        tournament.matches
+          .map((m) => (m.teamNumber || "").toString().trim())
+          .filter(Boolean)
+      )
+    );
+  }, [tournament?.matches]);
+
+  // Load team names for all teams in the tournament
+  const teamsKey = teams.join(',');
+  useEffect(() => {
+    if (teams.length > 0) {
+      loadTeamNames(teams);
+    }
+  }, [teamsKey, teams, loadTeamNames]);
 
   const tournamentNames = useMemo(() => {
     const names = Array.from(
@@ -304,14 +327,6 @@ function TournamentPage({ onBack }) {
     );
   }
 
-  const teams = Array.from(
-    new Set(
-      tournament.matches
-        .map((m) => (m.teamNumber || "").toString().trim())
-        .filter(Boolean)
-    )
-  );
-
   const filteredMatches = selectedTeam
     ? tournament.matches.filter(
         (m) => (m.teamNumber || "").toString().trim() === selectedTeam
@@ -414,7 +429,7 @@ function TournamentPage({ onBack }) {
                 <option value="">All Teams</option>
                 {teams.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    {getTeamName(t)} ({t})
                   </option>
                 ))}
               </select>
@@ -437,7 +452,7 @@ function TournamentPage({ onBack }) {
         <h2 className="mb-8">
           <span className="text-3xl mb-5">
             {selectedTeam
-              ? "Team " + selectedTeam + "'s Matches"
+              ? <>{getTeamName(selectedTeam)}'s Matches ({selectedTeam})</>
               : "All Tournament Matches"}
           </span>
         </h2>
@@ -451,6 +466,14 @@ function TournamentPage({ onBack }) {
               const matchStats = matchScoredOutOfTotal(filteredMatches[index]);
               const match = filteredMatches[index];
               const title = (match.title || '').trim();
+              const points = calculateTotalPoints({
+                events: match.events,
+                motif: match.motif,
+                autoPattern: match.autoPattern,
+                teleopPattern: match.teleopPattern,
+                autoLeave: match.autoLeave,
+                teleopPark: match.teleopPark,
+              }).total;
               return (
                 <button
                   key={index}
@@ -462,10 +485,17 @@ function TournamentPage({ onBack }) {
                   }`}
                 >
                   {title || `Match ${index + 1}`} (
-                  {match.teamNumber || "No Team"}){" "}
+                  {match.teamNumber ? getTeamName(match.teamNumber) : "No Team"}){" "}
                   <span
-                    className={`ml-3 text-xs text-[#666] ${
-                      selectedMatch == index ? "text-[#ddd]" : ""
+                    className={`ml-2 text-xs ${
+                      selectedMatch == index ? "text-amber-200" : "text-amber-600"
+                    }`}
+                  >
+                    {points}pts
+                  </span>
+                  <span
+                    className={`ml-1 text-xs ${
+                      selectedMatch == index ? "text-[#ddd]" : "text-[#666]"
                     }`}
                   >
                     {matchStats.scored}/{matchStats.total}
@@ -483,6 +513,11 @@ function TournamentPage({ onBack }) {
                 events={currentMatch.events}
                 teamNumber={currentMatch.teamNumber}
                 notes={currentMatch.notes}
+                motif={currentMatch.motif}
+                autoPattern={currentMatch.autoPattern}
+                teleopPattern={currentMatch.teleopPattern}
+                autoLeave={currentMatch.autoLeave}
+                teleopPark={currentMatch.teleopPark}
               />
               <Timeline
                 events={currentMatch.events}

@@ -6,6 +6,7 @@ import { TournamentProvider } from "./data/TournamentContext.jsx";
 import { PostHogProvider } from "posthog-js/react";
 import { MatchRecorderProvider } from "./data/MatchRecorderContext.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
+import { TeamNamesProvider } from "./contexts/TeamNamesContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -22,7 +23,9 @@ createRoot(document.getElementById("root")).render(
       <TournamentProvider>
         <MatchRecorderProvider>
           <AuthProvider>
-            <App />
+            <TeamNamesProvider>
+              <App />
+            </TeamNamesProvider>
           </AuthProvider>
           <footer className="text-center text-sm text-[#445F8B] my-4">
             <img

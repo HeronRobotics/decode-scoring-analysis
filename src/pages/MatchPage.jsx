@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, Target } from "@phosphor-icons/react";
 
 import MatchRecorderScreen from "./home/MatchRecorderScreen";
@@ -10,17 +10,23 @@ import { getMatchForCurrentUser } from "../api/matchesApi.js";
 function MatchPage() {
   const recorder = useMatchRecorderContext();
   const { user } = useAuth();
-  const userId = user?.id;
+  // const userId = user?.id;
   const [initialMeta, setInitialMeta] = useState(null);
   const [loadingMatch, setLoadingMatch] = useState(false);
   const [loadError, setLoadError] = useState("");
-  const [loadedMatchIdFromUrl, setLoadedMatchIdFromUrl] = useState(null);
+
+  const loadedKeyRef = useRef(null);
+
+  const matchId = new URLSearchParams(window.location.search).get("match");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const matchId = params.get("match");
-    if (!matchId || !userId) return;
-    if (loadedMatchIdFromUrl === matchId) return;
+    if (!matchId || !user?.id) return;
+
+    const loadedKey = `${user.id}:${matchId}`;
+    if (loadedKeyRef.current === loadedKey) return;
+    loadedKeyRef.current = loadedKey;
+
+    const applyParsedMatchData = recorder.applyParsedMatchData;
 
     let cancelled = false;
     const load = async () => {
@@ -29,13 +35,13 @@ function MatchPage() {
       try {
         const match = await getMatchForCurrentUser(matchId);
         if (cancelled) return;
-        recorder.applyParsedMatchData(match);
+        applyParsedMatchData(match);
         setInitialMeta({
           id: match.id,
           title: match.title || "",
           tournamentName: match.tournamentName || "",
         });
-        setLoadedMatchIdFromUrl(match.id);
+        // setLoadedMatchIdFromUrl(match.id);
       } catch (err) {
         if (!cancelled) {
           setLoadError(err.message || "Error loading match");
@@ -49,7 +55,7 @@ function MatchPage() {
     return () => {
       cancelled = true;
     };
-  }, [userId, recorder, loadedMatchIdFromUrl]);
+  }, [user?.id, matchId, recorder.applyParsedMatchData]);
 
   const hasSession = useMemo(
     () => recorder.isRecording || recorder.matchStartTime !== null,

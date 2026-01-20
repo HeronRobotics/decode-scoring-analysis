@@ -68,7 +68,6 @@ function NavigationBar({ currentPage, navigate }) {
           My Matches
         </button>
         <div className="ml-auto flex items-center justify-center gap-2">
-          <h2 className="hidden md:block text-lg font-bold">Heron Scout</h2>
           {authLoading ? (
             <span className="text-xs text-[#666] ml-1">Loading...</span>
           ) : user ? (
@@ -85,13 +84,16 @@ function NavigationBar({ currentPage, navigate }) {
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setAuthOpen(true)}
-              className="btn !py-1 !px-3 text-xs sm:text-sm"
-            >
-              <SignIn weight="bold" size={16} />
-              Sign in / Sign up
-            </button>
+            <>
+              <h2 className="hidden md:block text-lg font-bold">Heron Scout</h2>
+              <button
+                onClick={() => setAuthOpen(true)}
+                className="btn !py-1 !px-3 text-xs sm:text-sm"
+              >
+                <SignIn weight="bold" size={16} />
+                Sign in / Sign up
+              </button>
+            </>
           )}
         </div>
         <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />

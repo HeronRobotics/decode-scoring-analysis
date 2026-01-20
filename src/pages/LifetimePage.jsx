@@ -7,7 +7,7 @@ import {
   ChartBar,
   ArrowUp,
   ArrowDown,
-  Minus,
+  Minus, Star,
 } from "@phosphor-icons/react";
 import {
   LineChart,
@@ -26,8 +26,22 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 import { listMatchesForCurrentUser } from "../api/matchesApi.js";
 import { formatStat } from "../utils/format.js";
 import ProgressionCharts from "../components/lifetime/ProgressionCharts.jsx";
+import { calculateTotalPoints } from '../utils/scoring.js'
+import { useTeamNames } from '../contexts/TeamNamesContext.jsx'
+import TeamName from '../components/TeamName.jsx'
+
+// Full match duration in seconds (30s auto + 8s buffer + 120s teleop)
+const FULL_MATCH_DURATION = 158
+// Tolerance in seconds for considering a match "full"
+const FULL_MATCH_TOLERANCE = 10
 
 const LIFETIME_STORAGE_KEY = "heron_lifetime_stats_v1";
+
+// Helper to check if a match is a full match
+const isFullMatch = (match) => {
+  if (!match.duration) return false
+  return Math.abs(match.duration - FULL_MATCH_DURATION) <= FULL_MATCH_TOLERANCE
+}
 
 function LifetimePage() {
   const { user, authLoading } = useAuth();
@@ -35,6 +49,7 @@ function LifetimePage() {
   const [teamNumber, setTeamNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { loadTeamNames } = useTeamNames();
 
   useEffect(() => {
     try {
@@ -97,6 +112,16 @@ function LifetimePage() {
 
   const allMatches = teamMatches;
 
+  // Load team names for all unique teams
+  useEffect(() => {
+    const teamNumbers = [...new Set(
+      matches.map(m => m.teamNumber).filter(Boolean)
+    )];
+    if (teamNumbers.length > 0) {
+      loadTeamNames(teamNumbers);
+    }
+  }, [matches, loadTeamNames]);
+
   // Extract individual matches for analysis
   const matchStats = useMemo(() => {
     return teamMatches
@@ -147,10 +172,24 @@ function LifetimePage() {
             ? new Date(match.createdAt)
             : new Date();
 
+      // Calculate points
+      const pointsBreakdown = calculateTotalPoints({
+        events: match.events,
+        motif: match.motif,
+        autoPattern: match.autoPattern,
+        teleopPattern: match.teleopPattern,
+        autoLeave: match.autoLeave,
+        teleopPark: match.teleopPark,
+      })
+
+      // Check if this is a full match (for points validity)
+      const fullMatch = isFullMatch(match)
+
         return {
           id: match.id,
           name: match.title || match.tournamentName || `Match ${index + 1}`,
           tournamentName: match.tournamentName || "Unlabeled",
+          teamNumber: match.teamNumber,
           date: matchDate.toISOString(),
           scored,
           total,
@@ -158,10 +197,18 @@ function LifetimePage() {
           accuracy: total > 0 ? (scored / total) * 100 : 0,
           avgCycleTime,
           ballsPerTwoMinutes,
+          points: pointsBreakdown.total,
+          pointsBreakdown,
+          isFullMatch: fullMatch,
+          duration: match.duration,
         };
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
   }, [teamMatches]);
+
+  const fullMatchStats = useMemo(() => {
+    return matchStats.filter(m => m.isFullMatch)
+  }, [matchStats])
 
   // Best and worst matches
   const bestMatch = useMemo(() => {
@@ -173,12 +220,30 @@ function LifetimePage() {
   }, [matchStats]);
 
   const worstMatch = useMemo(() => {
-    if (matchStats.length === 0) return null;
-    return matchStats.reduce(
-      (worst, match) => (match.accuracy < worst.accuracy ? match : worst),
-      matchStats[0],
-    );
-  }, [matchStats]);
+    if (matchStats.length === 0) return null
+    return matchStats.reduce((worst, match) =>
+      match.accuracy < worst.accuracy ? match : worst
+    , matchStats[0])
+  }, [matchStats])
+
+  // Best match by points (full matches only)
+  const bestMatchByPoints = useMemo(() => {
+    if (fullMatchStats.length === 0) return null
+    return fullMatchStats.reduce((best, match) =>
+      match.points > best.points ? match : best
+    , fullMatchStats[0])
+  }, [fullMatchStats])
+
+  // Total points across all full matches
+  const totalPoints = useMemo(() => {
+    return fullMatchStats.reduce((sum, m) => sum + m.points, 0)
+  }, [fullMatchStats])
+
+  // Average points per full match
+  const avgPoints = useMemo(() => {
+    if (fullMatchStats.length === 0) return 0
+    return totalPoints / fullMatchStats.length
+  }, [totalPoints, fullMatchStats.length])
 
   // Tournament breakdown
   const tournamentStats = useMemo(() => {
@@ -186,25 +251,25 @@ function LifetimePage() {
     matchStats.forEach((match) => {
       const name = match.tournamentName;
       if (!byTournament[name]) {
-        byTournament[name] = {
-          name,
-          matches: [],
-          scored: 0,
-          total: 0,
-          cycles: 0,
-        };
+        byTournament[name] = { name, matches: [], scored: 0, total: 0, cycles: 0, points: 0, fullMatchCount: 0 }
       }
-      byTournament[name].matches.push(match);
+      byTournament[name].matches.push(match)
       byTournament[name].scored += match.scored;
       byTournament[name].total += match.total;
       byTournament[name].cycles += match.cycles;
-    });
+      // Only count points from full matches
+      if (match.isFullMatch) {
+        byTournament[name].points += match.points;
+        byTournament[name].fullMatchCount += 1;
+      }
+    })
 
     return Object.values(byTournament)
       .map((t) => ({
         ...t,
-        accuracy: t.total > 0 ? (t.scored / t.total) * 100 : 0,
+        accuracy: t.total > 0 ? (t.scored / t.total * 100) : 0,
         matchCount: t.matches.length,
+        avgPoints: t.fullMatchCount > 0 ? t.points / t.fullMatchCount : 0,
       }))
       .sort((a, b) => b.accuracy - a.accuracy);
   }, [matchStats]);
@@ -296,10 +361,34 @@ function LifetimePage() {
 
       {!authLoading && user && !error && allMatches.length > 0 && (
         <>
-          {/* Career Summary
-          <div className="mb-8">
-            <Statistics matches={allMatches} />
-          </div>
+          {/* Points Overview - Full matches only */}
+          {fullMatchStats.length > 0 && (
+            <div className="bg-gradient-to-br from-amber-500 to-orange-600 border-2 border-amber-600 p-4 sm:p-6 mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <Star size={28} weight="fill" className="text-white" />
+                <h2 className="text-2xl font-bold text-white">Points Overview</h2>
+                <span className="text-xs bg-white/20 px-2 py-1 rounded text-white/90">Full matches only</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/20 rounded-lg p-4 text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-white">{totalPoints}</div>
+                  <div className="text-white/80 text-sm">Total Points</div>
+                </div>
+                <div className="bg-white/20 rounded-lg p-4 text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-white">{formatStat(avgPoints, 1)}</div>
+                  <div className="text-white/80 text-sm">Avg per Match</div>
+                </div>
+                <div className="bg-white/20 rounded-lg p-4 text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-white">{bestMatchByPoints?.points || 0}</div>
+                  <div className="text-white/80 text-sm">Best Match</div>
+                </div>
+                <div className="bg-white/20 rounded-lg p-4 text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-white">{fullMatchStats.length}</div>
+                  <div className="text-white/80 text-sm">Full Matches</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Performance Insights */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -311,40 +400,37 @@ function LifetimePage() {
                   <h3 className="text-xl font-bold">Best & Worst Matches</h3>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Medal
-                        size={20}
-                        className="text-green-600"
-                        weight="fill"
-                      />
-                      <span className="text-sm font-semibold text-green-700">
-                        Best Performance
-                      </span>
+                <div className="space-y-3">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Star size={18} className="text-amber-600" weight="fill" />
+                      <span className="text-sm font-semibold text-amber-700">Highest Points</span>
                     </div>
-                    <div className="text-2xl font-bold text-green-800">
-                      {formatStat(bestMatch.accuracy)}%
+                    <div className="text-2xl font-bold text-amber-800">{bestMatchByPoints?.points || 0} pts</div>
+                    <div className="text-xs text-amber-700">
+                      {bestMatchByPoints?.name} • {bestMatchByPoints?.scored}/{bestMatchByPoints?.total} scored
                     </div>
-                    <div className="text-sm text-green-700">
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Medal size={18} className="text-green-600" weight="fill" />
+                      <span className="text-sm font-semibold text-green-700">Best Accuracy</span>
+                    </div>
+                    <div className="text-xs text-green-700">
                       {bestMatch.name} • {bestMatch.scored}/{bestMatch.total}{" "}
                       scored
                     </div>
                   </div>
 
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Medal size={20} className="text-red-400" />
-                      <span className="text-sm font-semibold text-red-700">
-                        Needs Improvement
-                      </span>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Medal size={18} className="text-red-400" />
+                      <span className="text-sm font-semibold text-red-700">Needs Improvement</span>
                     </div>
-                    <div className="text-2xl font-bold text-red-800">
-                      {formatStat(worstMatch.accuracy)}%
-                    </div>
-                    <div className="text-sm text-red-700">
-                      {worstMatch.name} • {worstMatch.scored}/{worstMatch.total}{" "}
-                      scored
+                    <div className="text-2xl font-bold text-red-800">{formatStat(worstMatch.accuracy)}%</div>
+                    <div className="text-xs text-red-700">
+                      {worstMatch.name} • {worstMatch.scored}/{worstMatch.total} scored
                     </div>
                   </div>
                 </div>
@@ -474,6 +560,7 @@ function LifetimePage() {
                         <th className="text-center py-2 px-2">Matches</th>
                         <th className="text-center py-2 px-2">Scored</th>
                         <th className="text-center py-2 px-2">Accuracy</th>
+                        <th className="text-center py-2 px-2">Avg Pts</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -492,6 +579,9 @@ function LifetimePage() {
                           <td className="text-center py-2 px-2 font-semibold text-[#445f8b]">
                             {formatStat(t.accuracy)}%
                           </td>
+                          <td className="text-center py-2 px-2 font-semibold text-amber-600">
+                            {formatStat(t.avgPoints, 1)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -508,7 +598,102 @@ function LifetimePage() {
               Match History
             </h2>
 
-            <ProgressionCharts matchStats={matchStats} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Points Over Time <span className="text-sm font-normal text-amber-600">(full matches only)</span></h3>
+                <div className="h-72 border-2 border-amber-300 bg-amber-50/30">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={fullMatchStats.map((stat, i) => ({
+                        ...stat,
+                        index: i,
+                        dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      }))}
+                      margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
+                    >
+                      <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+                      <XAxis
+                        dataKey="dateLabel"
+                        stroke="#666"
+                        style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
+                        interval="preserveStartEnd"
+                        minTickGap={30}
+                      />
+                      <YAxis
+                        stroke="#666"
+                        style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
+                        tickFormatter={(val) => `${val}`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '2px solid #f59e0b',
+                          fontFamily: 'League Spartan'
+                        }}
+                        formatter={(value) => [`${value} pts`, 'Points']}
+                        labelFormatter={(label, payload) => payload[0]?.payload.name}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="points"
+                        stroke="#f59e0b"
+                        strokeWidth={2}
+                        dot={{ fill: '#f59e0b', r: 3 }}
+                        activeDot={{ r: 5 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Accuracy Over Time</h3>
+                <div className="h-72 border-2 border-[#ddd] bg-white">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={matchStats.map((stat, i) => ({
+                        ...stat,
+                        index: i,
+                        dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      }))}
+                      margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
+                    >
+                      <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+                      <XAxis
+                        dataKey="dateLabel"
+                        stroke="#666"
+                        style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
+                        interval="preserveStartEnd"
+                        minTickGap={30}
+                      />
+                      <YAxis
+                        domain={[0, 100]}
+                        stroke="#666"
+                        style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
+                        tickFormatter={(val) => `${val}%`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '2px solid #445f8b',
+                          fontFamily: 'League Spartan'
+                        }}
+                        formatter={(value) => [`${formatStat(value)}%`, 'Accuracy']}
+                        labelFormatter={(label, payload) => payload[0]?.payload.name}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="accuracy"
+                        stroke="#445f8b"
+                        strokeWidth={2}
+                        dot={{ fill: '#445f8b', r: 3 }}
+                        activeDot={{ r: 5 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
           </div>
         </>
       )}
