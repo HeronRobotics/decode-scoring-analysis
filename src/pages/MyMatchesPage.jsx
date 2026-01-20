@@ -141,7 +141,9 @@ function MyMatchesPage() {
   const teamNumbers = useMemo(() => {
     const teams = Array.from(
       new Set(
-        matches.map((m) => (m.teamNumber || "").toString().trim()).filter(Boolean),
+        matches
+          .map((m) => (m.teamNumber || "").toString().trim())
+          .filter(Boolean),
       ),
     );
     teams.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
@@ -158,7 +160,12 @@ function MyMatchesPage() {
         const team = (m.teamNumber || "").toString().toLowerCase();
         const tournament = (m.tournamentName || "").toLowerCase();
         const notes = (m.notes || "").toLowerCase();
-        if (!title.includes(query) && !team.includes(query) && !tournament.includes(query) && !notes.includes(query)) {
+        if (
+          !title.includes(query) &&
+          !team.includes(query) &&
+          !tournament.includes(query) &&
+          !notes.includes(query)
+        ) {
           return false;
         }
       }
@@ -191,9 +198,16 @@ function MyMatchesPage() {
         key = (m.teamNumber || "").toString() || "__none__";
         label = m.teamNumber ? `Team ${m.teamNumber}` : "No Team";
       } else if (groupBy === "date") {
-        const date = m.startTime ? new Date(m.startTime) : m.createdAt ? new Date(m.createdAt) : null;
+        const date = m.startTime
+          ? new Date(m.startTime)
+          : m.createdAt
+            ? new Date(m.createdAt)
+            : null;
         if (date) {
-          key = date.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+          key = date.toLocaleDateString(undefined, {
+            month: "short",
+            year: "numeric",
+          });
           label = key;
         } else {
           key = "__none__";
@@ -258,7 +272,9 @@ function MyMatchesPage() {
         teamNumber: editTeamNumber,
         notes: editNotes,
       });
-      setMatches((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+      setMatches((prev) =>
+        prev.map((m) => (m.id === updated.id ? updated : m)),
+      );
     } catch (err) {
       setDetailsError(err.message || "Failed to save changes");
     } finally {
@@ -380,7 +396,9 @@ function MyMatchesPage() {
   };
 
   // Compute stats for selected match
-  const selectedStats = selectedMatch ? getMatchStats(selectedMatch.events) : null;
+  const selectedStats = selectedMatch
+    ? getMatchStats(selectedMatch.events)
+    : null;
 
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
@@ -451,7 +469,9 @@ function MyMatchesPage() {
                       {tournamentTags.length > 0 && (
                         <select
                           value={bulkTournamentName}
-                          onChange={(e) => setBulkTournamentName(e.target.value)}
+                          onChange={(e) =>
+                            setBulkTournamentName(e.target.value)
+                          }
                           className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
                         >
                           <option value="">Use existing...</option>
@@ -500,432 +520,471 @@ function MyMatchesPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] lg:items-start">
-          {/* Left Column - Match List */}
-          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6">
-            {/* Saved Matches Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Saved Matches</h2>
-              <span className="text-sm text-[#666]">
-                {filteredMatches.length === matches.length
-                  ? `${matches.length} ${matches.length === 1 ? "match" : "matches"}`
-                  : `${filteredMatches.length} of ${matches.length}`}
-              </span>
-            </div>
-
-            {/* Search and Filter Section */}
-            {matches.length > 0 && (
-              <div className="mb-4 space-y-3">
-                {/* Search Input */}
-                <div className="relative">
-                  <MagnifyingGlass
-                    size={18}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888]"
-                  />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search matches..."
-                    className="w-full pl-10 pr-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
-                  />
-                </div>
-
-                {/* Filter and Group Row */}
-                <div className="flex flex-wrap gap-2">
-                  {/* Tournament Filter */}
-                  {tournamentTags.length > 0 && (
-                    <select
-                      value={filterTournament}
-                      onChange={(e) => setFilterTournament(e.target.value)}
-                      className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
-                    >
-                      <option value="">All Tournaments</option>
-                      {tournamentTags.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-                  {/* Team Filter */}
-                  {teamNumbers.length > 1 && (
-                    <select
-                      value={filterTeam}
-                      onChange={(e) => setFilterTeam(e.target.value)}
-                      className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
-                    >
-                      <option value="">All Teams</option>
-                      {teamNumbers.map((num) => (
-                        <option key={num} value={num}>
-                          Team {num}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-                  {/* Group By */}
-                  <select
-                    value={groupBy}
-                    onChange={(e) => setGroupBy(e.target.value)}
-                    className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white ml-auto"
-                  >
-                    <option value="none">No Grouping</option>
-                    <option value="tournament">Group by Tournament</option>
-                    <option value="team">Group by Team</option>
-                    <option value="date">Group by Month</option>
-                  </select>
-                </div>
-
-                {/* Clear Filters */}
-                {(searchQuery || filterTournament || filterTeam) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery("");
-                      setFilterTournament("");
-                      setFilterTeam("");
-                    }}
-                    className="text-sm text-[#445f8b] hover:underline flex items-center gap-1"
-                  >
-                    <Funnel size={14} />
-                    Clear filters
-                  </button>
-                )}
+            {/* Left Column - Match List */}
+            <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6">
+              {/* Saved Matches Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Saved Matches</h2>
+                <span className="text-sm text-[#666]">
+                  {filteredMatches.length === matches.length
+                    ? `${matches.length} ${matches.length === 1 ? "match" : "matches"}`
+                    : `${filteredMatches.length} of ${matches.length}`}
+                </span>
               </div>
-            )}
 
-            {loading && <p className="text-[#666]">Loading matches...</p>}
-            {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-
-            {!loading && matches.length === 0 && !error && (
-              <div className="text-center py-8 text-[#666]">
-                <Target size={48} className="mx-auto mb-3 opacity-30" />
-                <p className="text-sm">No saved matches yet.</p>
-                <p className="text-xs mt-1">
-                  Record a match and use{" "}
-                  <span className="font-semibold">Save to My Matches</span>
-                </p>
-              </div>
-            )}
-
-            {/* Match List */}
-            <div className="space-y-2 max-h-none lg:max-h-[calc(100vh-380px)] min-h-[220px] sm:min-h-[260px] lg:min-h-[300px] overflow-y-auto lg:pr-1">
-              {/* No results message */}
-              {!loading && filteredMatches.length === 0 && matches.length > 0 && (
-                <div className="text-center py-8 text-[#666]">
-                  <MagnifyingGlass size={48} className="mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No matches found.</p>
-                  <p className="text-xs mt-1">Try adjusting your search or filters.</p>
-                </div>
-              )}
-
-              {groupedMatches.map((group) => (
-                <div key={group.key}>
-                  {/* Group Header (only shown when grouping is enabled) */}
-                  {group.label && (
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(group.key)}
-                      className="w-full flex items-center justify-between py-2 px-3 mb-2 bg-[#f0f5ff] border border-[#c8d6f0] rounded-lg hover:bg-[#e8eef8] transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        {collapsedGroups[group.key] ? (
-                          <CaretRight size={16} weight="bold" className="text-[#445f8b]" />
-                        ) : (
-                          <CaretDown size={16} weight="bold" className="text-[#445f8b]" />
-                        )}
-                        <span className="font-semibold text-[#445f8b]">{group.label}</span>
-                      </div>
-                      <span className="text-sm text-[#666]">
-                        {group.matches.length} {group.matches.length === 1 ? "match" : "matches"}
-                      </span>
-                    </button>
-                  )}
-
-                  {/* Group Content */}
-                  {!collapsedGroups[group.key] && (
-                    <div className="space-y-2">
-                      {group.matches.map((m) => {
-                        const date = m.startTime
-                          ? new Date(m.startTime)
-                          : m.createdAt
-                            ? new Date(m.createdAt)
-                            : null;
-                        const dateStr = date
-                          ? date.toLocaleDateString(undefined, {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : "Unknown date";
-                        const stats = getMatchStats(m.events);
-                        const isSelected = selectedMatchId === m.id;
-
-                        return (
-                          <div
-                            key={m.id}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => setSelectedMatchId(m.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                setSelectedMatchId(m.id);
-                              }
-                            }}
-                            className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
-                              isSelected
-                                ? "border-[#445f8b] bg-[#f0f5ff] shadow-sm"
-                                : "border-[#e5e7eb] bg-white hover:border-[#445f8b] hover:bg-[#fafbfc]"
-                            }`}
-                          >
-                            {/* Match Header */}
-                            <div className="flex items-start justify-between gap-3 mb-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-[#1a1a1a] truncate">
-                                  {m.title || `Team ${m.teamNumber || "?"} Match`}
-                                </div>
-                                {m.tournamentName && groupBy !== "tournament" && (
-                                  <div className="text-xs text-[#445f8b] font-medium mt-0.5">
-                                    {m.tournamentName}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <a
-                                  href={`/match?match=${encodeURIComponent(m.id)}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="p-1.5 text-[#666] hover:text-[#445f8b] hover:bg-[#e8eef8] rounded transition-colors"
-                                  title="Open in new tab"
-                                >
-                                  <ArrowSquareOut size={16} weight="bold" />
-                                </a>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(m.id);
-                                  }}
-                                  className="p-1.5 text-[#666] hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                  title="Delete match"
-                                >
-                                  <Trash size={16} weight="bold" />
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Match Stats Row */}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#555]">
-                              {groupBy !== "team" && (
-                                <span className="flex items-center gap-1.5">
-                                  <Users size={14} className="text-[#888]" />
-                                  Team {m.teamNumber || "?"}
-                                </span>
-                              )}
-                              {groupBy !== "date" && (
-                                <span className="flex items-center gap-1.5">
-                                  <CalendarBlank size={14} className="text-[#888]" />
-                                  {dateStr}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Score Summary */}
-                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#eee]">
-                              <div className="flex items-center gap-1.5">
-                                <Target size={16} className="text-[#445f8b]" />
-                                <span className="font-semibold text-[#1a1a1a]">
-                                  {stats.scored}/{stats.total}
-                                </span>
-                                <span className="text-xs text-[#888]">scored</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <ListNumbers size={16} className="text-[#445f8b]" />
-                                <span className="font-semibold text-[#1a1a1a]">
-                                  {stats.cycles}
-                                </span>
-                                <span className="text-xs text-[#888]">cycles</span>
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-semibold text-[#1a1a1a]">
-                                  {formatStat(stats.accuracy, 0)}%
-                                </span>
-                                <span className="text-xs text-[#888] ml-1">acc</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Column - Match Preview */}
-          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
-            {selectedMatch ? (
-              <>
-                {/* Header with title and actions */}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-[#1a1a1a]">
-                      {selectedMatch.title ||
-                        `Team ${selectedMatch.teamNumber || "?"} Match`}
-                    </h2>
-                    {selectedMatch.tournamentName && (
-                      <p className="text-[#445f8b] font-medium mt-1">
-                        {selectedMatch.tournamentName}
-                      </p>
-                    )}
-                  </div>
-                  <a
-                    href={`/match?match=${encodeURIComponent(selectedMatch.id)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn !py-2 !px-3 text-sm flex items-center gap-2 flex-shrink-0"
-                  >
-                    <ArrowSquareOut size={16} weight="bold" />
-                    Full Details
-                  </a>
-                </div>
-
-                {/* Condensed Stats Summary */}
-                {selectedStats && selectedStats.cycles > 0 && (
-                  <div className="bg-[#445f8b] rounded-lg p-5 mb-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-white">
-                          {selectedStats.cycles}
-                        </div>
-                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
-                          <ListNumbers size={14} />
-                          Cycles
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-white">
-                          {selectedStats.scored}
-                          <span className="text-lg text-white/60">
-                            /{selectedStats.total}
-                          </span>
-                        </div>
-                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
-                          <Target size={14} />
-                          Scored
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-white">
-                          {formatStat(selectedStats.accuracy, 0)}%
-                        </div>
-                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
-                          <Target size={14} weight="fill" />
-                          Accuracy
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-white">
-                          {selectedStats.avgCycleTime
-                            ? `${formatStat(selectedStats.avgCycleTime, 1)}s`
-                            : "—"}
-                        </div>
-                        <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
-                          <Clock size={14} />
-                          Avg Cycle
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Edit Section */}
-                <div className="border-t border-[#eee] pt-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <PencilSimple size={18} className="text-[#445f8b]" />
-                    <h3 className="font-semibold text-[#444]">Edit Match Info</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-[#555] mb-1">
-                        Title
-                      </label>
-                      <input
-                        type="text"
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        placeholder="e.g. Quals 15, Finals 2"
-                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#555] mb-1">
-                        Tournament
-                      </label>
-                      <input
-                        type="text"
-                        value={editTournament}
-                        onChange={(e) => setEditTournament(e.target.value)}
-                        placeholder="e.g. Regionals"
-                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#555] mb-1">
-                        Team Number
-                      </label>
-                      <input
-                        type="number"
-                        value={editTeamNumber}
-                        onChange={(e) => setEditTeamNumber(e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
-                        min="1"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-[#555] mb-1">
-                      Notes
-                    </label>
-                    <textarea
-                      value={editNotes}
-                      onChange={(e) => setEditNotes(e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded min-h-[80px] resize-y"
-                      placeholder="Defense played, robot issues, strategy notes..."
+              {/* Search and Filter Section */}
+              {matches.length > 0 && (
+                <div className="mb-4 space-y-3">
+                  {/* Search Input */}
+                  <div className="relative">
+                    <MagnifyingGlass
+                      size={18}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888]"
+                    />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search matches..."
+                      className="w-full pl-10 pr-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
                     />
                   </div>
 
-                  {detailsError && (
-                    <p className="mb-3 text-sm text-red-600">{detailsError}</p>
+                  {/* Filter and Group Row */}
+                  <div className="flex flex-wrap gap-2">
+                    {/* Tournament Filter */}
+                    {tournamentTags.length > 0 && (
+                      <select
+                        value={filterTournament}
+                        onChange={(e) => setFilterTournament(e.target.value)}
+                        className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                      >
+                        <option value="">All Tournaments</option>
+                        {tournamentTags.map((name) => (
+                          <option key={name} value={name}>
+                            {name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {/* Team Filter */}
+                    {teamNumbers.length > 1 && (
+                      <select
+                        value={filterTeam}
+                        onChange={(e) => setFilterTeam(e.target.value)}
+                        className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                      >
+                        <option value="">All Teams</option>
+                        {teamNumbers.map((num) => (
+                          <option key={num} value={num}>
+                            Team {num}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {/* Group By */}
+                    <select
+                      value={groupBy}
+                      onChange={(e) => setGroupBy(e.target.value)}
+                      className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white ml-auto"
+                    >
+                      <option value="none">No Grouping</option>
+                      <option value="tournament">Group by Tournament</option>
+                      <option value="team">Group by Team</option>
+                      <option value="date">Group by Month</option>
+                    </select>
+                  </div>
+
+                  {/* Clear Filters */}
+                  {(searchQuery || filterTournament || filterTeam) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setFilterTournament("");
+                        setFilterTeam("");
+                      }}
+                      className="text-sm text-[#445f8b] hover:underline flex items-center gap-1"
+                    >
+                      <Funnel size={14} />
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {loading && <p className="text-[#666]">Loading matches...</p>}
+              {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+
+              {!loading && matches.length === 0 && !error && (
+                <div className="text-center py-8 text-[#666]">
+                  <Target size={48} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No saved matches yet.</p>
+                  <p className="text-xs mt-1">
+                    Record a match and use{" "}
+                    <span className="font-semibold">Save to My Matches</span>
+                  </p>
+                </div>
+              )}
+
+              {/* Match List */}
+              <div className="space-y-2 max-h-none lg:max-h-[calc(100vh-380px)] min-h-[220px] sm:min-h-[260px] lg:min-h-[300px] overflow-y-auto lg:pr-1">
+                {/* No results message */}
+                {!loading &&
+                  filteredMatches.length === 0 &&
+                  matches.length > 0 && (
+                    <div className="text-center py-8 text-[#666]">
+                      <MagnifyingGlass
+                        size={48}
+                        className="mx-auto mb-3 opacity-30"
+                      />
+                      <p className="text-sm">No matches found.</p>
+                      <p className="text-xs mt-1">
+                        Try adjusting your search or filters.
+                      </p>
+                    </div>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={handleSaveDetails}
-                    disabled={savingDetails}
-                    className="btn !py-2 !px-4"
-                  >
-                    {savingDetails ? "Saving..." : "Save Changes"}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-[#666]">
-                <Target size={64} className="mb-4 opacity-20" />
-                <p className="text-lg font-medium">No match selected</p>
-                <p className="text-sm mt-1">
-                  Select a match from the list to view details
-                </p>
+                {groupedMatches.map((group) => (
+                  <div key={group.key}>
+                    {/* Group Header (only shown when grouping is enabled) */}
+                    {group.label && (
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(group.key)}
+                        className="w-full flex items-center justify-between py-2 px-3 mb-2 bg-[#f0f5ff] border border-[#c8d6f0] rounded-lg hover:bg-[#e8eef8] transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          {collapsedGroups[group.key] ? (
+                            <CaretRight
+                              size={16}
+                              weight="bold"
+                              className="text-[#445f8b]"
+                            />
+                          ) : (
+                            <CaretDown
+                              size={16}
+                              weight="bold"
+                              className="text-[#445f8b]"
+                            />
+                          )}
+                          <span className="font-semibold text-[#445f8b]">
+                            {group.label}
+                          </span>
+                        </div>
+                        <span className="text-sm text-[#666]">
+                          {group.matches.length}{" "}
+                          {group.matches.length === 1 ? "match" : "matches"}
+                        </span>
+                      </button>
+                    )}
+
+                    {/* Group Content */}
+                    {!collapsedGroups[group.key] && (
+                      <div className="space-y-2">
+                        {group.matches.map((m) => {
+                          const date = m.startTime
+                            ? new Date(m.startTime)
+                            : m.createdAt
+                              ? new Date(m.createdAt)
+                              : null;
+                          const dateStr = date
+                            ? date.toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "Unknown date";
+                          const stats = getMatchStats(m.events);
+                          const isSelected = selectedMatchId === m.id;
+
+                          return (
+                            <div
+                              key={m.id}
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => setSelectedMatchId(m.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  setSelectedMatchId(m.id);
+                                }
+                              }}
+                              className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
+                                isSelected
+                                  ? "border-[#445f8b] bg-[#f0f5ff] shadow-sm"
+                                  : "border-[#e5e7eb] bg-white hover:border-[#445f8b] hover:bg-[#fafbfc]"
+                              }`}
+                            >
+                              {/* Match Header */}
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-semibold text-[#1a1a1a] truncate">
+                                    {m.title ||
+                                      `Team ${m.teamNumber || "?"} Match`}
+                                  </div>
+                                  {m.tournamentName &&
+                                    groupBy !== "tournament" && (
+                                      <div className="text-xs text-[#445f8b] font-medium mt-0.5">
+                                        {m.tournamentName}
+                                      </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <a
+                                    href={`/match?match=${encodeURIComponent(m.id)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="p-1.5 text-[#666] hover:text-[#445f8b] hover:bg-[#e8eef8] rounded transition-colors"
+                                    title="Open in new tab"
+                                  >
+                                    <ArrowSquareOut size={16} weight="bold" />
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(m.id);
+                                    }}
+                                    className="p-1.5 text-[#666] hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    title="Delete match"
+                                  >
+                                    <Trash size={16} weight="bold" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Match Stats Row */}
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#555]">
+                                {groupBy !== "team" && (
+                                  <span className="flex items-center gap-1.5">
+                                    <Users size={14} className="text-[#888]" />
+                                    Team {m.teamNumber || "?"}
+                                  </span>
+                                )}
+                                {groupBy !== "date" && (
+                                  <span className="flex items-center gap-1.5">
+                                    <CalendarBlank
+                                      size={14}
+                                      className="text-[#888]"
+                                    />
+                                    {dateStr}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Score Summary */}
+                              <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-3 pt-3 border-t border-[#eee]">
+                                <div className="flex items-center gap-1 sm:gap-1.5">
+                                  <Target
+                                    size={16}
+                                    className="text-[#445f8b]"
+                                  />
+                                  <span className="font-semibold text-[#1a1a1a]">
+                                    {stats.scored}/{stats.total}
+                                  </span>
+                                  <span className="text-xs text-[#888] hidden sm:inline">
+                                    scored
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1 sm:gap-1.5">
+                                  <ListNumbers
+                                    size={16}
+                                    className="text-[#445f8b]"
+                                  />
+                                  <span className="font-semibold text-[#1a1a1a]">
+                                    {stats.cycles}
+                                  </span>
+                                  <span className="text-xs text-[#888] hidden sm:inline">
+                                    cycles
+                                  </span>
+                                </div>
+                                <div className="text-sm">
+                                  <span className="font-semibold text-[#1a1a1a]">
+                                    {formatStat(stats.accuracy, 0)}%
+                                  </span>
+                                  <span className="text-xs text-[#888] ml-1 hidden sm:inline">
+                                    acc
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+
+            {/* Right Column - Match Preview */}
+            <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
+              {selectedMatch ? (
+                <>
+                  {/* Header with title and actions */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#1a1a1a]">
+                        {selectedMatch.title ||
+                          `Team ${selectedMatch.teamNumber || "?"} Match`}
+                      </h2>
+                      {selectedMatch.tournamentName && (
+                        <p className="text-[#445f8b] font-medium mt-1">
+                          {selectedMatch.tournamentName}
+                        </p>
+                      )}
+                    </div>
+                    <a
+                      href={`/match?match=${encodeURIComponent(selectedMatch.id)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn !py-2 !px-3 text-sm flex items-center gap-2 flex-shrink-0"
+                    >
+                      <ArrowSquareOut size={16} weight="bold" />
+                      Full Details
+                    </a>
+                  </div>
+
+                  {/* Condensed Stats Summary */}
+                  {selectedStats && selectedStats.cycles > 0 && (
+                    <div className="bg-[#445f8b] rounded-lg p-5 mb-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                            {selectedStats.cycles}
+                          </div>
+                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                            <ListNumbers size={14} />
+                            Cycles
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                            {selectedStats.scored}
+                            <span className="text-lg text-white/60">
+                              /{selectedStats.total}
+                            </span>
+                          </div>
+                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                            <Target size={14} />
+                            Scored
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                            {formatStat(selectedStats.accuracy, 0)}%
+                          </div>
+                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                            <Target size={14} weight="fill" />
+                            Accuracy
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                            {selectedStats.avgCycleTime
+                              ? `${formatStat(selectedStats.avgCycleTime, 1)}s`
+                              : "—"}
+                          </div>
+                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                            <Clock size={14} />
+                            Avg Cycle
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Edit Section */}
+                  <div className="border-t border-[#eee] pt-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <PencilSimple size={18} className="text-[#445f8b]" />
+                      <h3 className="font-semibold text-[#444]">
+                        Edit Match Info
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#555] mb-1">
+                          Title
+                        </label>
+                        <input
+                          type="text"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          placeholder="e.g. Quals 15, Finals 2"
+                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#555] mb-1">
+                          Tournament
+                        </label>
+                        <input
+                          type="text"
+                          value={editTournament}
+                          onChange={(e) => setEditTournament(e.target.value)}
+                          placeholder="e.g. Regionals"
+                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#555] mb-1">
+                          Team Number
+                        </label>
+                        <input
+                          type="number"
+                          value={editTeamNumber}
+                          onChange={(e) => setEditTeamNumber(e.target.value)}
+                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                          min="1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-[#555] mb-1">
+                        Notes
+                      </label>
+                      <textarea
+                        value={editNotes}
+                        onChange={(e) => setEditNotes(e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded min-h-[80px] resize-y"
+                        placeholder="Defense played, robot issues, strategy notes..."
+                      />
+                    </div>
+
+                    {detailsError && (
+                      <p className="mb-3 text-sm text-red-600">
+                        {detailsError}
+                      </p>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleSaveDetails}
+                      disabled={savingDetails}
+                      className="btn !py-2 !px-4"
+                    >
+                      {savingDetails ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-[#666]">
+                  <Target size={64} className="mb-4 opacity-20" />
+                  <p className="text-lg font-medium">No match selected</p>
+                  <p className="text-sm mt-1">
+                    Select a match from the list to view details
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         </>
       )}
 
