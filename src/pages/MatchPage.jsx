@@ -10,14 +10,17 @@ import { getMatchForCurrentUser } from "../api/matchesApi.js";
 function MatchPage() {
   const recorder = useMatchRecorderContext();
   const { user } = useAuth();
+  const userId = user?.id;
   const [initialMeta, setInitialMeta] = useState(null);
   const [loadingMatch, setLoadingMatch] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [loadedMatchIdFromUrl, setLoadedMatchIdFromUrl] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const matchId = params.get("match");
-    if (!matchId || !user) return;
+    if (!matchId || !userId) return;
+    if (loadedMatchIdFromUrl === matchId) return;
 
     let cancelled = false;
     const load = async () => {
@@ -32,6 +35,7 @@ function MatchPage() {
           title: match.title || "",
           tournamentName: match.tournamentName || "",
         });
+        setLoadedMatchIdFromUrl(match.id);
       } catch (err) {
         if (!cancelled) {
           setLoadError(err.message || "Error loading match");
@@ -45,7 +49,7 @@ function MatchPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, recorder]);
+  }, [userId, recorder, loadedMatchIdFromUrl]);
 
   const hasSession = useMemo(
     () => recorder.isRecording || recorder.matchStartTime !== null,

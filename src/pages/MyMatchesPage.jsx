@@ -499,7 +499,7 @@ function MyMatchesPage() {
             )}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] items-start">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] lg:items-start">
           {/* Left Column - Match List */}
           <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6">
             {/* Saved Matches Header */}
@@ -610,7 +610,7 @@ function MyMatchesPage() {
             )}
 
             {/* Match List */}
-            <div className="space-y-2 max-h-[calc(100vh-380px)] min-h-[300px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-none lg:max-h-[calc(100vh-380px)] min-h-[220px] sm:min-h-[260px] lg:min-h-[300px] overflow-y-auto lg:pr-1">
               {/* No results message */}
               {!loading && filteredMatches.length === 0 && matches.length > 0 && (
                 <div className="text-center py-8 text-[#666]">
@@ -663,10 +663,17 @@ function MyMatchesPage() {
                         const isSelected = selectedMatchId === m.id;
 
                         return (
-                          <button
+                          <div
                             key={m.id}
-                            type="button"
+                            role="button"
+                            tabIndex={0}
                             onClick={() => setSelectedMatchId(m.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setSelectedMatchId(m.id);
+                              }
+                            }}
                             className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
                               isSelected
                                 ? "border-[#445f8b] bg-[#f0f5ff] shadow-sm"
@@ -749,7 +756,7 @@ function MyMatchesPage() {
                                 <span className="text-xs text-[#888] ml-1">acc</span>
                               </div>
                             </div>
-                          </button>
+                          </div>
                         );
                       })}
                     </div>
@@ -760,11 +767,11 @@ function MyMatchesPage() {
           </div>
 
           {/* Right Column - Match Preview */}
-          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6 min-h-[400px]">
+          <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
             {selectedMatch ? (
               <>
                 {/* Header with title and actions */}
-                <div className="flex items-start justify-between gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-[#1a1a1a]">
                       {selectedMatch.title ||

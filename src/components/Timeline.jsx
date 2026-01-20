@@ -77,22 +77,24 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
     maxTimeSeconds * pixelsPerSecond
   );
 
-  // Auto-scroll to keep playhead visible
+  // Auto-scroll to keep playhead visible (match mode only to avoid flicker on loaded sessions)
   useEffect(() => {
-    if (scrollRef.current && safeCurrent > 0) {
-      const playheadPosition = (safeCurrent / maxTimeMs) * timelineWidth;
-      const containerWidth = scrollRef.current.clientWidth;
-      const scrollLeft = scrollRef.current.scrollLeft;
+    if (!scrollRef.current) return;
+    if (mode !== "match") return;
+    if (safeCurrent <= 0) return;
 
-      // If playhead is near the right edge, scroll to follow
-      if (playheadPosition > scrollLeft + containerWidth - 100) {
-        scrollRef.current.scrollTo({
-          left: playheadPosition - containerWidth + 150,
-          behavior: 'smooth'
-        });
-      }
+    const playheadPosition = (safeCurrent / maxTimeMs) * timelineWidth;
+    const containerWidth = scrollRef.current.clientWidth;
+    const scrollLeft = scrollRef.current.scrollLeft;
+
+    // If playhead is near the right edge, scroll to follow
+    if (playheadPosition > scrollLeft + containerWidth - 100) {
+      scrollRef.current.scrollTo({
+        left: playheadPosition - containerWidth + 150,
+        behavior: "smooth",
+      });
     }
-  }, [safeCurrent, maxTimeMs, timelineWidth]);
+  }, [safeCurrent, maxTimeMs, timelineWidth, mode]);
 
   // If the user expands from the phase overview, scroll to that phase start.
   useEffect(() => {
