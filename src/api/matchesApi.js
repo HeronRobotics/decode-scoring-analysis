@@ -203,6 +203,11 @@ export async function updateMatch(matchId, changes) {
   if (Object.prototype.hasOwnProperty.call(changes, 'notes')) {
     payload.notes = changes.notes || ''
   }
+  if (Object.prototype.hasOwnProperty.call(changes, 'startTime')) {
+    payload.start_time = changes.startTime
+      ? new Date(changes.startTime).toISOString()
+      : null
+  }
 
   // Scoring fields (only if columns exist)
   if (hasScoring) {

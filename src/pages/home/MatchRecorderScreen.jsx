@@ -64,6 +64,7 @@ function MatchRecorderScreen({
   const [title, setTitle] = useState("");
   const [tournamentName, setTournamentName] = useState("");
   const [knownTournaments, setKnownTournaments] = useState([]);
+  const [matchDate, setMatchDate] = useState("");
 
   const posthog = usePostHog();
   const wasRecordingRef = useRef(false);
@@ -132,6 +133,22 @@ function MatchRecorderScreen({
   }, [events, motif, autoPattern, teleopPattern, autoLeave, teleopPark]);
 
   const [showPointsEntry, setShowPointsEntry] = useState(true);
+
+  useEffect(() => {
+    if (!matchStartTime) {
+      setMatchDate("");
+      return;
+    }
+    const d = new Date(matchStartTime);
+    if (Number.isNaN(d.getTime())) {
+      setMatchDate("");
+      return;
+    }
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    setMatchDate(`${year}-${month}-${day}`);
+  }, [matchStartTime]);
 
   useEffect(() => {
     if (initialTitle !== undefined && initialTitle !== null) {
@@ -307,7 +324,28 @@ function MatchRecorderScreen({
   };
 
   const buildMatchPayload = () => ({
-    startTime: matchStartTime,
+    startTime: (() => {
+      if (matchDate) {
+        const dateOnly = new Date(matchDate);
+        if (!Number.isNaN(dateOnly.getTime())) {
+          if (matchStartTime) {
+            const existing = new Date(matchStartTime);
+            const combined = new Date(
+              dateOnly.getFullYear(),
+              dateOnly.getMonth(),
+              dateOnly.getDate(),
+              existing.getHours(),
+              existing.getMinutes(),
+              existing.getSeconds(),
+              existing.getMilliseconds(),
+            );
+            return combined.getTime();
+          }
+          return dateOnly.getTime();
+        }
+      }
+      return matchStartTime;
+    })(),
     duration: timerDuration,
     teamNumber,
     events,
@@ -689,6 +727,18 @@ function MatchRecorderScreen({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Driver practice, match 3, etc."
+              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+            />
+          </div>
+
+          <div className="bg-white p-4 border-2 border-[#445f8b]">
+            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+              Match Date
+            </label>
+            <input
+              type="date"
+              value={matchDate}
+              onChange={(e) => setMatchDate(e.target.value)}
               className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
             />
           </div>

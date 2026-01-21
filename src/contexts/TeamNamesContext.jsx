@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { fetchTeamsBatch, isFtcApiConfigured } from '../api/ftcApi';
 
-const TeamNamesContext = createContext(null);
+export const TeamNamesContext = createContext(null);
 
 // Local storage key for persisting team names
 const STORAGE_KEY = 'heron_team_names_cache';

@@ -75,6 +75,7 @@ function MyMatchesPage() {
   const [editTournament, setEditTournament] = useState("");
   const [editTeamNumber, setEditTeamNumber] = useState("");
   const [editNotes, setEditNotes] = useState("");
+  const [editDate, setEditDate] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState("");
 
@@ -270,6 +271,19 @@ function MyMatchesPage() {
     setEditTournament(selectedMatch.tournamentName || "");
     setEditTeamNumber(selectedMatch.teamNumber || "");
     setEditNotes(selectedMatch.notes || "");
+    const baseDate = selectedMatch.startTime
+      ? new Date(selectedMatch.startTime)
+      : selectedMatch.createdAt
+        ? new Date(selectedMatch.createdAt)
+        : null;
+    if (baseDate && !Number.isNaN(baseDate.getTime())) {
+      const year = baseDate.getFullYear();
+      const month = String(baseDate.getMonth() + 1).padStart(2, "0");
+      const day = String(baseDate.getDate()).padStart(2, "0");
+      setEditDate(`${year}-${month}-${day}`);
+    } else {
+      setEditDate("");
+    }
     setDetailsError("");
   }, [selectedMatch]);
 
@@ -278,11 +292,33 @@ function MyMatchesPage() {
     try {
       setSavingDetails(true);
       setDetailsError("");
+      let newStartTime = selectedMatch.startTime || null;
+      if (editDate) {
+        const dateOnly = new Date(editDate);
+        if (!Number.isNaN(dateOnly.getTime())) {
+          if (selectedMatch.startTime) {
+            const existing = new Date(selectedMatch.startTime);
+            const combined = new Date(
+              dateOnly.getFullYear(),
+              dateOnly.getMonth(),
+              dateOnly.getDate(),
+              existing.getHours(),
+              existing.getMinutes(),
+              existing.getSeconds(),
+              existing.getMilliseconds(),
+            );
+            newStartTime = combined.getTime();
+          } else {
+            newStartTime = dateOnly.getTime();
+          }
+        }
+      }
       const updated = await updateMatch(selectedMatch.id, {
         title: editTitle,
         tournamentName: editTournament,
         teamNumber: editTeamNumber,
         notes: editNotes,
+        startTime: newStartTime,
       });
       setMatches((prev) =>
         prev.map((m) => (m.id === updated.id ? updated : m)),
@@ -959,6 +995,21 @@ function MyMatchesPage() {
                           onChange={(e) => setEditTeamNumber(e.target.value)}
                           className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
                           min="1"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#555] mb-1 flex items-center gap-1.5">
+                          <CalendarBlank
+                            size={14}
+                            className="text-[#888]"
+                          />
+                          Match Date
+                        </label>
+                        <input
+                          type="date"
+                          value={editDate}
+                          onChange={(e) => setEditDate(e.target.value)}
+                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
                         />
                       </div>
                     </div>
