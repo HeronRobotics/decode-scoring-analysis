@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")).render(
         defaults: "2025-05-24",
         capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
         debug: import.meta.env.MODE === "development",
-        // person_profiles: "always",
+        person_profiles: "always",
       }}
     >
       <TournamentProvider>
