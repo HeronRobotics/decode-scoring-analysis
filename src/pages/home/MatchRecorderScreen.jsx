@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowClockwise,
   Record,
@@ -17,6 +17,7 @@ import {
   CaretDown,
   Car,
   Flag,
+  FloppyDisk,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -61,6 +62,7 @@ function MatchRecorderScreen({
   const [copiedTeleopUrl, setCopiedTeleopUrl] = useState(false);
 
   const [saveStatus, setSaveStatus] = useState("idle");
+  const [hasSavedThisSession, setHasSavedThisSession] = useState(false);
   const [title, setTitle] = useState("");
   const [tournamentName, setTournamentName] = useState("");
   const [knownTournaments, setKnownTournaments] = useState([]);
@@ -134,6 +136,8 @@ function MatchRecorderScreen({
 
   const [showPointsEntry, setShowPointsEntry] = useState(true);
 
+  const autoSaveRef = useRef(false);
+
   useEffect(() => {
     if (!matchStartTime) {
       setMatchDate("");
@@ -185,24 +189,11 @@ function MatchRecorderScreen({
     load();
   }, [user]);
 
-  // Track match finish with PostHog
   useEffect(() => {
-    if (wasRecordingRef.current && !isRecording) {
-      const totalCycles = events.filter((e) => e.type === "cycle").length;
-      const finishReason = wasManualStopRef.current ? "manual_stop" : "timeout";
-
-      posthog.capture("finish_match", {
-        finishReason,
-        teamNumber,
-        totalCycles,
-        matchDuration: elapsedTime,
-        mode,
-      });
-
-      wasManualStopRef.current = false;
+    if (loadedMatchId) {
+      setHasSavedThisSession(true);
     }
-    wasRecordingRef.current = isRecording;
-  }, [isRecording, events, teamNumber, elapsedTime, mode, posthog]);
+  }, [loadedMatchId]);
 
   const matchText = useMemo(
     () =>
@@ -372,7 +363,7 @@ function MatchRecorderScreen({
     });
   };
 
-  const handleSaveToAccount = async () => {
+  const handleSaveToAccount = useCallback(async () => {
     if (!events.length) return;
     if (!user) {
       alert("Sign in (top right) to save matches to your account.");
@@ -388,6 +379,7 @@ function MatchRecorderScreen({
         await createMatchForUser(user.id, payload, "recorder");
       }
       setSaveStatus("saved");
+      setHasSavedThisSession(true);
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (error) {
       console.error(error);
@@ -395,7 +387,53 @@ function MatchRecorderScreen({
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 2000);
     }
-  };
+  }, [events, user, loadedMatchId, buildMatchPayload]);
+
+  useEffect(() => {
+    if (!isRecording && events.length === 0) {
+      setHasSavedThisSession(false);
+      autoSaveRef.current = false;
+    }
+  }, [isRecording, events.length]);
+
+  // Track match finish with PostHog and auto-save for logged-in users
+  useEffect(() => {
+    if (wasRecordingRef.current && !isRecording) {
+      const totalCycles = events.filter((e) => e.type === "cycle").length;
+      const finishReason = wasManualStopRef.current ? "manual_stop" : "timeout";
+
+      posthog.capture("finish_match", {
+        finishReason,
+        teamNumber,
+        totalCycles,
+        matchDuration: elapsedTime,
+        mode,
+      });
+
+      if (user && events.length && !autoSaveRef.current && !hasSavedThisSession) {
+        handleSaveToAccount();
+        autoSaveRef.current = true;
+      }
+
+      wasManualStopRef.current = false;
+    }
+
+    if (!wasRecordingRef.current && isRecording) {
+      autoSaveRef.current = false;
+    }
+
+    wasRecordingRef.current = isRecording;
+  }, [
+    isRecording,
+    events,
+    teamNumber,
+    elapsedTime,
+    mode,
+    posthog,
+    user,
+    hasSavedThisSession,
+    handleSaveToAccount,
+  ]);
 
   const confirmCycle = () => {
     recorder.addCycle({ total: cycleData.total, scored: cycleData.scored });
@@ -841,6 +879,13 @@ function MatchRecorderScreen({
         />
       )}
 
+      {user && !isRecording && events.length > 0 && !loadedMatchId && !hasSavedThisSession && (
+        <SaveMatchPromptToast
+          onSave={handleSaveToAccount}
+          onDismiss={() => setHasSavedThisSession(true)}
+        />
+      )}
+
       <KeyboardEntryToast visible={keyEntryVisible} keyEntry={keyEntry} />
       <CycleModal
         open={showCycleModal}
@@ -849,6 +894,36 @@ function MatchRecorderScreen({
         onConfirm={confirmCycle}
         onClose={() => setShowCycleModal(false)}
       />
+    </div>
+  );
+}
+
+function SaveMatchPromptToast({ onSave, onDismiss }) {
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:bottom-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
+      <div className="bg-white border-2 border-[#445f8b] shadow p-4 w-full">
+        <div className="text-sm font-semibold text-[#2d3e5c] mb-1">Save match?</div>
+        <div className="text-xs text-[#666] mb-3">
+          You&apos;re viewing a match that isn&apos;t saved to your account.
+        </div>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="text-xs px-3 py-1.5 border border-[#ddd] rounded hover:bg-[#f3f4f6] text-[#555]"
+          >
+            Not now
+          </button>
+          <button
+            type="button"
+            onClick={onSave}
+            className="btn !py-2 !px-3 !text-xs flex items-center gap-2"
+          >
+            <FloppyDisk size={14} weight="bold" />
+            Save to My Matches
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

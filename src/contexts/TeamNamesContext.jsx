@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { fetchTeamsBatch, isFtcApiConfigured } from '../api/ftcApi';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const TeamNamesContext = createContext(null);
 
 // Local storage key for persisting team names
@@ -99,7 +100,7 @@ export function TeamNamesProvider({ children }) {
     </TeamNamesContext.Provider>
   );
 }
-
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTeamNames() {
   const context = useContext(TeamNamesContext);
   if (!context) {
@@ -113,6 +114,7 @@ export function useTeamNames() {
  * @param {string|number} teamNumber
  * @returns {{ name: string, info: object|null, loading: boolean }}
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTeamName(teamNumber) {
   const { getTeamName, getTeamInfo, loadTeamNames, loading } = useTeamNames();
 
