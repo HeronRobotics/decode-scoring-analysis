@@ -477,6 +477,37 @@ function MatchRecorderScreen({
 
   const phaseInfo = getPhaseLabel();
 
+  // Calculate display time based on mode and phase
+  const displayTime = useMemo(() => {
+    // Only apply special formatting for full matches
+    if (mode !== "match") {
+      return formatTime(elapsedTime);
+    }
+
+    const { AUTO_DURATION, BUFFER_DURATION, TELEOP_DURATION } = matchRecorderConstants;
+    const elapsedSeconds = elapsedTime / 1000;
+    const elapsedMs = elapsedTime;
+
+    if (phase === "auto" || elapsedSeconds < AUTO_DURATION) {
+      // Count UP from 0 to 30
+      const autoTimeMs = Math.min(elapsedMs, AUTO_DURATION * 1000);
+      return formatTime(autoTimeMs);
+    } else if (phase === "buffer" || elapsedSeconds < AUTO_DURATION + BUFFER_DURATION) {
+      // Count DOWN from 8 to 0
+      const bufferElapsedMs = elapsedMs - AUTO_DURATION * 1000;
+      const bufferRemainingMs = Math.max(0, BUFFER_DURATION * 1000 - bufferElapsedMs);
+      return formatTime(bufferRemainingMs);
+    } else if (phase === "teleop" || elapsedSeconds < AUTO_DURATION + BUFFER_DURATION + TELEOP_DURATION) {
+      // Count DOWN from 120 (2:00) to 0
+      const teleopElapsedMs = elapsedMs - (AUTO_DURATION + BUFFER_DURATION) * 1000;
+      const teleopRemainingMs = Math.max(0, TELEOP_DURATION * 1000 - teleopElapsedMs);
+      return formatTime(teleopRemainingMs);
+    } else {
+      // Finished - show 0:00.000
+      return formatTime(0);
+    }
+  }, [elapsedTime, mode, phase]);
+
   return (
     <div className="w-full max-w-5xl space-y-4">
       {/* Timeline - Full width anchor at top */}
@@ -512,7 +543,7 @@ function MatchRecorderScreen({
         {/* Main timer */}
         <div className="text-center">
           <h2 className="text-5xl sm:text-6xl font-mono font-bold tracking-tight text-white!">
-            {formatTime(elapsedTime)}
+            {displayTime}
           </h2>
           <p className="text-sm opacity-80 mt-1">
             {cycleCount} cycle{cycleCount !== 1 ? "s" : ""} recorded
