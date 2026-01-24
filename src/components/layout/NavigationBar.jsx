@@ -1,4 +1,11 @@
-import { Calendar, ChartLine, House, SignIn, SignOut, Trophy } from "@phosphor-icons/react";
+import {
+  Calendar,
+  ChartLine,
+  House,
+  SignIn,
+  SignOut,
+  Trophy,
+} from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../../firebase";
 import { useState } from "react";
@@ -89,6 +96,7 @@ function NavigationBar({ currentPage, navigate }) {
               <button
                 onClick={() => setAuthOpen(true)}
                 className="btn !py-1 !px-3 text-xs sm:text-sm"
+                data-auth-modal-trigger
               >
                 <SignIn weight="bold" size={16} />
                 Sign in / Sign up
