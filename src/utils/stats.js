@@ -165,6 +165,46 @@ export const teamStatsFromTournament = (tournament) => {
     }, 0)
     const accuracy = totalBalls > 0 ? (totalScored / totalBalls) * 100 : 0
 
+    // Calculate points per match (for full matches)
+    // Import calculateTotalPoints dynamically since this is a utility file
+    const teamMatches = matchesOrdered.filter(m => (m.teamNumber || '').toString().trim() === team)
+    const pointsArray = teamMatches.map(m => {
+      // Check if match has duration (full matches are 158 seconds)
+      const isFullMatch = m.duration && Math.abs(m.duration - 158) <= 10
+      if (!isFullMatch) return null
+
+      // Calculate points for this match
+      const cycleEvents = m.events.filter(e => e.type === 'cycle')
+      const artifactPoints = cycleEvents.reduce((sum, e) => sum + e.scored, 0) * 3
+
+      // Motif points
+      let motifPoints = 0
+      if (m.motif) {
+        const getTargetPattern = (motif) => motif ? motif.repeat(3) : ''
+        const calculateMatches = (pattern, target) => {
+          if (!pattern || !target) return 0
+          let matches = 0
+          const len = Math.min(pattern.length, target.length)
+          for (let i = 0; i < len; i++) {
+            if (pattern[i] === target[i]) matches++
+          }
+          return matches
+        }
+        const target = getTargetPattern(m.motif)
+        const autoMatches = calculateMatches(m.autoPattern || '', target)
+        const teleopMatches = calculateMatches(m.teleopPattern || '', target)
+        motifPoints = (autoMatches + teleopMatches) * 2
+      }
+
+      // Leave and park points
+      const leavePoints = m.autoLeave ? 3 : 0
+      const parkPoints = m.teleopPark === 'partial' ? 5 : m.teleopPark === 'full' ? 10 : 0
+
+      return artifactPoints + motifPoints + leavePoints + parkPoints
+    }).filter(p => p !== null)
+
+    const avgPoints = pointsArray.length > 0 ? pointsArray.reduce((a,b)=>a+b,0) / pointsArray.length : 0
+
     return {
       team,
       scores,
@@ -172,7 +212,9 @@ export const teamStatsFromTournament = (tournament) => {
       avg,
       totalScored,
       totalBalls,
-      accuracy
+      accuracy,
+      avgPoints,
+      fullMatchCount: pointsArray.length
     }
   }).sort((a,b) => b.median - a.median)
 }

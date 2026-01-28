@@ -28,28 +28,33 @@ createRoot(document.getElementById("root")).render(
             </TeamNamesProvider>
           </AuthProvider>
           <footer className="text-center text-sm text-[#445F8B] my-4">
-            <img
-              src="https://heronrobotics.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fheronlogo.b712bcb0.png&w=828&q=75"
-              className="inline-block w-6 h-6 mx-2 mb-1"
-            />{" "}
-            Heron Robotics, FTC 27621. &copy; 2025. All rights reserved.
-            <br />
-            Made with late nights and free time —{" "}
-            <a
-              className="underline"
-              href="https://github.com/HeronRobotics/decode-scoring-analysis"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Contribute on GitHub
-            </a>
-            !
-            <a
-              href="https://heronscout.me/privacy"
-              className="block mt-1 underline"
-            >
-              Privacy Policy: https://heronscout.me/privacy
-            </a>
+            <div className="w-full flex flex-row justify-center items-center gap-2">
+              <p className="font-semibold">
+                <img
+                  src="https://heronrobotics.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fheronlogo.b712bcb0.png&w=828&q=75"
+                  className="inline-block w-6 h-6 mx-2"
+                />{" "}
+                Heron Robotics, FTC 27621. &copy; 2025. All rights reserved.
+              </p>
+              <a
+                href="https://heronscout.me/privacy"
+                className="block underline"
+              >
+                Privacy Policy
+              </a>
+            </div>
+            <div className="text-sm">
+              Made with late nights and free time —{" "}
+              <a
+                className="underline"
+                href="https://github.com/HeronRobotics/decode-scoring-analysis"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Contribute on GitHub
+              </a>
+              !
+            </div>
           </footer>
         </MatchRecorderProvider>
       </TournamentProvider>

@@ -19,6 +19,7 @@ import {
   Flag,
   FloppyDisk,
   UserPlus,
+  Play,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -81,6 +82,7 @@ function MatchRecorderScreen({
     elapsedTime,
     events,
     isRecording,
+    isReady,
     notes,
     teamNumber,
     mode,
@@ -572,6 +574,17 @@ function MatchRecorderScreen({
       </div>
 
       <div className="space-y-4">
+        {/* Begin Match Button - Shows when ready but not recording */}
+        {isReady && !isRecording && (
+          <button
+            onClick={() => recorder.beginMatch()}
+            className="w-96 mx-auto py-6 px-6 text-xl font-bold bg-[#445f8b] text-white border-2 border-[#445f8b] hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-3 shadow-lg animate-pulse"
+          >
+            <Play size={32} weight="fill" />
+            <span className="mt-0.5">Begin Match</span>
+          </button>
+        )}
+
         {/* Action Buttons (Full width) */}
         {isRecording ? (
           <div className="flex flex-row items-center justify-center space-x-2">
@@ -610,7 +623,7 @@ function MatchRecorderScreen({
         ) : (
           <button
             onClick={() => recorder.resetMatch()}
-            className="btn w-full py-3! justify-center"
+            className="bg-white border-2 border-[#445f8b] w-48 mx-auto text-sm transition-all flex items-center justify-center gap-1.5 shadow-lg"
           >
             <ArrowClockwise size={20} weight="bold" />
             Start New Match
@@ -662,33 +675,33 @@ function MatchRecorderScreen({
           </div>
         )}
 
-        {/* Points Entry - Show after match stops */}
+        {/* Points Entry - Secondary importance */}
         {
-          <div className="bg-white border-2 border-[#445f8b] overflow-hidden">
+          <div className="bg-white border border-[#ddd] overflow-hidden">
             <button
               onClick={() => setShowPointsEntry(!showPointsEntry)}
-              className="w-full p-4 flex items-center justify-between hover:bg-[#f7f9ff] transition-colors text-left"
+              className="w-full p-3 flex items-center justify-between hover:bg-[#f8fafc] transition-colors text-left"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Palette
-                  size={24}
+                  size={20}
                   weight="duotone"
                   className="text-[#445f8b]"
                 />
-                <span className="text-lg font-semibold">Points Entry</span>
-                <span className="text-sm bg-[#445f8b] text-white px-2 py-0.5 rounded-full font-bold">
+                <span className="text-base font-semibold">Points Entry</span>
+                <span className="text-xs bg-[#445f8b] text-white px-2 py-0.5 rounded-full font-bold">
                   {pointsBreakdown.total} pts
                 </span>
               </div>
               <CaretDown
-                size={20}
+                size={18}
                 weight="bold"
                 className={`text-[#445f8b] transition-transform ${showPointsEntry ? "rotate-180" : ""}`}
               />
             </button>
 
             {showPointsEntry && (
-              <div className="p-4 border-t-2 border-[#445f8b]/20 space-y-5">
+              <div className="p-3 border-t border-[#eee] space-y-4">
                 {/* Motif Selector */}
                 <div>
                   <label className="flex items-center gap-2 text-sm font-semibold mb-2">
@@ -820,95 +833,94 @@ function MatchRecorderScreen({
           </div>
         }
 
-        {/* Team & Notes (Stacked) */}
-        <div className="space-y-4">
-          <div className="bg-white p-4 border-2 border-[#445f8b]">
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
-              <Target size={16} weight="bold" className="text-[#445f8b]" />
-              Team Number
-            </label>
-            <input
-              type="number"
-              value={teamNumber}
-              onChange={(e) => recorder.setTeamNumber(e.target.value)}
-              placeholder="Enter team #"
-              className="w-full px-4 py-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-center font-mono text-xl rounded transition-colors"
-              min="1"
-              max="99999"
-            />
-          </div>
+        {/* Metadata - Reduced visual weight */}
+        <div className="bg-white border border-[#ddd] p-4">
+          <h3 className="text-sm font-semibold text-[#666] mb-3 uppercase tracking-wide">Match Details</h3>
+          <div className="space-y-3 flex flex-row flex-wrap justify-start gap-4">
+            <div className="w-full">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Match Title (e.g. Driver practice, match 3, etc.)"
+                className="w-full px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none rounded text-lg"
+              />
+            </div>
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-[#666]">
+                <Target size={14} weight="bold" className="text-[#445f8b]" />
+                Team Number
+              </label>
+              <input
+                type="number"
+                value={teamNumber}
+                onChange={(e) => recorder.setTeamNumber(e.target.value)}
+                placeholder="Enter team #"
+                className="w-48 p-2 border border-[#ddd] focus:border-[#445f8b] outline-none text-center text-sm font-mono rounded transition-colors"
+                min="1"
+                max="99999"
+              />
+            </div>
 
-          <div className="bg-white p-4 border-2 border-[#445f8b]">
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
-              Match Title (optional)
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Driver practice, match 3, etc."
-              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
-            />
-          </div>
+            <div>
+              <label className="text-xs font-semibold mb-1 text-[#666] block">
+                Match Date
+              </label>
+              <input
+                type="date"
+                value={matchDate}
+                onChange={(e) => setMatchDate(e.target.value)}
+                className="w-48 px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+              />
+            </div>
 
-          <div className="bg-white p-4 border-2 border-[#445f8b]">
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
-              Match Date
-            </label>
-            <input
-              type="date"
-              value={matchDate}
-              onChange={(e) => setMatchDate(e.target.value)}
-              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
-            />
-          </div>
+            <div>
+              <label className="text-xs font-semibold mb-1 text-[#666] block">
+                Tournament Tag <span className="text-[#999] font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={tournamentName}
+                onChange={(e) => setTournamentName(e.target.value)}
+                placeholder="e.g. Play Space Qualifier, Regionals, etc."
+                className="w-full px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+              />
+              {knownTournaments.length > 0 && (
+                <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                  <span className="text-xs text-[#666]">
+                    Or pick from previous:
+                  </span>
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (!e.target.value) return;
+                      setTournamentName(e.target.value);
+                    }}
+                    className="px-2 py-1 border border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded min-w-40"
+                  >
+                    <option value="">Select tournament...</option>
+                    {knownTournaments.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
 
-          <div className="bg-white p-4 border-2 border-[#445f8b]">
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
-              <Note size={16} weight="bold" className="text-[#445f8b]" />
-              Match Notes
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => recorder.setNotes(e.target.value)}
-              placeholder="Defense, robot issues, strategy..."
-              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none resize-none h-24 rounded transition-colors text-sm"
-            />
-          </div>
-
-          <div className="bg-white p-4 border-2 border-[#445f8b]">
-            <label className="flex items-center gap-2 text-sm font-semibold mb-2">
-              Tournament Tag (optional)
-            </label>
-            <input
-              type="text"
-              value={tournamentName}
-              onChange={(e) => setTournamentName(e.target.value)}
-              placeholder="e.g. Play Space Qualifier, Regionals, etc."
-              className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
-            />
-            {knownTournaments.length > 0 && (
-              <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                <span className="text-xs text-[#666] font-semibold">
-                  Or pick from previous:
-                </span>
-                <select
-                  value=""
-                  onChange={(e) => {
-                    if (!e.target.value) return;
-                    setTournamentName(e.target.value);
-                  }}
-                  className="px-2 py-1 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded min-w-[10rem]"
-                >
-                  <option value="">Select tournament...</option>
-                  {knownTournaments.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="w-full">
+              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-[#666]">
+                <Note size={14} weight="bold" className="text-[#445f8b]" />
+                Match Notes
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => recorder.setNotes(e.target.value)}
+                placeholder="Defense, robot issues, strategy..."
+                className="w-full px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none resize-none h-20 rounded transition-colors text-sm"
+              />
+            </div>
           </div>
         </div>
       </div>

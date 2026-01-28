@@ -58,8 +58,8 @@ function MatchPage() {
   }, [user?.id, matchId, recorder.applyParsedMatchData]);
 
   const hasSession = useMemo(
-    () => recorder.isRecording || recorder.matchStartTime !== null,
-    [recorder.isRecording, recorder.matchStartTime]
+    () => recorder.isRecording || recorder.matchStartTime !== null || recorder.isReady,
+    [recorder.isRecording, recorder.matchStartTime, recorder.isReady]
   );
 
   if (!hasSession && !loadingMatch) {
@@ -72,7 +72,7 @@ function MatchPage() {
           </p>
 
           <div className="bg-[#f7f9ff] border-2 border-[#445f8b]/30 p-4 sm:p-5 rounded-lg mb-5">
-            <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+            <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-32">
               <span className="font-medium flex items-center gap-2 text-[#2d3e5c]">
                 <Target size={18} weight="bold" />
                 Team Number:

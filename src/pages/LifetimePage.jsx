@@ -8,6 +8,7 @@ import {
   ArrowUp,
   ArrowDown,
   Minus, Star,
+  LightbulbIcon,
 } from "@phosphor-icons/react";
 import {
   LineChart,
@@ -20,6 +21,7 @@ import {
   BarChart,
   Bar,
   Cell,
+  ReferenceArea,
 } from "recharts";
 import Statistics from "../components/Statistics";
 import { useAuth } from "../contexts/AuthContext.jsx";
@@ -49,6 +51,7 @@ function LifetimePage() {
   const [teamNumber, setTeamNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showTournaments, setShowTournaments] = useState(false);
   const { loadTeamNames } = useTeamNames();
 
   useEffect(() => {
@@ -210,6 +213,172 @@ function LifetimePage() {
     return matchStats.filter(m => m.isFullMatch)
   }, [matchStats])
 
+  // Group matches by date for boxplot visualization
+  const fullMatchStatsByDate = useMemo(() => {
+    if (fullMatchStats.length === 0) return []
+
+    // Group by date (ignoring time)
+    const byDate = {}
+    fullMatchStats.forEach(stat => {
+      const dateKey = new Date(stat.date).toDateString()
+      if (!byDate[dateKey]) {
+        byDate[dateKey] = {
+          date: new Date(stat.date).setHours(12, 0, 0, 0), // Use noon for consistent positioning
+          matches: []
+        }
+      }
+      byDate[dateKey].matches.push(stat)
+    })
+
+    // Convert to array and calculate stats
+    const result = []
+    Object.values(byDate).forEach(group => {
+      const points = group.matches.map(m => m.points).sort((a, b) => a - b)
+
+      if (points.length === 1) {
+        // Single match - show as regular point
+        result.push({
+          date: group.date,
+          dateTimestamp: group.date,
+          value: points[0],
+          type: 'single',
+          matchName: group.matches[0].name
+        })
+      } else if (points.length === 2) {
+        // Two matches - show both as individual dots
+        group.matches.forEach((match, idx) => {
+          result.push({
+            date: group.date,
+            dateTimestamp: group.date + idx * 60000, // Offset by 1 minute to separate them slightly
+            value: match.points,
+            type: 'single',
+            matchName: match.name
+          })
+        })
+      } else {
+        // 3+ matches - calculate boxplot stats
+        const min = points[0]
+        const max = points[points.length - 1]
+        const median = points.length % 2 === 0
+          ? (points[points.length / 2 - 1] + points[points.length / 2]) / 2
+          : points[Math.floor(points.length / 2)]
+        const q1 = points[Math.floor(points.length * 0.25)]
+        const q3 = points[Math.floor(points.length * 0.75)]
+
+        result.push({
+          date: group.date,
+          dateTimestamp: group.date,
+          value: median,
+          min,
+          max,
+          q1,
+          q3,
+          type: 'boxplot',
+          count: points.length
+        })
+      }
+    })
+
+    return result.sort((a, b) => a.dateTimestamp - b.dateTimestamp)
+  }, [fullMatchStats])
+
+  // Group all matches by date for boxplot visualization (accuracy)
+  const matchStatsByDate = useMemo(() => {
+    if (matchStats.length === 0) return []
+
+    // Group by date (ignoring time)
+    const byDate = {}
+    matchStats.forEach(stat => {
+      const dateKey = new Date(stat.date).toDateString()
+      if (!byDate[dateKey]) {
+        byDate[dateKey] = {
+          date: new Date(stat.date).setHours(12, 0, 0, 0),
+          matches: []
+        }
+      }
+      byDate[dateKey].matches.push(stat)
+    })
+
+    // Convert to array and calculate stats
+    const result = []
+    Object.values(byDate).forEach(group => {
+      const accuracies = group.matches.map(m => m.accuracy).sort((a, b) => a - b)
+
+      if (accuracies.length === 1) {
+        // Single match - show as regular point
+        result.push({
+          date: group.date,
+          dateTimestamp: group.date,
+          value: accuracies[0],
+          type: 'single',
+          matchName: group.matches[0].name
+        })
+      } else if (accuracies.length === 2) {
+        // Two matches - show both as individual dots
+        group.matches.forEach((match, idx) => {
+          result.push({
+            date: group.date,
+            dateTimestamp: group.date + idx * 60000,
+            value: match.accuracy,
+            type: 'single',
+            matchName: match.name
+          })
+        })
+      } else {
+        // 3+ matches - calculate boxplot stats
+        const min = accuracies[0]
+        const max = accuracies[accuracies.length - 1]
+        const median = accuracies.length % 2 === 0
+          ? (accuracies[accuracies.length / 2 - 1] + accuracies[accuracies.length / 2]) / 2
+          : accuracies[Math.floor(accuracies.length / 2)]
+        const q1 = accuracies[Math.floor(accuracies.length * 0.25)]
+        const q3 = accuracies[Math.floor(accuracies.length * 0.75)]
+
+        result.push({
+          date: group.date,
+          dateTimestamp: group.date,
+          value: median,
+          min,
+          max,
+          q1,
+          q3,
+          type: 'boxplot',
+          count: accuracies.length
+        })
+      }
+    })
+
+    return result.sort((a, b) => a.dateTimestamp - b.dateTimestamp)
+  }, [matchStats])
+
+  // Calculate tournament date ranges for visualization (using all matches, not just full)
+  const tournamentRanges = useMemo(() => {
+    if (matchStats.length === 0) return []
+
+    // Group matches by tournament
+    const byTournament = {}
+    matchStats.forEach(match => {
+      const tournament = match.tournamentName || "Unlabeled"
+      if (!byTournament[tournament]) {
+        byTournament[tournament] = []
+      }
+      byTournament[tournament].push(new Date(match.date).getTime())
+    })
+
+    // Calculate date ranges for each tournament
+    return Object.entries(byTournament)
+      .filter(([name]) => name !== "Unlabeled")
+      .map(([name, dates]) => {
+        const sortedDates = dates.sort((a, b) => a - b)
+        return {
+          name,
+          start: sortedDates[0],
+          end: sortedDates[sortedDates.length - 1]
+        }
+      })
+      .sort((a, b) => a.start - b.start)
+  }, [matchStats])
+
   // Best and worst matches
   const bestMatch = useMemo(() => {
     if (matchStats.length === 0) return null;
@@ -320,7 +489,7 @@ function LifetimePage() {
             />
           </label>
         </div>
-        <p className="text-sm text-[#666] mt-1">
+        <p className="text-sm text-[#6b7c95] mt-1">
           Lifetime stats are computed from matches saved to your account on the
           <strong> My Matches</strong> tab.
         </p>
@@ -337,7 +506,7 @@ function LifetimePage() {
           <p className="mb-2">
             Sign in and save matches to see your lifetime statistics.
           </p>
-          <p className="text-sm text-[#666]">
+          <p className="text-sm text-[#6b7c95]">
             Use the <strong>Sign in / Sign up</strong> button in the top right,
             then record matches or bulk import them on the My Matches tab.
           </p>
@@ -361,28 +530,50 @@ function LifetimePage() {
 
       {!authLoading && user && !error && allMatches.length > 0 && (
         <>
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white border-2 border-[#445f8b] p-5 text-center">
+              <div className="text-4xl font-bold text-[#445f8b] mb-1">{matchStats.length}</div>
+              <div className="text-sm text-[#6b7c95]">Total Matches Recorded</div>
+            </div>
+            <div className="bg-white border-2 border-[#445f8b] p-5 text-center">
+              <div className="text-4xl font-bold text-[#445f8b] mb-1">
+                {matchStats.length > 0 ? formatStat(matchStats.reduce((sum, m) => sum + m.accuracy, 0) / matchStats.length) : 0}%
+              </div>
+              <div className="text-sm text-[#6b7c95]">Overall Accuracy</div>
+            </div>
+            <div className="bg-white border-2 border-[#445f8b] p-5 text-center">
+              <div className="text-4xl font-bold text-[#445f8b] mb-1">
+                {matchStats.reduce((sum, m) => sum + m.scored, 0)}
+              </div>
+              <div className="text-sm text-[#6b7c95]">Total Balls Scored</div>
+            </div>
+          </div>
+
           {/* Points Overview - Full matches only */}
           {fullMatchStats.length > 0 && (
-            <div className="bg-gradient-to-br from-amber-500 to-orange-600 border-2 border-amber-600 p-4 sm:p-6 mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <Star size={28} weight="fill" className="text-white" />
-                <h2 className="text-2xl font-bold text-white">Points Overview</h2>
-                <span className="text-xs bg-white/20 px-2 py-1 rounded text-white/90">Full matches only</span>
+            <div className="bg-[#445f8b] border-2 border-[#2d3e5c] p-4 sm:p-6 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <Star size={28} weight="fill" className="text-white" />
+                  <h2 className="text-2xl font-bold text-white">Match Points</h2>
+                </div>
+                <span className="text-xs bg-white/20 px-3 py-1.5 rounded text-white/90 w-fit">Full matches only (158s duration)</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white/20 rounded-lg p-4 text-center">
+                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
                   <div className="text-3xl sm:text-4xl font-bold text-white">{totalPoints}</div>
                   <div className="text-white/80 text-sm">Total Points</div>
                 </div>
-                <div className="bg-white/20 rounded-lg p-4 text-center">
+                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
                   <div className="text-3xl sm:text-4xl font-bold text-white">{formatStat(avgPoints, 1)}</div>
                   <div className="text-white/80 text-sm">Avg per Match</div>
                 </div>
-                <div className="bg-white/20 rounded-lg p-4 text-center">
+                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
                   <div className="text-3xl sm:text-4xl font-bold text-white">{bestMatchByPoints?.points || 0}</div>
                   <div className="text-white/80 text-sm">Best Match</div>
                 </div>
-                <div className="bg-white/20 rounded-lg p-4 text-center">
+                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
                   <div className="text-3xl sm:text-4xl font-bold text-white">{fullMatchStats.length}</div>
                   <div className="text-white/80 text-sm">Full Matches</div>
                 </div>
@@ -390,108 +581,136 @@ function LifetimePage() {
             </div>
           )}
 
-          {/* Performance Insights */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Best & Worst Matches */}
-            {bestMatch && worstMatch && matchStats.length > 1 && (
-              <div className="bg-white border-2 border-[#445f8b] p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Trophy size={24} weight="bold" className="text-[#445f8b]" />
-                  <h3 className="text-xl font-bold">Best & Worst Matches</h3>
-                </div>
+          {/* Key Insights Section */}
+          <div className="bg-white border-2 border-[#445f8b] p-5 mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Trophy size={24} weight="bold" className="text-[#445f8b]" />
+              <h2 className="text-2xl font-bold">Performance Insights</h2>
+            </div>
 
-                <div className="space-y-3">
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Star size={18} className="text-amber-600" weight="fill" />
-                      <span className="text-sm font-semibold text-amber-700">Highest Points</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Best Performance */}
+              {bestMatch && bestMatchByPoints && matchStats.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-[#445f8b]">Your Best</h3>
+                  <div className="space-y-3">
+                    <div className="bg-[#445f8b]/10 border border-[#445f8b]/30 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-[#2d3e5c]">Highest Points</span>
+                        <Star size={18} className="text-[#445f8b]" weight="fill" />
+                      </div>
+                      <div className="text-3xl font-bold text-[#445f8b] mb-1">{bestMatchByPoints?.points || 0}</div>
+                      <div className="text-xs text-[#6b7c95]">
+                        {bestMatchByPoints?.name}
+                      </div>
                     </div>
-                    <div className="text-2xl font-bold text-amber-800">{bestMatchByPoints?.points || 0} pts</div>
-                    <div className="text-xs text-amber-700">
-                      {bestMatchByPoints?.name} • {bestMatchByPoints?.scored}/{bestMatchByPoints?.total} scored
-                    </div>
-                  </div>
 
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Medal size={18} className="text-green-600" weight="fill" />
-                      <span className="text-sm font-semibold text-green-700">Best Accuracy</span>
-                    </div>
-                    <div className="text-xs text-green-700">
-                      {bestMatch.name} • {bestMatch.scored}/{bestMatch.total}{" "}
-                      scored
-                    </div>
-                  </div>
-
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Medal size={18} className="text-red-400" />
-                      <span className="text-sm font-semibold text-red-700">Needs Improvement</span>
-                    </div>
-                    <div className="text-2xl font-bold text-red-800">{formatStat(worstMatch.accuracy)}%</div>
-                    <div className="text-xs text-red-700">
-                      {worstMatch.name} • {worstMatch.scored}/{worstMatch.total} scored
+                    <div className="bg-[#445f8b]/10 border border-[#445f8b]/30 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-[#2d3e5c]">Best Accuracy</span>
+                        <Medal size={18} className="text-[#445f8b]" weight="fill" />
+                      </div>
+                      <div className="text-3xl font-bold text-[#445f8b] mb-1">{formatStat(bestMatch.accuracy)}%</div>
+                      <div className="text-xs text-[#6b7c95]">
+                        {bestMatch.scored} of {bestMatch.total} scored • {bestMatch.name}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Recent Performance Trend */}
-            {recentPerformance && (
-              <div className="bg-white border-2 border-[#445f8b] p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendUp size={24} weight="bold" className="text-[#445f8b]" />
-                  <h3 className="text-xl font-bold">Recent Performance</h3>
-                </div>
-
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="text-sm text-[#666]">
-                      Last {recentPerformance.recentMatches} matches
+              {/* Areas for Improvement */}
+              {worstMatch && matchStats.length > 1 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-[#6b7c95]">Focus Areas</h3>
+                  <div className="space-y-3">
+                    <div className="bg-[#f7f9ff] border border-[#ddd] rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-[#6b7c95]">Lowest Accuracy</span>
+                        <Medal size={18} className="text-[#8a99b3]" />
+                      </div>
+                      <div className="text-3xl font-bold text-[#6b7c95] mb-1">{formatStat(worstMatch.accuracy)}%</div>
+                      <div className="text-xs text-[#8a99b3]">
+                        {worstMatch.scored} of {worstMatch.total} scored • {worstMatch.name}
+                      </div>
                     </div>
-                    <div className="text-3xl font-bold text-[#445f8b]">
-                      {formatStat(recentPerformance.recentAccuracy)}%
+
+                    {/* Actionable insight */}
+                    <div className="bg-[#f7f9ff] border border-[#ddd] rounded-lg p-3">
+                      <div className="text-sm font-semibold text-[#6b7c95] mb-2 flex items-center gap-1"><LightbulbIcon weight="duotone" /> To Improve</div>
+                      <ul className="text-xs text-[#6b7c95] space-y-1.5">
+                        <li>• Aim for 70%+ accuracy</li>
+                        <li>• Focus on cycle efficiency during practice</li>
+                        <li>• Review matches with low accuracy for patterns</li>
+                      </ul>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm text-[#666]">Career average</div>
-                    <div className="text-3xl font-bold text-[#666]">
-                      {formatStat(recentPerformance.overallAccuracy)}%
-                    </div>
-                  </div>
                 </div>
-
-                <div
-                  className={`flex items-center gap-2 p-3 rounded-lg ${
-                    recentPerformance.trend === "improving"
-                      ? "bg-green-50 text-green-700"
-                      : recentPerformance.trend === "declining"
-                        ? "bg-red-50 text-red-700"
-                        : "bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  {recentPerformance.trend === "improving" && (
-                    <ArrowUp size={20} weight="bold" />
-                  )}
-                  {recentPerformance.trend === "declining" && (
-                    <ArrowDown size={20} weight="bold" />
-                  )}
-                  {recentPerformance.trend === "stable" && (
-                    <Minus size={20} weight="bold" />
-                  )}
-                  <span className="font-semibold">
-                    {recentPerformance.trend === "improving" &&
-                      `Improving! +${formatStat(recentPerformance.diff)}% above average`}
-                    {recentPerformance.trend === "declining" &&
-                      `Declining: ${formatStat(recentPerformance.diff)}% below average`}
-                    {recentPerformance.trend === "stable" &&
-                      "Performing consistently with career average"}
-                  </span>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
+          {/* Recent Performance Trend */}
+          {recentPerformance && (
+            <div className="bg-white border-2 border-[#445f8b] p-5 mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendUp size={24} weight="bold" className="text-[#445f8b]" />
+                <h2 className="text-2xl font-bold">Recent Trend</h2>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="text-center p-4 bg-[#445f8b]/10 rounded-lg">
+                  <div className="text-sm text-[#6b7c95] mb-1">
+                    Last {recentPerformance.recentMatches} matches
+                  </div>
+                  <div className="text-4xl font-bold text-[#445f8b]">
+                    {formatStat(recentPerformance.recentAccuracy)}%
+                  </div>
+                </div>
+                <div className="text-center p-4 bg-[#f7f9ff] rounded-lg">
+                  <div className="text-sm text-[#6b7c95] mb-1">Career average</div>
+                  <div className="text-4xl font-bold text-[#6b7c95]">
+                    {formatStat(recentPerformance.overallAccuracy)}%
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={`flex items-center gap-2 p-4 rounded-lg ${
+                  recentPerformance.trend === "improving"
+                    ? "bg-[#445f8b]/10 text-[#445f8b] border border-[#445f8b]/30"
+                    : recentPerformance.trend === "declining"
+                      ? "bg-[#f7f9ff] text-[#6b7c95] border border-[#ddd]"
+                      : "bg-[#f7f9ff] text-[#6b7c95] border border-[#ddd]"
+                }`}
+              >
+                {recentPerformance.trend === "improving" && (
+                  <ArrowUp size={24} weight="bold" />
+                )}
+                {recentPerformance.trend === "declining" && (
+                  <ArrowDown size={24} weight="bold" />
+                )}
+                {recentPerformance.trend === "stable" && (
+                  <Minus size={24} weight="bold" />
+                )}
+                <div>
+                  <div className="font-bold text-base">
+                    {recentPerformance.trend === "improving" && "Improving Performance"}
+                    {recentPerformance.trend === "declining" && "Performance Dip"}
+                    {recentPerformance.trend === "stable" && "Consistent Performance"}
+                  </div>
+                  <div className="text-sm">
+                    {recentPerformance.trend === "improving" &&
+                      `You're ${formatStat(Math.abs(recentPerformance.diff))}% above your career average`}
+                    {recentPerformance.trend === "declining" &&
+                      `You're ${formatStat(Math.abs(recentPerformance.diff))}% below your career average`}
+                    {recentPerformance.trend === "stable" &&
+                      "Your performance is steady with your career stats"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Tournament Breakdown */}
           {tournamentStats.length > 1 && (
@@ -543,7 +762,7 @@ function LifetimePage() {
                         {tournamentStats.slice(0, 8).map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
-                            fill={index === 0 ? "#22c55e" : "#445f8b"}
+                            fill={index === 0 ? "#2d3e5c" : "#445f8b"}
                           />
                         ))}
                       </Bar>
@@ -579,7 +798,7 @@ function LifetimePage() {
                           <td className="text-center py-2 px-2 font-semibold text-[#445f8b]">
                             {formatStat(t.accuracy)}%
                           </td>
-                          <td className="text-center py-2 px-2 font-semibold text-amber-600">
+                          <td className="text-center py-2 px-2 font-semibold text-[#445f8b]">
                             {formatStat(t.avgPoints, 1)}
                           </td>
                         </tr>
@@ -600,46 +819,158 @@ function LifetimePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-xl font-semibold mb-3">Points Over Time <span className="text-sm font-normal text-amber-600">(full matches only)</span></h3>
-                <div className="h-72 border-2 border-amber-300 bg-amber-50/30">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xl font-semibold">Points Over Time <span className="text-sm font-normal text-[#6b7c95]">(full matches only)</span></h3>
+                  {tournamentRanges.length > 0 && (
+                    <button
+                      onClick={() => setShowTournaments(!showTournaments)}
+                      className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${
+                        showTournaments
+                          ? "bg-[#445f8b] text-white border-[#445f8b]"
+                          : "border-[#445f8b] text-[#445f8b] hover:bg-[#445f8b]/10"
+                      }`}
+                    >
+                      {showTournaments ? "Hide" : "Show"} Tournaments
+                    </button>
+                  )}
+                </div>
+                <div className="h-72 border-2 border-[#445f8b]/20 bg-white">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={fullMatchStats.map((stat, i) => ({
+                      data={fullMatchStatsByDate.map((stat) => ({
                         ...stat,
-                        index: i,
-                        dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                        dateLabel: new Date(stat.dateTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                       }))}
                       margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                     >
                       <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
                       <XAxis
-                        dataKey="dateLabel"
-                        stroke="#666"
+                        dataKey="dateTimestamp"
+                        type="number"
+                        domain={['dataMin', 'dataMax']}
+                        scale="time"
+                        stroke="#6b7c95"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
-                        interval="preserveStartEnd"
-                        minTickGap={30}
+                        tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       />
                       <YAxis
-                        stroke="#666"
+                        stroke="#6b7c95"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
                         tickFormatter={(val) => `${val}`}
                       />
                       <Tooltip
                         contentStyle={{
                           backgroundColor: 'white',
-                          border: '2px solid #f59e0b',
+                          border: '2px solid #445f8b',
                           fontFamily: 'League Spartan'
                         }}
-                        formatter={(value) => [`${value} pts`, 'Points']}
-                        labelFormatter={(label, payload) => payload[0]?.payload.name}
+                        formatter={(value, name, props) => {
+                          const point = props.payload
+                          if (point.type === 'boxplot') {
+                            return [
+                              `Median: ${point.value} pts\nRange: ${point.min}-${point.max} pts\n${point.count} matches`,
+                              'Points Distribution'
+                            ]
+                          }
+                          return [`${value} pts`, point.matchName || 'Points']
+                        }}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       />
+                      {showTournaments && tournamentRanges.map((tournament) => (
+                        <ReferenceArea
+                          key={tournament.name}
+                          x1={tournament.start}
+                          x2={tournament.end}
+                          fill="#445f8b"
+                          fillOpacity={0.08}
+                          stroke="#445f8b"
+                          strokeOpacity={0.3}
+                          strokeWidth={1}
+                          label={{
+                            value: tournament.name,
+                            position: 'top',
+                            fill: '#445f8b',
+                            fontSize: 10,
+                            fontFamily: 'League Spartan',
+                            fontWeight: 600
+                          }}
+                        />
+                      ))}
                       <Line
                         type="monotone"
-                        dataKey="points"
-                        stroke="#f59e0b"
+                        dataKey="value"
+                        stroke="#445f8b"
                         strokeWidth={2}
-                        dot={{ fill: '#f59e0b', r: 3 }}
+                        dot={(props) => {
+                          const { cx, cy, payload, height } = props
+                          if (!payload) return null
+
+                          if (payload.type === 'boxplot') {
+                            // Use cy (median position) to calculate scale factor
+                            const { min, max, q1, q3, value } = payload
+
+                            const medianY = cy
+
+                            // Calculate the data range to determine scale
+                            const dataMax = Math.max(...fullMatchStatsByDate.map(d => d.type === 'boxplot' ? d.max : d.value))
+                            const dataMin = Math.min(...fullMatchStatsByDate.map(d => d.type === 'boxplot' ? d.min : d.value))
+                            const range = dataMax - dataMin || 1
+
+                            // Calculate scale factor relative to the median
+                            const getY = (val) => {
+                              const valueDiff = val - value // difference in points from median
+                              // Estimate chart rendering height (accounting for margins)
+                              const estimatedChartHeight = (height || 232) - 40
+                              const pixelsPerUnit = estimatedChartHeight / range
+
+                              // cy corresponds to the median; calculate other positions relative to it
+                              // Higher values should have lower Y (since SVG Y increases downward)
+                              return cy - (valueDiff * pixelsPerUnit)
+                            }
+
+                            const minY = getY(min)
+                            const maxY = getY(max)
+                            const q1Y = getY(q1)
+                            const q3Y = getY(q3)
+                            const boxWidth = 4
+
+                            return (
+                              <g>
+                                {/* Whiskers */}
+                                <line x1={cx} y1={minY} x2={cx} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={minY} x2={cx + 3} y2={minY} stroke="#445f8b" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={maxY} x2={cx + 3} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
+
+                                {/* Box */}
+                                <rect
+                                  x={cx - boxWidth / 2}
+                                  y={q3Y}
+                                  width={boxWidth}
+                                  height={q1Y - q3Y}
+                                  fill="#445f8b"
+                                  fillOpacity={0.3}
+                                  stroke="#445f8b"
+                                  strokeWidth={0.5}
+                                />
+
+                                {/* Median line */}
+                                <line
+                                  x1={cx - boxWidth}
+                                  y1={medianY}
+                                  x2={cx + boxWidth}
+                                  y2={medianY}
+                                  stroke="#445f8b"
+                                  strokeWidth={2}
+                                />
+                              </g>
+                            )
+                          } else {
+                            // Regular dot
+                            return <circle cx={cx} cy={cy} r={3} fill="#445f8b" stroke="none" />
+                          }
+                        }}
                         activeDot={{ r: 5 }}
+                        isAnimationActive={false}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -647,28 +978,43 @@ function LifetimePage() {
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold mb-3">Accuracy Over Time</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xl font-semibold">Accuracy Over Time</h3>
+                  {tournamentRanges.length > 0 && (
+                    <button
+                      onClick={() => setShowTournaments(!showTournaments)}
+                      className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${
+                        showTournaments
+                          ? "bg-[#445f8b] text-white border-[#445f8b]"
+                          : "border-[#445f8b] text-[#445f8b] hover:bg-[#445f8b]/10"
+                      }`}
+                    >
+                      {showTournaments ? "Hide" : "Show"} Tournaments
+                    </button>
+                  )}
+                </div>
                 <div className="h-72 border-2 border-[#ddd] bg-white">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={matchStats.map((stat, i) => ({
+                      data={matchStatsByDate.map((stat) => ({
                         ...stat,
-                        index: i,
-                        dateLabel: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                        dateLabel: new Date(stat.dateTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                       }))}
                       margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                     >
                       <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
                       <XAxis
-                        dataKey="dateLabel"
-                        stroke="#666"
+                        dataKey="dateTimestamp"
+                        type="number"
+                        domain={['dataMin', 'dataMax']}
+                        scale="time"
+                        stroke="#6b7c95"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
-                        interval="preserveStartEnd"
-                        minTickGap={30}
+                        tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       />
                       <YAxis
                         domain={[0, 100]}
-                        stroke="#666"
+                        stroke="#6b7c95"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
                         tickFormatter={(val) => `${val}%`}
                       />
@@ -678,16 +1024,146 @@ function LifetimePage() {
                           border: '2px solid #445f8b',
                           fontFamily: 'League Spartan'
                         }}
-                        formatter={(value) => [`${formatStat(value)}%`, 'Accuracy']}
-                        labelFormatter={(label, payload) => payload[0]?.payload.name}
+                        formatter={(value, _name, props) => {
+                          const point = props.payload
+                          if (point.type === 'boxplot') {
+                            return [
+                              `Med(${formatStat(point.value)}%). ${point.count} matches`,
+                              'Accuracy Distribution'
+                            ]
+                          }
+                          return [`${formatStat(value)}%`, point.matchName || 'Accuracy']
+                        }}
+                        labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       />
+                      {showTournaments && tournamentRanges.map((tournament) => (
+                        <ReferenceArea
+                          key={tournament.name}
+                          x1={tournament.start}
+                          x2={tournament.end}
+                          fill="#445f8b"
+                          fillOpacity={0.08}
+                          stroke="#445f8b"
+                          strokeOpacity={0.3}
+                          strokeWidth={1}
+                          label={{
+                            value: tournament.name,
+                            position: 'top',
+                            fill: '#445f8b',
+                            fontSize: 10,
+                            fontFamily: 'League Spartan',
+                            fontWeight: 600
+                          }}
+                        />
+                      ))}
                       <Line
                         type="monotone"
-                        dataKey="accuracy"
+                        dataKey="value"
                         stroke="#445f8b"
                         strokeWidth={2}
-                        dot={{ fill: '#445f8b', r: 3 }}
+                        dot={(props) => {
+                          const { cx, cy, payload, height } = props
+                          if (!payload) return null
+
+                          if (payload.type === 'boxplot') {
+                            // Use cy (median position) to calculate scale factor
+                            // Since YAxis domain is [0, 100], we can derive the pixels-per-unit ratio
+                            const { min, max, q1, q3, value } = payload
+
+                            // cy is the correct Y position for the median (value)
+                            // Domain is [0, 100] where 100 is at top (low Y) and 0 is at bottom (high Y)
+                            // Calculate scale: how many pixels per percentage point
+                            // cy = chartTop + (100 - value) * scale
+                            // We can use cy and value to find the scale factor
+
+                            const medianY = cy
+
+                            // Calculate scale factor using the median as reference
+                            // If domain is [0, 100], then the full height represents 100 units
+                            // scale = pixels_per_unit
+                            // We derive it from: cy corresponds to value
+                            // For a value of 100 (top), Y should be near 0 (plus margin)
+                            // For a value of 0 (bottom), Y should be near height (minus margin)
+
+                            // Use the median to calculate the scale
+                            // Assuming the chart scales linearly from 0 at bottom to 100 at top
+                            // chartTop is the Y coordinate for value=100
+                            // chartBottom is the Y coordinate for value=0
+                            // cy = chartTop + (100 - value) * (chartBottom - chartTop) / 100
+                            // Rearranging: (cy - chartTop) = (100 - value) * scale where scale = (chartBottom - chartTop) / 100
+
+                            // We can estimate chartTop and chartBottom from the median:
+                            // scale = (chartBottom - chartTop) / 100
+                            // Let's assume the relationship is linear and use cy to derive positions
+
+                            // Better approach: calculate how many pixels correspond to the percentage difference from median
+                            const getY = (val) => {
+                              // Calculate pixel distance from median proportional to value distance
+                              const valueDiff = val - value // difference in percentage points
+                              // In SVG, Y increases downward, but values increase upward
+                              // So higher values should have lower Y coordinates
+                              // scale factor: we need to know pixels per percentage point
+                              // From cy and value, we can estimate the full chart height
+                              // For domain [0, 100]: chartHeight / 100 = pixels per unit
+                              // cy should correspond to: chartBottom - (value / 100) * totalChartHeight
+                              // where chartBottom is the Y position for value=0
+
+                              // Simpler: use the fact that domain is [0,100]
+                              // and estimate scale from the median position
+                              // If value is at cy, then:
+                              // - Moving up 1 percentage point should decrease Y
+                              // - The scale is approximately: full_height / 100
+
+                              // Estimate the full rendering height from cy and value
+                              const estimatedChartHeight = (height || 232) - 40 // Account for margins
+                              const pixelsPerUnit = estimatedChartHeight / 100
+
+                              return cy - (valueDiff * pixelsPerUnit)
+                            }
+
+                            const minY = getY(min)
+                            const maxY = getY(max)
+                            const q1Y = getY(q1)
+                            const q3Y = getY(q3)
+                            const boxWidth = 4
+
+                            return (
+                              <g>
+                                {/* Whiskers */}
+                                <line x1={cx} y1={minY} x2={cx} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={minY} x2={cx + 3} y2={minY} stroke="#445f8b" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={maxY} x2={cx + 3} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
+
+                                {/* Box */}
+                                <rect
+                                  x={cx - boxWidth / 2}
+                                  y={q3Y}
+                                  width={boxWidth}
+                                  height={q1Y - q3Y}
+                                  fill="#445f8b"
+                                  fillOpacity={0.3}
+                                  stroke="#445f8b"
+                                  strokeWidth={0.5}
+                                />
+
+                                {/* Median line */}
+                                <line
+                                  x1={cx - boxWidth}
+                                  y1={medianY}
+                                  x2={cx + boxWidth}
+                                  y2={medianY}
+                                  stroke="#445f8b"
+                                  strokeWidth={2}
+                                />
+                              </g>
+                            )
+                          } else {
+                            // Regular dot
+                            return <circle cx={cx} cy={cy} r={3} fill="#445f8b" stroke="none" />
+                          }
+                        }}
                         activeDot={{ r: 5 }}
+                        isAnimationActive={false}
                       />
                     </LineChart>
                   </ResponsiveContainer>

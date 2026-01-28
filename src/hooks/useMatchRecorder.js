@@ -18,6 +18,7 @@ export default function useMatchRecorder() {
   const [elapsedTime, setElapsedTime] = useState(0); // ms
   const [events, setEvents] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [isReady, setIsReady] = useState(false); // New state: match initialized but not started
   const [notes, setNotes] = useState("");
   const [teamNumber, setTeamNumber] = useState("");
   const [mode, setMode] = useState("free"); // "free" | "match"
@@ -72,13 +73,13 @@ export default function useMatchRecorder() {
   }, [isRecording, matchStartTime, timerDuration, mode]);
 
   const startMatch = (duration, newMode = "free", initialMotif = null) => {
-    const now = Date.now();
-    setMatchStartTime(now);
+    // Set up the match but don't start the timer yet
     setTimerDuration(duration);
     setElapsedTime(0);
     setEvents([]);
     setNotes("");
-    setIsRecording(true);
+    setIsReady(true);
+    setIsRecording(false);
     setMode(newMode);
     setPhase(newMode === "match" ? "auto" : "idle");
     // Initialize scoring state
@@ -87,6 +88,14 @@ export default function useMatchRecorder() {
     setTeleopPattern("");
     setAutoLeave(false);
     setTeleopPark("none");
+  };
+
+  const beginMatch = () => {
+    // Actually start the timer
+    const now = Date.now();
+    setMatchStartTime(now);
+    setIsRecording(true);
+    setIsReady(false);
   };
 
   const stopMatch = () => {
@@ -104,6 +113,7 @@ export default function useMatchRecorder() {
     setMode("free");
     setPhase("idle");
     setIsRecording(false);
+    setIsReady(false);
     setTimerDuration(null);
     // Reset scoring state
     setMotif(null);
@@ -168,6 +178,7 @@ export default function useMatchRecorder() {
     elapsedTime,
     events,
     isRecording,
+    isReady,
     notes,
     teamNumber,
     mode,
@@ -191,6 +202,7 @@ export default function useMatchRecorder() {
     setTeleopPark,
 
     startMatch,
+    beginMatch,
     stopMatch,
     resetMatch,
     addCycle,

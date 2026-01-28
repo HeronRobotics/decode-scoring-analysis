@@ -25,7 +25,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
   const safeEvents = useMemo(() => events || [], [events]);
   const safeCurrent = Number(currentTime) || 0;
 
-  const [isExpanded, setIsExpanded] = useState(mode !== "match");
+  const [isExpanded, setIsExpanded] = useState(true);
   const [viewportWidth, setViewportWidth] = useState(0);
 
   useEffect(() => {
