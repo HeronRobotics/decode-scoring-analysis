@@ -27,7 +27,7 @@ createRoot(document.getElementById("root")).render(
               <App />
             </TeamNamesProvider>
           </AuthProvider>
-          <footer className="text-center text-sm text-[#445F8B] my-4">
+          <footer className="text-center text-sm text-brand-accent my-4">
             <div className="w-full flex flex-row justify-center items-center gap-2">
               <p className="font-semibold">
                 <img

@@ -3,7 +3,7 @@ import Statistics from '../Statistics'
 
 function TournamentList({ tournaments, tournamentStats, selectedTournament, setSelectedTournament, removeTournament }) {
   return (
-    <div className="bg-white border-2 border-[#445f8b] p-6">
+    <div className="bg-brand-bg border-2 border-brand-border p-6">
       <h2 className="text-3xl mb-5 flex items-center gap-3">
         <Calendar weight="bold" size={32} />
         Uploads ({tournaments.length})
@@ -16,15 +16,15 @@ function TournamentList({ tournaments, tournamentStats, selectedTournament, setS
               key={index} 
               className={`border-2 p-4 cursor-pointer transition-colors ${
                 selectedTournament === index 
-                  ? 'border-[#445f8b] bg-[#f0f5ff]' 
-                  : 'border-[#ddd] hover:border-[#445f8b]'
+                  ? 'border-brand-accent bg-brand-accentBg' 
+                  : 'border-brand-border hover:border-brand-accent'
               }`}
               onClick={() => setSelectedTournament(selectedTournament === index ? null : index)}
             >
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-2xl font-bold">{tournament.name}</h3>
-                  <p className="text-[#666] mb-3">{new Date(tournament.date).toLocaleDateString()}</p>
+                  <p className="text-brand-muted mb-3">{new Date(tournament.date).toLocaleDateString()}</p>
                   <div className="flex gap-6 text-sm">
                     <span><strong>{stat.matchCount}</strong> match{stat.matchCount !== 1 ? 'es' : ''}</span>
                     <span><strong>{stat.scored}/{stat.total}</strong> scored</span>
@@ -44,7 +44,7 @@ function TournamentList({ tournaments, tournamentStats, selectedTournament, setS
               </div>
               
               {selectedTournament === index && (
-                <div className="mt-6 pt-6 border-t-2 border-[#ddd]">
+                <div className="mt-6 pt-6 border-t-2 border-brand-border">
                   <Statistics matches={tournament.matches} />
                 </div>
               )}

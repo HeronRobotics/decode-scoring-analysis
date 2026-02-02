@@ -267,7 +267,7 @@ function TournamentPage({ onBack }) {
         <div className="my-6 sm:my-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-3xl sm:text-5xl font-bold">Tournament Analysis</h1>
-            <p className="text-sm text-[#666] mt-2">
+            <p className="text-sm text-brand-muted mt-2">
               Build a tournament from matches you have saved in <strong>My Matches</strong>,
               grouped by their tournament tag.
             </p>
@@ -278,13 +278,13 @@ function TournamentPage({ onBack }) {
           </button>
         </div>
 
-        <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6">
+        <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6">
           {authLoading || loadingMatches ? (
-            <p className="text-[#445f8b]">Loading your matches...</p>
+            <p className="text-brand-accent">Loading your matches...</p>
           ) : matchesError ? (
-            <p className="text-red-600 text-sm">{matchesError}</p>
+            <p className="text-brand-accent text-sm">{matchesError}</p>
           ) : !tournamentNames.length ? (
-            <p className="text-sm text-[#666]">
+            <p className="text-sm text-brand-muted">
               No tournaments found. Add a <strong>tournament tag</strong> to your matches
               on the My Matches page, then come back here to analyze them.
             </p>
@@ -297,7 +297,7 @@ function TournamentPage({ onBack }) {
                 <select
                   value={selectedTournamentName}
                   onChange={(e) => setSelectedTournamentName(e.target.value)}
-                  className="p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:min-w-56"
+                  className="p-2 border-2 border-brand-border focus:border-brand-accent outline-none w-full sm:min-w-56"
                 >
                   <option value="">Choose a tournament...</option>
                   {tournamentNames.map((name) => (
@@ -311,12 +311,12 @@ function TournamentPage({ onBack }) {
                 type="button"
                 onClick={handleLoadFromMyMatches}
                 disabled={!selectedTournamentName}
-                className="btn !py-3 !bg-[#445f8b] !text-white !px-6 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="btn !py-3 !bg-brand-accent !text-brand-mainText !px-6 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Calendar weight="bold" size={20} />
                 Analyze Selected Tournament
               </button>
-              <p className="text-xs text-[#666] mt-3">
+              <p className="text-xs text-brand-muted mt-3">
                 Tournament tags are set when recording matches or editing them on the My
                 Matches page.
               </p>
@@ -337,16 +337,13 @@ function TournamentPage({ onBack }) {
 
   const teamStats = teamStatsFromTournament(tournament);
   const palette = [
-    "#445f8b",
-    "#2d3e5c",
-    "#7a93c2",
-    "#9fb0df",
-    "#ff7f50",
-    "#6aa84f",
-    "#f1c232",
-    "#8e7cc3",
-    "#d9534f",
-    "#5bc0de",
+    "var(--color-brand-accent)",
+    "var(--color-brand-accentStrong)",
+    "var(--color-brand-text)",
+    "var(--color-brand-muted)",
+    "var(--color-brand-border)",
+    "var(--color-brand-outline)",
+    "var(--color-brand-surfaceStrong)",
   ];
   const teamColors = teamStats.reduce((acc, ts, i) => {
     acc[ts.team] = palette[i % palette.length];
@@ -358,7 +355,7 @@ function TournamentPage({ onBack }) {
       <div className="my-6 sm:my-8 flex flex-row flex-wrap gap-3 items-center justify-between">
         <div>
           <h1 className="text-3xl sm:text-5xl font-bold">{tournament.name}</h1>
-          <p className="text-lg text-[#666] mt-2">
+          <p className="text-lg text-brand-muted mt-2">
             {new Date(tournament.date).toLocaleDateString()}
           </p>
         </div>
@@ -392,11 +389,11 @@ function TournamentPage({ onBack }) {
           <h2 className="text-3xl">Tournament Summary</h2>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 border-2 border-[#445f8b] mt-5">
+        <div className="bg-brand-bg p-4 sm:p-6 border-2 border-brand-border mt-5">
           <h3 className="text-xl font-semibold mb-3">
             Match Scores — All Teams
           </h3>
-          <div className="mb-2 text-sm text-[#666]">
+          <div className="mb-2 text-sm text-brand-muted">
             Sorted by median scored (highest first). Hover teams for score
             distributions.
           </div>
@@ -408,7 +405,7 @@ function TournamentPage({ onBack }) {
             teamColors={teamColors}
           />
           <TeamSummaryGrid teamStats={teamStats} />
-          <p className="mt-4 italic text-sm text-[#666]">
+          <p className="mt-4 italic text-sm text-brand-muted">
             ^ Hover over a box above!
           </p>
         </div>
@@ -424,7 +421,7 @@ function TournamentPage({ onBack }) {
                   setSelectedTeam(e.target.value);
                   setSelectedMatch(0);
                 }}
-                className="p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:min-w-40"
+                className="p-2 border-2 border-brand-border focus:border-brand-accent outline-none w-full sm:min-w-40"
               >
                 <option value="">All Teams</option>
                 {teams.map((t) => (
@@ -436,10 +433,10 @@ function TournamentPage({ onBack }) {
             </div>
           )}
         </div>
-        <div className="bg-white p-4 sm:p-6 border-2 border-[#445f8b] mt-8">
+        <div className="bg-brand-bg p-4 sm:p-6 border-2 border-brand-border mt-8">
           <h3 className="text-xl font-semibold mb-3">Team Statistics</h3>
           <div className={`mt-5 ${selectedTeam && "mb-5"}`}>
-            <p className="text-[#666]">
+            <p className="text-brand-muted">
               Select a team to view detailed graphs for that team.
             </p>
           </div>
@@ -448,7 +445,7 @@ function TournamentPage({ onBack }) {
         </div>
       </div>
 
-      <div className="w-full flex flex-col items-start p-4 sm:p-8 bg-[#f0f5fd]">
+      <div className="w-full flex flex-col items-start p-4 sm:p-8 bg-brand-bg">
         <h2 className="mb-8">
           <span className="text-3xl mb-5">
             {selectedTeam
@@ -457,7 +454,7 @@ function TournamentPage({ onBack }) {
           </span>
         </h2>
 
-        <div className="w-full bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
+        <div className="w-full bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
           <h3 className="text-2xl mb-4">
             Select Match ({filteredMatches.length} total)
           </h3>
@@ -480,22 +477,22 @@ function TournamentPage({ onBack }) {
                   onClick={() => setSelectedMatch(index)}
                   className={`px-3 py-2 sm:px-6 sm:py-3 text-sm sm:text-base border-2 font-semibold transition-colors ${
                     selectedMatch === index
-                      ? "border-[#445f8b] bg-[#445f8b] text-white"
-                      : "border-[#ddd] bg-white hover:border-[#445f8b]"
+                      ? "border-brand-accent bg-brand-accent text-brand-mainText"
+                      : "border-brand-border bg-brand-bg hover:border-brand-accent"
                   }`}
                 >
                   {title || `Match ${index + 1}`} (
                   {match.teamNumber ? getTeamName(match.teamNumber) : "No Team"}){" "}
                   <span
                     className={`ml-2 text-xs ${
-                      selectedMatch == index ? "text-amber-200" : "text-amber-600"
+                      selectedMatch == index ? "text-brand-mainText" : "text-brand-accent"
                     }`}
                   >
                     {points}pts
                   </span>
                   <span
                     className={`ml-1 text-xs ${
-                      selectedMatch == index ? "text-[#ddd]" : "text-[#666]"
+                      selectedMatch == index ? "text-brand-mainText" : "text-brand-muted"
                     }`}
                   >
                     {matchStats.scored}/{matchStats.total}
@@ -528,7 +525,7 @@ function TournamentPage({ onBack }) {
               />
             </>
           ) : (
-            <div className="bg-white border-2 border-[#445f8b] p-6 text-center text-[#666]">
+            <div className="bg-brand-bg border-2 border-brand-border p-6 text-center text-brand-muted">
               No matches for selected team.
             </div>
           )}

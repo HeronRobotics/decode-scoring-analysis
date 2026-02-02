@@ -65,25 +65,25 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-brand-bg flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-white p-4 sm:p-8 max-w-md w-11/12 border-2 border-[#445f8b]"
+        className="bg-brand-bg p-4 sm:p-8 max-w-md w-11/12 border-2 border-brand-border"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-2xl mb-5 text-center">
           {mode === "signin" ? "Sign In" : "Create Account"}
         </h3>
 
-        <div className="flex mb-4 border-b border-[#ddd]">
+        <div className="flex mb-4 border-b border-brand-border">
           <button
             type="button"
             onClick={() => switchMode("signin")}
             className={`flex-1 py-2 text-sm font-semibold ${
               mode === "signin"
-                ? "border-b-2 border-[#445f8b] text-[#445f8b]"
-                : "text-[#666]"
+                ? "border-b-2 border-brand-accent text-brand-accent"
+                : "text-brand-muted"
             }`}
           >
             Sign In
@@ -93,30 +93,30 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
             onClick={() => switchMode("signup")}
             className={`flex-1 py-2 text-sm font-semibold ${
               mode === "signup"
-                ? "border-b-2 border-[#445f8b] text-[#445f8b]"
-                : "text-[#666]"
+                ? "border-b-2 border-brand-accent text-brand-accent"
+                : "text-brand-muted"
             }`}
           >
             Sign Up
           </button>
         </div>
 
-        {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
+        {error && <div className="mb-3 text-sm text-brand-accent">{error}</div>}
 
         <div className="flex flex-col gap-3 mb-4 items-center">
           <button
             type="button"
             onClick={handleGitHubSignIn}
-            className="btn w-fit !bg-white !text-black hover:!bg-[#eee] flex items-center justify-center gap-2 !border-2 !border-black"
+            className="btn w-fit !bg-brand-bg !text-brand-mainText hover:!bg-brand-accentBg flex items-center justify-center gap-2 !border-2 !border-brand-border"
             disabled={loading}
           >
             <GithubLogo weight="fill" size={18} />
             <span>Continue with GitHub</span>
           </button>
-          <div className="flex items-center gap-2 text-xs text-[#666]">
-            <div className="flex-1 h-px bg-[#ddd]" />
+          <div className="flex items-center gap-2 text-xs text-brand-muted">
+            <div className="flex-1 h-px bg-brand-border" />
             <span>or</span>
-            <div className="flex-1 h-px bg-[#ddd]" />
+            <div className="flex-1 h-px bg-brand-border" />
           </div>
         </div>
 
@@ -128,7 +128,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
               placeholder="Your team email here"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none"
+              className="w-full p-2 border-2 border-brand-border focus:border-brand-accent outline-none"
               required
             />
           </label>
@@ -138,7 +138,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none"
+              className="w-full p-2 border-2 border-brand-border focus:border-brand-accent outline-none"
               required
             />
           </label>
@@ -153,7 +153,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
             </button>
             <button
               type="submit"
-              className="btn !bg-[#445f8b] !text-white"
+              className="btn !bg-brand-accent !text-brand-mainText"
               disabled={loading}
             >
               {loading

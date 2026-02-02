@@ -21,7 +21,7 @@ export function BoxPlot({
 }) {
   if (data.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-[#666]">
+      <div className="w-full h-full flex items-center justify-center text-brand-muted">
         No data available
       </div>
     );
@@ -46,14 +46,14 @@ export function BoxPlot({
 
   return (
     <div className="mt-4">
-      <div className="text-xs text-[#666] mb-2">{title.toUpperCase()} ({unit.trim()})</div>
+      <div className="text-xs text-brand-muted mb-2">{title.toUpperCase()} ({unit.trim()})</div>
       <div className="w-full" style={{ height }}>
         <ResponsiveContainer width={width} height={height}>
           <ComposedChart
             data={[{ name: "dummy", x: boxMedian }]} // give XAxis a key to map
             margin={{ top: 10, right: 10, left: 10, bottom: 30 }}
           >
-            <CartesianGrid stroke="#f7fafc" />
+            <CartesianGrid stroke="var(--color-brand-border)" />
 
             {/* Bottom X axis with proper ticks */}
             <XAxis
@@ -62,10 +62,10 @@ export function BoxPlot({
               domain={[rangeMin, rangeMax]}
               ticks={ticks}
               tickFormatter={(v) => `${v}`}
-              stroke="#666"
+              stroke="var(--color-brand-muted)"
               axisLine={true}
               tickLine={true}
-              tick={{ fill: "#666", fontSize: 11 }}
+              tick={{ fill: "var(--color-brand-muted)", fontSize: 11 }}
               allowDecimals
             />
 
@@ -77,12 +77,12 @@ export function BoxPlot({
                 <ReferenceLine
                   key={label}
                   x={val}
-                  stroke={label === "Median" ? "#d33" : "#999"}
+                  stroke={label === "Median" ? "var(--color-brand-accent)" : "var(--color-brand-muted)"}
                   strokeDasharray={label === "Median" ? "4 2" : "3 3"}
                   label={{
                     value: `${label} (${val}${unit})`,
                     position: "bottom",
-                    fill: label === "Median" ? "#d33" : "#555",
+                    fill: label === "Median" ? "var(--color-brand-accent)" : "var(--color-brand-text)",
                     fontSize: 11,
                   }}
                 />
@@ -113,14 +113,14 @@ export function BoxPlot({
                 return (
                   <g>
                     {/* Whisker */}
-                    <line x1={xMin} x2={xMax} y1={cy} y2={cy} stroke="#445f8b" strokeWidth={1.2} />
+                    <line x1={xMin} x2={xMax} y1={cy} y2={cy} stroke="var(--color-brand-accent)" strokeWidth={1.2} />
                     {/* Caps */}
                     <line
                       x1={xMin}
                       x2={xMin}
                       y1={cy - capH / 2}
                       y2={cy + capH / 2}
-                      stroke="#445f8b"
+                      stroke="var(--color-brand-accent)"
                       strokeWidth={1.2}
                     />
                     <line
@@ -128,7 +128,7 @@ export function BoxPlot({
                       x2={xMax}
                       y1={cy - capH / 2}
                       y2={cy + capH / 2}
-                      stroke="#445f8b"
+                      stroke="var(--color-brand-accent)"
                       strokeWidth={1.2}
                     />
                     {/* Box */}
@@ -137,8 +137,8 @@ export function BoxPlot({
                       y={cy - boxH / 2}
                       width={Math.abs(xQ3 - xQ1)}
                       height={boxH}
-                      fill="#fff"
-                      stroke="#445f8b"
+                      fill="var(--color-brand-bg)"
+                      stroke="var(--color-brand-accent)"
                       strokeWidth={1.5}
                     />
                     {/* Median line */}
@@ -147,7 +147,7 @@ export function BoxPlot({
                       x2={xMedian}
                       y1={cy - boxH / 2}
                       y2={cy + boxH / 2}
-                      stroke="#445f8b"
+                      stroke="var(--color-brand-accent)"
                       strokeWidth={2}
                     />
                   </g>
@@ -158,7 +158,7 @@ export function BoxPlot({
         </ResponsiveContainer>
       </div>
 
-      <div className="text-sm text-[#666] mt-2 flex flex-row flex-wrap justify-center items-center">
+      <div className="text-sm text-brand-muted mt-2 flex flex-row flex-wrap justify-center items-center">
         <strong>Q1:</strong>&nbsp;{formatStat(boxQ1)}
         {unit} <strong className="ml-3">Median:</strong>&nbsp;{formatStat(boxMedian)}
         {unit} <strong className="ml-3">Q3:</strong>&nbsp;{formatStat(boxQ3)}

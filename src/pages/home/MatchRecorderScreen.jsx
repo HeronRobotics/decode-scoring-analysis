@@ -595,7 +595,7 @@ function MatchRecorderScreen({
               <Record size={24} weight="fill" />
               Record Cycle
               <span className="hidden sm:flex items-center gap-1 text-xs font-normal opacity-70 ml-2">
-                <span className="kbd border-white/30! shadow-none! text-[12px]!">
+                <span className="kbd border-brand-border! shadow-none! text-[12px]!">
                   1-3
                 </span>
               </span>

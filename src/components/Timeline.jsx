@@ -139,9 +139,9 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
     const teleopEnd = matchRecorderConstants.MATCH_TOTAL_DURATION * 1000;
 
     return [
-      { start: 0, end: autoEnd, label: "AUTO", color: "bg-[#6b8cae]/20" },
-      { start: autoEnd, end: bufferEnd, label: "BUFFER", color: "bg-[#8899aa]/20" },
-      { start: bufferEnd, end: teleopEnd, label: "TELEOP", color: "bg-[#445f8b]/10" },
+      { start: 0, end: autoEnd, label: "AUTO", color: "bg-brand-accentBg" },
+      { start: autoEnd, end: bufferEnd, label: "BUFFER", color: "bg-brand-bg" },
+      { start: bufferEnd, end: teleopEnd, label: "TELEOP", color: "bg-brand-accentBg" },
     ];
   }, [mode]);
 
@@ -178,27 +178,27 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
   return (
     <div className="timeline-container w-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#445f8b]/20 bg-[#f8fafc]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-brand-border bg-brand-bg">
         <div className="flex items-center gap-2">
-          <Timer size={20} weight="duotone" className="text-[#445f8b]" />
-          <h3 className="text-lg font-semibold text-[#445f8b]">Match Timeline</h3>
+          <Timer size={20} weight="duotone" className="text-brand-accent" />
+          <h3 className="text-lg font-semibold text-brand-accent">Match Timeline</h3>
         </div>
-        <div className="flex items-center gap-4 text-xs text-[#666]">
+        <div className="flex items-center gap-4 text-xs text-brand-muted">
           {mode === "match" && phaseScoreSummary && (
-            <span className="font-mono text-[#445f8b]">
+            <span className="font-mono text-brand-accent">
               {phaseScoreSummary.total} scored
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#2D6C3E]" />
+            <span className="w-3 h-3 rounded-full bg-brand-accent" />
             Scored
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#94a3b8]" />
+            <span className="w-3 h-3 rounded-full bg-brand-muted" />
             Missed
           </span>
           <span className="flex items-center gap-1.5">
-            <DoorOpen size={14} className="text-[#445f8b]" />
+            <DoorOpen size={14} className="text-brand-accent" />
             Gate
           </span>
 
@@ -206,7 +206,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
             <button
               type="button"
               onClick={() => setIsExpanded((v) => !v)}
-              className="ml-2 px-2 py-1 rounded border border-[#445f8b]/30 hover:bg-white transition-colors text-[#445f8b]"
+              className="ml-2 px-2 py-1 rounded border border-brand-border hover:bg-brand-accentBg transition-colors text-brand-accent"
               title={isExpanded ? "Show phase overview" : "Show full timeline"}
             >
               {isExpanded ? "Overview" : "Expand"}
@@ -217,21 +217,21 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
 
       {/* Match-mode collapsed overview */}
       {mode === "match" && !isExpanded && phaseScoreSummary && (
-        <div className="px-4 py-4 bg-white">
+        <div className="px-4 py-4 bg-brand-bg">
           <div className="flex items-stretch gap-2">
             <button
               type="button"
               onClick={() => expandAndScrollTo(phaseScoreSummary.auto.start)}
-              className="flex-1 rounded-lg border border-[#6b8cae]/30 bg-[#6b8cae]/10 hover:bg-[#6b8cae]/15 transition-colors px-3 py-3 text-left"
+              className="flex-1 rounded-lg border border-brand-border bg-brand-accentBg hover:bg-brand-accentBg transition-colors px-3 py-3 text-left"
               title="Click to expand timeline"
             >
-              <div className="text-xs font-bold tracking-wider text-[#445f8b]">
+              <div className="text-xs font-bold tracking-wider text-brand-accent">
                 AUTO
               </div>
-              <div className="mt-1 font-mono text-sm text-[#2d3e5c]">
+              <div className="mt-1 font-mono text-sm text-brand-text">
                 {phaseScoreSummary.auto.scored} scored
               </div>
-              <div className="mt-0.5 text-[11px] text-[#667]">
+              <div className="mt-0.5 text-[11px] text-brand-muted">
                 0–{matchRecorderConstants.AUTO_DURATION}s
               </div>
             </button>
@@ -239,16 +239,16 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
             <button
               type="button"
               onClick={() => expandAndScrollTo(phaseScoreSummary.buffer.start)}
-              className="flex-[0.35] rounded-lg border border-[#8899aa]/30 bg-[#8899aa]/10 hover:bg-[#8899aa]/15 transition-colors px-3 py-3 text-left"
+              className="flex-[0.35] rounded-lg border border-brand-border bg-brand-bg hover:bg-brand-accentBg transition-colors px-3 py-3 text-left"
               title="Click to expand timeline"
             >
-              <div className="text-xs font-bold tracking-wider text-[#445f8b]">
+              <div className="text-xs font-bold tracking-wider text-brand-accent">
                 BUFFER
               </div>
-              <div className="mt-1 font-mono text-sm text-[#2d3e5c]">
+              <div className="mt-1 font-mono text-sm text-brand-text">
                 {phaseScoreSummary.buffer.scored} scored
               </div>
-              <div className="mt-0.5 text-[11px] text-[#667]">
+              <div className="mt-0.5 text-[11px] text-brand-muted">
                 {matchRecorderConstants.AUTO_DURATION}–
                 {matchRecorderConstants.AUTO_DURATION +
                   matchRecorderConstants.BUFFER_DURATION}
@@ -259,16 +259,16 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
             <button
               type="button"
               onClick={() => expandAndScrollTo(phaseScoreSummary.teleop.start)}
-              className="flex-[1.6] rounded-lg border border-[#445f8b]/25 bg-[#445f8b]/5 hover:bg-[#445f8b]/10 transition-colors px-3 py-3 text-left"
+              className="flex-[1.6] rounded-lg border border-brand-border bg-brand-accentBg hover:bg-brand-accentBg transition-colors px-3 py-3 text-left"
               title="Click to expand timeline"
             >
-              <div className="text-xs font-bold tracking-wider text-[#445f8b]">
+              <div className="text-xs font-bold tracking-wider text-brand-accent">
                 TELEOP
               </div>
-              <div className="mt-1 font-mono text-sm text-[#2d3e5c]">
+              <div className="mt-1 font-mono text-sm text-brand-text">
                 {phaseScoreSummary.teleop.scored} scored
               </div>
-              <div className="mt-0.5 text-[11px] text-[#667]">
+              <div className="mt-0.5 text-[11px] text-brand-muted">
                 {matchRecorderConstants.AUTO_DURATION +
                   matchRecorderConstants.BUFFER_DURATION}
                 –{matchRecorderConstants.MATCH_TOTAL_DURATION}s
@@ -276,7 +276,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
             </button>
           </div>
 
-          <div className="mt-3 text-xs text-[#666]">
+          <div className="mt-3 text-xs text-brand-muted">
             Click any section to expand into the full timeline.
           </div>
         </div>
@@ -299,13 +299,13 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
               return (
             <div
               key={i}
-              className={`absolute top-0 bottom-8 ${region.color} border-r border-[#445f8b]/10`}
+              className={`absolute top-0 bottom-8 ${region.color} border-r border-brand-border`}
               style={{
                 left: `${(startMs / maxTimeMs) * 100}%`,
                 width: `${(widthMs / maxTimeMs) * 100}%`,
               }}
             >
-              <span className="absolute top-2 left-2 text-[10px] font-bold text-[#445f8b]/50 tracking-wider">
+              <span className="absolute top-2 left-2 text-[10px] font-bold text-brand-muted tracking-wider">
                 {region.label}
               </span>
             </div>
@@ -317,7 +317,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
           {timeMarkers.map((time) => (
             <div
               key={time}
-              className="absolute top-0 bottom-0 w-px bg-[#e5e7eb]"
+              className="absolute top-0 bottom-0 w-px bg-brand-border"
               style={{ left: `${(time / maxTimeMs) * 100}%` }}
             />
           ))}
@@ -340,7 +340,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                       size={20}
                       weight="fill"
                       className={`timeline-ball-enter ${
-                        isScored ? "text-[#2D6C3E]" : "text-[#94a3b8]"
+                        isScored ? "text-brand-accent" : "text-brand-muted"
                       }`}
                       style={{ animationDelay: `${markerDelayMs + i * 70}ms` }}
                     />
@@ -355,7 +355,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                     title={`${event.scored}/${event.total} scored at ${formatTime(timestamp)}`}
                   >
                     {/* Tooltip */}
-                    <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-[#2d3e5c] text-white text-[10px] px-2 py-1 rounded whitespace-nowrap pointer-events-none">
+                    <div className="absolute bottom-full mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-brand-bg text-brand-mainText text-[10px] px-2 py-1 rounded whitespace-nowrap pointer-events-none">
                       {event.scored}/{event.total} @ {formatTime(timestamp)}
                     </div>
                     {/* Balls stack */}
@@ -365,7 +365,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                     {/* Stem */}
                     <div
                       className={`w-0.5 h-2 ${
-                        colorClass === "success" ? "bg-[#2D6C3E]" : "bg-[#94a3b8]"
+                        colorClass === "success" ? "bg-brand-accent" : "bg-brand-muted"
                       }`}
                     />
                   </div>
@@ -381,12 +381,12 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                     title={`Gate opened at ${formatTime(timestamp)}`}
                   >
                     {/* Tooltip */}
-                    <div className="absolute top-full mt-1 opacity-0 group-hover:opacity-100 transition-opacity bg-[#2d3e5c] text-white text-[10px] px-2 py-1 rounded whitespace-nowrap pointer-events-none z-20">
+                    <div className="absolute top-full mt-1 opacity-0 group-hover:opacity-100 transition-opacity bg-brand-bg text-brand-mainText text-[10px] px-2 py-1 rounded whitespace-nowrap pointer-events-none z-20">
                       Gate @ {formatTime(timestamp)}
                     </div>
                     {/* Gate marker */}
-                    <div className="w-6 h-full bg-[#445f8b]/10 border-x border-[#445f8b]/30 flex items-start justify-center pt-2">
-                      <DoorOpen size={16} weight="duotone" className="text-[#445f8b]" />
+                    <div className="w-6 h-full bg-brand-accentBg border-x border-brand-border flex items-start justify-center pt-2">
+                      <DoorOpen size={16} weight="duotone" className="text-brand-accent" />
                     </div>
                   </div>
                 );
@@ -397,23 +397,23 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
 
           {/* Playhead */}
           <div
-            className="playhead absolute top-0 bottom-8 w-0.5 bg-[#2196f3] z-10 transition-all duration-100"
+            className="playhead absolute top-0 bottom-8 w-0.5 bg-brand-accent z-10 transition-all duration-100"
             style={{ left: `${(safeCurrent / maxTimeMs) * 100}%` }}
           >
             {/* Playhead triangle */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-8 border-l-transparent border-r-transparent border-t-[#2196f3]" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-8 border-l-transparent border-r-transparent border-t-brand-accent" />
             {/* Current time badge */}
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#2196f3] text-white text-[10px] font-mono px-1.5 py-0.5 rounded">
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-brand-accent text-brand-mainText text-[10px] font-mono px-1.5 py-0.5 rounded">
               {formatTime(safeCurrent)}
             </div>
           </div>
 
           {/* Time axis */}
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-[#f8fafc] border-t border-[#e5e7eb] flex items-center">
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-brand-bg border-t border-brand-border flex items-center">
             {timeMarkers.map((time) => (
               <div
                 key={time}
-                className="absolute text-[10px] text-[#666] font-mono -translate-x-1/2"
+                className="absolute text-[10px] text-brand-muted font-mono -translate-x-1/2"
                 style={{ left: `${(time / maxTimeMs) * 100}%` }}
               >
                 {formatTime(time)}
@@ -425,7 +425,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
       )}
 
       {/* Footer stats */}
-      <div className="flex items-center justify-between px-4 py-2 border-t border-[#445f8b]/20 bg-[#f8fafc] text-xs text-[#666]">
+      <div className="flex items-center justify-between px-4 py-2 border-t border-brand-border bg-brand-bg text-xs text-brand-muted">
         <span>
           {safeEvents.filter(e => e.type === 'cycle').length} cycles recorded
         </span>

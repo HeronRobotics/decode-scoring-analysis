@@ -74,9 +74,9 @@ function MatchPage() {
               Start a match to begin recording cycles and gates.
             </p>
 
-            <div className="card p-4 sm:p-5 mb-5" style={{ background: "rgba(15, 18, 28, 0.6)" }}>
+            <div className="card p-4 sm:p-5 mb-5 bg-brand-surface">
               <label className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <span className="font-medium flex items-center gap-2 text-white">
+                <span className="font-medium flex items-center gap-2 text-brand-mainText">
                   <Target size={18} weight="bold" />
                   Team Number:
                 </span>

@@ -36,17 +36,13 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 sm:space-y-8 flex flex-col">
-
-      <KeyboardShortcuts />
-
-      {/* Quick Start - Primary Action */}
       <div className="p-6 sm:p-8 text-brand-text animate-slide-up">
         <div className="flex items-center gap-3 mb-4">
           <h3 className="text-xl sm:text-2xl font-bold">Start Recording</h3>
         </div>
 
         <div className="bg-brand-bg flex flex-row flex-wrap justify-around border border-brand-border rounded-lg p-4 mb-6 space-y-3">
-          <label className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <label className="flex flex-col sm:flex-row sm:items-center gap-3 m-0">
             <span className="text-brand-muted font-medium flex items-center gap-2">
               <HashIcon size={20} weight="bold" />
               Team Number:
@@ -118,12 +114,15 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                 motif: selectedMotif || null,
               });
             }}
-            className=""
+            className="text-brand-accent font-semibold hover:underline flex items-center gap-2"
           >
             Start No-Timer Match
           </button>
         </div>
       </div>
+
+
+      <KeyboardShortcuts />
 
       <div className="card overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <button

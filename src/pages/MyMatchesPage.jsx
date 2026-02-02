@@ -455,11 +455,11 @@ function MyMatchesPage() {
       </div>
 
       {authLoading && (
-        <p className="text-center mt-8 text-[#445f8b]">Loading account...</p>
+        <p className="text-center mt-8 text-brand-accent">Loading account...</p>
       )}
 
       {!authLoading && !user && (
-        <div className="bg-white border-2 border-[#445f8b] p-6 text-center">
+        <div className="bg-brand-bg border-2 border-brand-border p-6 text-center">
           <p className="mb-4">
             Sign in to view and manage matches saved to your account.
           </p>
@@ -473,7 +473,7 @@ function MyMatchesPage() {
       {!authLoading && user && (
         <>
           {/* Import Section - Full Width at Top */}
-          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-5 mb-6">
+          <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-5 mb-6">
             <button
               type="button"
               onClick={() => setShowImportSection(!showImportSection)}
@@ -483,27 +483,27 @@ function MyMatchesPage() {
                 <UploadSimple
                   size={20}
                   weight="bold"
-                  className="text-[#445f8b]"
+                  className="text-brand-accent"
                 />
-                <span className="font-semibold text-[#445f8b]">
+                <span className="font-semibold text-brand-accent">
                   Import Matches
                 </span>
               </div>
               <CaretRight
                 size={18}
                 weight="bold"
-                className={`text-[#445f8b] transition-transform ${
+                className={`text-brand-accent transition-transform ${
                   showImportSection ? "rotate-90" : ""
                 }`}
               />
             </button>
 
             {showImportSection && (
-              <div className="mt-4 pt-4 border-t border-[#e2e8f0]">
+              <div className="mt-4 pt-4 border-t border-brand-border">
                 <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
                   {/* Tournament Tag */}
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-[#444] mb-2">
+                    <label className="block text-sm font-medium text-brand-mainText mb-2">
                       Tournament Tag (optional)
                     </label>
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -512,7 +512,7 @@ function MyMatchesPage() {
                         value={bulkTournamentName}
                         onChange={(e) => setBulkTournamentName(e.target.value)}
                         placeholder="e.g. Regionals, Worlds"
-                        className="flex-1 px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                        className="flex-1 px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded"
                       />
                       {tournamentTags.length > 0 && (
                         <select
@@ -520,7 +520,7 @@ function MyMatchesPage() {
                           onChange={(e) =>
                             setBulkTournamentName(e.target.value)
                           }
-                          className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                          className="px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded bg-brand-bg"
                         >
                           <option value="">Use existing...</option>
                           {tournamentTags.map((name) => (
@@ -558,8 +558,8 @@ function MyMatchesPage() {
                 </div>
 
                 {importing && (
-                  <div className="mt-3 text-sm text-[#445f8b] flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-[#445f8b] border-t-transparent rounded-full animate-spin" />
+                  <div className="mt-3 text-sm text-brand-accent flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-brand-accent border-t-transparent rounded-full animate-spin" />
                     Importing matches...
                   </div>
                 )}
@@ -569,11 +569,11 @@ function MyMatchesPage() {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] lg:items-start">
             {/* Left Column - Match List */}
-            <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6">
+            <div className="bg-brand-bg border-2 border-brand-border p-5 sm:p-6">
               {/* Saved Matches Header */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Saved Matches</h2>
-                <span className="text-sm text-[#666]">
+                <span className="text-sm text-brand-muted">
                   {filteredMatches.length === matches.length
                     ? `${matches.length} ${matches.length === 1 ? "match" : "matches"}`
                     : `${filteredMatches.length} of ${matches.length}`}
@@ -587,14 +587,14 @@ function MyMatchesPage() {
                   <div className="relative">
                     <MagnifyingGlass
                       size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888]"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted"
                     />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search matches..."
-                      className="w-full pl-10 pr-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                      className="w-full pl-10 pr-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded"
                     />
                   </div>
 
@@ -605,7 +605,7 @@ function MyMatchesPage() {
                       <select
                         value={filterTournament}
                         onChange={(e) => setFilterTournament(e.target.value)}
-                        className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                        className="px-3 py-1.5 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded bg-brand-bg"
                       >
                         <option value="">All Tournaments</option>
                         {tournamentTags.map((name) => (
@@ -621,7 +621,7 @@ function MyMatchesPage() {
                       <select
                         value={filterTeam}
                         onChange={(e) => setFilterTeam(e.target.value)}
-                        className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white"
+                        className="px-3 py-1.5 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded bg-brand-bg"
                       >
                         <option value="">All Teams</option>
                         {teamNumbers.map((num) => (
@@ -636,7 +636,7 @@ function MyMatchesPage() {
                     <select
                       value={groupBy}
                       onChange={(e) => setGroupBy(e.target.value)}
-                      className="px-3 py-1.5 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded bg-white ml-auto"
+                      className="px-3 py-1.5 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded bg-brand-bg ml-auto"
                     >
                       <option value="none">No Grouping</option>
                       <option value="tournament">Group by Tournament</option>
@@ -654,7 +654,7 @@ function MyMatchesPage() {
                         setFilterTournament("");
                         setFilterTeam("");
                       }}
-                      className="text-sm text-[#445f8b] hover:underline flex items-center gap-1"
+                      className="text-sm text-brand-accent hover:underline flex items-center gap-1"
                     >
                       <Funnel size={14} />
                       Clear filters
@@ -663,11 +663,11 @@ function MyMatchesPage() {
                 </div>
               )}
 
-              {loading && <p className="text-[#666]">Loading matches...</p>}
-              {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+              {loading && <p className="text-brand-muted">Loading matches...</p>}
+              {error && <p className="text-brand-accent text-sm mb-2">{error}</p>}
 
               {!loading && matches.length === 0 && !error && (
-                <div className="text-center py-8 text-[#666]">
+                <div className="text-center py-8 text-brand-muted">
                   <Target size={48} className="mx-auto mb-3 opacity-30" />
                   <p className="text-sm">No saved matches yet.</p>
                   <p className="text-xs mt-1">
@@ -683,7 +683,7 @@ function MyMatchesPage() {
                 {!loading &&
                   filteredMatches.length === 0 &&
                   matches.length > 0 && (
-                    <div className="text-center py-8 text-[#666]">
+                    <div className="text-center py-8 text-brand-muted">
                       <MagnifyingGlass
                         size={48}
                         className="mx-auto mb-3 opacity-30"
@@ -702,27 +702,27 @@ function MyMatchesPage() {
                       <button
                         type="button"
                         onClick={() => toggleGroup(group.key)}
-                        className="w-full flex items-center justify-between py-2 px-3 mb-2 bg-[#f0f5ff] border border-[#c8d6f0] rounded-lg hover:bg-[#e8eef8] transition-colors"
+                        className="w-full flex items-center justify-between py-2 px-3 mb-2 bg-brand-accentBg border border-brand-border rounded-lg hover:bg-brand-accentBg transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           {collapsedGroups[group.key] ? (
                             <CaretRight
                               size={16}
                               weight="bold"
-                              className="text-[#445f8b]"
+                              className="text-brand-accent"
                             />
                           ) : (
                             <CaretDown
                               size={16}
                               weight="bold"
-                              className="text-[#445f8b]"
+                              className="text-brand-accent"
                             />
                           )}
-                          <span className="font-semibold text-[#445f8b]">
+                          <span className="font-semibold text-brand-accent">
                             {group.label}
                           </span>
                         </div>
-                        <span className="text-sm text-[#666]">
+                        <span className="text-sm text-brand-muted">
                           {group.matches.length}{" "}
                           {group.matches.length === 1 ? "match" : "matches"}
                         </span>
@@ -763,20 +763,20 @@ function MyMatchesPage() {
                               }}
                               className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
                                 isSelected
-                                  ? "border-[#445f8b] bg-[#f0f5ff] shadow-sm"
-                                  : "border-[#e5e7eb] bg-white hover:border-[#445f8b] hover:bg-[#fafbfc]"
+                                  ? "border-brand-accent bg-brand-accentBg shadow-sm"
+                                  : "border-brand-border bg-brand-bg hover:border-brand-accent hover:bg-brand-bg"
                               }`}
                             >
                               {/* Match Header */}
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="flex-1 min-w-0">
-                                  <div className="font-semibold text-[#1a1a1a] truncate">
+                                  <div className="font-semibold text-brand-mainText truncate">
                                     {m.title ||
                                       (m.teamNumber ? `${getTeamName(m.teamNumber)} Match` : "Match")}
                                   </div>
                                   {m.tournamentName &&
                                     groupBy !== "tournament" && (
-                                      <div className="text-xs text-[#445f8b] font-medium mt-0.5">
+                                      <div className="text-xs text-brand-accent font-medium mt-0.5">
                                         {m.tournamentName}
                                       </div>
                                     )}
@@ -787,7 +787,7 @@ function MyMatchesPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="p-1.5 text-[#666] hover:text-[#445f8b] hover:bg-[#e8eef8] rounded transition-colors"
+                                    className="p-1.5 text-brand-muted hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
                                     title="Open in new tab"
                                   >
                                     <ArrowSquareOut size={16} weight="bold" />
@@ -798,7 +798,7 @@ function MyMatchesPage() {
                                       e.stopPropagation();
                                       handleDelete(m.id);
                                     }}
-                                    className="p-1.5 text-[#666] hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    className="p-1.5 text-brand-muted hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
                                     title="Delete match"
                                   >
                                     <Trash size={16} weight="bold" />
@@ -807,10 +807,10 @@ function MyMatchesPage() {
                               </div>
 
                               {/* Match Stats Row */}
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#555]">
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-brand-text">
                                 {groupBy !== "team" && (
                                   <span className="flex items-center gap-1.5">
-                                    <Users size={14} className="text-[#888]" />
+                                    <Users size={14} className="text-brand-muted" />
                                     {m.teamNumber ? `${getTeamName(m.teamNumber)} (${m.teamNumber})` : "No Team"}
                                   </span>
                                 )}
@@ -818,49 +818,49 @@ function MyMatchesPage() {
                                   <span className="flex items-center gap-1.5">
                                     <CalendarBlank
                                       size={14}
-                                      className="text-[#888]"
+                                      className="text-brand-muted"
                                     />
                                     {dateStr}
                                   </span>
                                 )}
                                 <span className="flex items-center gap-1.5">
-                                <Target size={14} className="text-[#888]" />
-                                <span className="font-semibold text-[#1a1a1a]">{formatStat(points.total, 0)}</span>
-                                <span className="text-xs text-[#888]">pts</span>
+                                <Target size={14} className="text-brand-muted" />
+                                <span className="font-semibold text-brand-mainText">{formatStat(points.total, 0)}</span>
+                                <span className="text-xs text-brand-muted">pts</span>
                               </span>
                             </div>
 
                               {/* Score Summary */}
-                              <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-3 pt-3 border-t border-[#eee]">
+                              <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-3 pt-3 border-t border-brand-border">
                                 <div className="flex items-center gap-1 sm:gap-1.5">
                                   <Target
                                     size={16}
-                                    className="text-[#445f8b]"
+                                    className="text-brand-accent"
                                   />
-                                  <span className="font-semibold text-[#1a1a1a]">
+                                  <span className="font-semibold text-brand-mainText">
                                     {stats.scored}/{stats.total}
                                   </span>
-                                  <span className="text-xs text-[#888] hidden sm:inline">
+                                  <span className="text-xs text-brand-muted hidden sm:inline">
                                     scored
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1 sm:gap-1.5">
                                   <ListNumbers
                                     size={16}
-                                    className="text-[#445f8b]"
+                                    className="text-brand-accent"
                                   />
-                                  <span className="font-semibold text-[#1a1a1a]">
+                                  <span className="font-semibold text-brand-mainText">
                                     {stats.cycles}
                                   </span>
-                                  <span className="text-xs text-[#888] hidden sm:inline">
+                                  <span className="text-xs text-brand-muted hidden sm:inline">
                                     cycles
                                   </span>
                                 </div>
                                 <div className="text-sm">
-                                  <span className="font-semibold text-[#1a1a1a]">
+                                  <span className="font-semibold text-brand-mainText">
                                     {formatStat(stats.accuracy, 0)}%
                                   </span>
-                                  <span className="text-xs text-[#888] ml-1 hidden sm:inline">
+                                  <span className="text-xs text-brand-muted ml-1 hidden sm:inline">
                                     acc
                                   </span>
                                 </div>
@@ -876,17 +876,17 @@ function MyMatchesPage() {
             </div>
 
             {/* Right Column - Match Preview */}
-            <div className="bg-white border-2 border-[#445f8b] p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
+            <div className="bg-brand-bg border-2 border-brand-border p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
               {selectedMatch ? (
                 <>
                   {/* Header with title and actions */}
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-[#1a1a1a]">
+                      <h2 className="text-2xl font-bold text-brand-mainText">
                         {selectedMatch.title || (selectedMatch.teamNumber ? <><TeamName teamNumber={selectedMatch.teamNumber} /> Match</> : "Match")}
                       </h2>
                       {selectedMatch.tournamentName && (
-                        <p className="text-[#445f8b] font-medium mt-1">
+                        <p className="text-brand-accent font-medium mt-1">
                           {selectedMatch.tournamentName}
                         </p>
                       )}
@@ -904,45 +904,45 @@ function MyMatchesPage() {
 
                   {/* Condensed Stats Summary */}
                   {selectedStats && selectedStats.cycles > 0 && (
-                    <div className="bg-[#445f8b] rounded-lg p-5 mb-6">
+                    <div className="bg-brand-accent rounded-lg p-5 mb-6">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
                             {selectedStats.cycles}
                           </div>
-                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
                             <ListNumbers size={14} />
                             Cycles
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
                             {selectedStats.scored}
-                            <span className="text-lg text-white/60">
+                            <span className="text-lg text-brand-mainText">
                               /{selectedStats.total}
                             </span>
                           </div>
-                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
                             <Target size={14} />
                             Scored
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
                             {formatStat(selectedStats.accuracy, 0)}%
                           </div>
-                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
                             <Target size={14} weight="fill" />
                             Accuracy
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-white">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
                             {selectedStats.avgCycleTime
                               ? `${formatStat(selectedStats.avgCycleTime, 1)}s`
                               : "—"}
                           </div>
-                          <div className="text-white/70 text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
                             <Clock size={14} />
                             Avg Cycle
                           </div>
@@ -952,17 +952,17 @@ function MyMatchesPage() {
                   )}
 
                   {/* Edit Section */}
-                  <div className="border-t border-[#eee] pt-5">
+                  <div className="border-t border-brand-border pt-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <PencilSimple size={18} className="text-[#445f8b]" />
-                      <h3 className="font-semibold text-[#444]">
+                      <PencilSimple size={18} className="text-brand-accent" />
+                      <h3 className="font-semibold text-brand-mainText">
                         Edit Match Info
                       </h3>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="block text-sm font-medium text-[#555] mb-1">
+                        <label className="block text-sm font-medium text-brand-text mb-1">
                           Title
                         </label>
                         <input
@@ -970,11 +970,11 @@ function MyMatchesPage() {
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
                           placeholder="e.g. Quals 15, Finals 2"
-                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                          className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#555] mb-1">
+                        <label className="block text-sm font-medium text-brand-text mb-1">
                           Tournament
                         </label>
                         <input
@@ -982,26 +982,26 @@ function MyMatchesPage() {
                           value={editTournament}
                           onChange={(e) => setEditTournament(e.target.value)}
                           placeholder="e.g. Regionals"
-                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                          className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#555] mb-1">
+                        <label className="block text-sm font-medium text-brand-text mb-1">
                           Team Number
                         </label>
                         <input
                           type="number"
                           value={editTeamNumber}
                           onChange={(e) => setEditTeamNumber(e.target.value)}
-                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                          className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded"
                           min="1"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-[#555] mb-1 flex items-center gap-1.5">
+                        <label className="block text-sm font-medium text-brand-text mb-1 flex items-center gap-1.5">
                           <CalendarBlank
                             size={14}
-                            className="text-[#888]"
+                            className="text-brand-muted"
                           />
                           Match Date
                         </label>
@@ -1009,25 +1009,25 @@ function MyMatchesPage() {
                           type="date"
                           value={editDate}
                           onChange={(e) => setEditDate(e.target.value)}
-                          className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded"
+                          className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded"
                         />
                       </div>
                     </div>
 
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-[#555] mb-1">
+                      <label className="block text-sm font-medium text-brand-text mb-1">
                         Notes
                       </label>
                       <textarea
                         value={editNotes}
                         onChange={(e) => setEditNotes(e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none text-sm rounded min-h-[80px] resize-y"
+                        className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none text-sm rounded min-h-[80px] resize-y"
                         placeholder="Defense played, robot issues, strategy notes..."
                       />
                     </div>
 
                     {detailsError && (
-                      <p className="mb-3 text-sm text-red-600">
+                      <p className="mb-3 text-sm text-brand-accent">
                         {detailsError}
                       </p>
                     )}
@@ -1043,7 +1043,7 @@ function MyMatchesPage() {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-[#666]">
+                <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-brand-muted">
                   <Target size={64} className="mb-4 opacity-20" />
                   <p className="text-lg font-medium">No match selected</p>
                   <p className="text-sm mt-1">

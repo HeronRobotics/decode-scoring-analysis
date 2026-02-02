@@ -95,8 +95,8 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
 
   if (!chartData || chartData.length === 0 || !teamStats || teamStats.length === 0) {
     return (
-      <div className="h-[600px] flex items-center justify-center border-2 border-[#ddd] bg-gray-50">
-        <p className="text-gray-500">No team data available for chart</p>
+      <div className="h-[600px] flex items-center justify-center border-2 border-brand-border bg-brand-bg">
+        <p className="text-brand-muted">No team data available for chart</p>
       </div>
     )
   }
@@ -109,7 +109,7 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
     const displayLabel = row.matchTime ? new Date(row.matchTime).toLocaleString() : label
     
     return (
-      <div className="bg-white border-2 border-[#445f8b] p-2 text-sm">
+      <div className="bg-brand-bg border-2 border-brand-border p-2 text-sm">
         <div className="font-semibold mb-1">{displayLabel}</div>
         <div className="space-y-1">
           {teamStats.filter(ts => visibleTeams[ts.team] !== false).map(ts => {
@@ -217,19 +217,19 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
         />
         
         {/* Value labels */}
-        <text x={labelX} y={scaleY(boxplotData.max) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.max) + 4} fill="var(--color-brand-muted)" fontSize="9" dominantBaseline="middle">
           {boxplotData.max}
         </text>
-        <text x={labelX} y={scaleY(boxplotData.q3) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.q3) + 4} fill="var(--color-brand-muted)" fontSize="9" dominantBaseline="middle">
           {boxplotData.q3}
         </text>
-        <text x={labelX} y={scaleY(boxplotData.median) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.median) + 4} fill="var(--color-brand-muted)" fontSize="9" dominantBaseline="middle">
           {boxplotData.median}
         </text>
-        <text x={labelX} y={scaleY(boxplotData.q1) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.q1) + 4} fill="var(--color-brand-muted)" fontSize="9" dominantBaseline="middle">
           {boxplotData.q1}
         </text>
-        <text x={labelX} y={scaleY(boxplotData.min) + 4} fill="#666" fontSize="9" dominantBaseline="middle">
+        <text x={labelX} y={scaleY(boxplotData.min) + 4} fill="var(--color-brand-muted)" fontSize="9" dominantBaseline="middle">
           {boxplotData.min}
         </text>
       </>
@@ -240,17 +240,17 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
     <div className="h-[360px] sm:h-[600px]">
       <ResponsiveContainer width="100%" height="100%" onResize={onResize}>
         <LineChart data={chartData} margin={chartMargin}>
-          <CartesianGrid stroke="#f7fafc" />
+          <CartesianGrid stroke="var(--color-brand-border)" />
           <XAxis
             dataKey="label"
-            tick={{ fill: '#666', fontSize: isCompact ? 10 : 12 }}
+            tick={{ fill: 'var(--color-brand-muted)', fontSize: isCompact ? 10 : 12 }}
             interval="preserveStartEnd"
             minTickGap={20}
             angle={isCompact ? -35 : 0}
             textAnchor={isCompact ? 'end' : 'middle'}
             height={isCompact ? 60 : undefined}
           />
-          <YAxis domain={[0, sharedMax]} tick={{ fill: '#666' }} />
+          <YAxis domain={[0, sharedMax]} tick={{ fill: 'var(--color-brand-muted)' }} />
           <Tooltip content={<CustomTooltip />} />
           {teamStats.map((ts) => {
             const key = numToKey(ts.team)

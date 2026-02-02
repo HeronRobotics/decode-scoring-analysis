@@ -8,8 +8,8 @@ import {
 
 
 const motifColor = {
-  "P": "text-[#d7b4ff] bg-[#2b1f39] border-[#8a63c8]/50",
-  "G": "text-[#7ef0b0] bg-[#1e2f28] border-[#3adf8a]/50",
+  "P": "text-brand-mainText bg-brand-accent border-brand-accent",
+  "G": "text-brand-text bg-brand-bg border-brand-border",
 };
 
 function PatternInput({ label, value, onChange, motif, disabled }) {
@@ -42,13 +42,13 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
                   hasInput
                     ? isMatch
                       ? " border " + motifColor[char]
-                      : "border border-brand-danger  " + motifColor[inputChar]
+                      : "border border-brand-border " + motifColor[inputChar]
                     : "bg-brand-bg text-brand-muted border border-brand-border"
                 }`}
               >
                 {inputChar || char}
               </span>
-              <span className={`text-[10px] text-brand-muted mt-0.5 ${hasInput ? "" : "italic"} ${isMatch ? "text-brand-accent" : hasInput ? "text-brand-danger!" : ""}`}>
+              <span className={`text-[10px] text-brand-muted mt-0.5 ${hasInput ? "" : "italic"} ${isMatch ? "text-brand-accent" : ""}`}>
                 {char}
               </span>
             </div>
@@ -76,7 +76,7 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
             <span>Target: {targetPattern}</span>
             <span className="flex items-center gap-1">
               {matches > 0 ? (
-                <Check size={12} weight="bold" className="text-brand-success" />
+                <Check size={12} weight="bold" className="text-brand-accent" />
               ) : (
                 <X size={12} weight="bold" className="text-brand-muted" />
               )}

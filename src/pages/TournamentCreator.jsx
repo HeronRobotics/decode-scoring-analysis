@@ -161,7 +161,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
         </button>
       </div>
 
-      <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-8">
+      <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-8">
         <div className="space-y-6 mb-8">
           <div>
             <label className="block font-semibold mb-2">Tournament Name</label>
@@ -170,7 +170,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
               value={tournamentName}
               onChange={(e) => setTournamentName(e.target.value)}
               placeholder="e.g., Qualifier October 10th"
-              className="w-full p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none"
+              className="w-full p-3 border-2 border-brand-border focus:border-brand-accent outline-none"
             />
           </div>
 
@@ -180,7 +180,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
               type="date"
               value={tournamentDate}
               onChange={(e) => setTournamentDate(e.target.value)}
-              className="w-full p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none"
+              className="w-full p-3 border-2 border-brand-border focus:border-brand-accent outline-none"
             />
           </div>
 
@@ -214,10 +214,10 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                   const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0)
                   const total = cycleEvents.reduce((sum, e) => sum + e.total, 0)
                   return (
-                    <div key={index} className="border-2 border-[#ddd] p-3 flex justify-between items-center">
+                    <div key={index} className="border-2 border-brand-border p-3 flex justify-between items-center">
                       <div>
                         <span className="font-semibold">Match {index + 1} ({match.teamNumber || 'No Team'})</span>
-                        <span className="text-sm text-[#666] ml-4">
+                        <span className="text-sm text-brand-muted ml-4">
                           {scored}/{total} balls scored
                         </span>
                       </div>
@@ -237,7 +237,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
 
         <button
           onClick={createTournament}
-          className="btn py-3! bg-[#445f8b]! text-white! px-6! w-full sm:w-auto justify-center"
+          className="btn py-3! bg-brand-accent! text-brand-mainText! px-6! w-full sm:w-auto justify-center"
         >
           <FloppyDisk weight="bold" size={20} />
           Create Tournament
@@ -246,22 +246,22 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
 
       {showTextImport && (
         <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-brand-bg flex items-center justify-center z-50"
           onClick={() => setShowTextImport(false)}
         >
           <div
-            className="bg-white p-4 sm:p-8 max-w-2xl w-11/12 border-2 border-[#445f8b]"
+            className="bg-brand-bg p-4 sm:p-8 max-w-2xl w-11/12 border-2 border-brand-border"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl mb-5">Paste Match Codes</h3>
-            <p className="text-sm mb-4 text-[#666]">
+            <p className="text-sm mb-4 text-brand-muted">
               Paste one or more match codes below (one per line). Format: hmadv2/teamNum/...;; 0:00.000; 1/2 at 0:10.123; ... (hmadv1 also supported)
             </p>
             <textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="hmadv2/1234/.../...;; 0:00.000; 1/2 at 0:10.123; 1/2 at 0:20.456; gate at 1:30.000; ..."
-              className="w-full h-56 sm:h-64 p-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none font-mono text-sm resize-none"
+              className="w-full h-56 sm:h-64 p-3 border-2 border-brand-border focus:border-brand-accent outline-none font-mono text-sm resize-none"
             />
             <div className="flex gap-4 justify-end mt-6">
               <button onClick={importFromText} className="btn">

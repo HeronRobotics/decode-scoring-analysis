@@ -474,7 +474,7 @@ function LifetimePage() {
         <h1 className="text-3xl sm:text-5xl font-bold">Lifetime Statistics</h1>
       </div>
 
-      <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
+      <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
         <h2 className="text-2xl sm:text-3xl mb-4">Filters</h2>
         <div className="flex flex-col sm:flex-row gap-4 items-center mb-2">
           <label className="flex items-center gap-2 font-semibold">
@@ -484,29 +484,29 @@ function LifetimePage() {
               value={teamNumber}
               onChange={(e) => setTeamNumber(e.target.value)}
               placeholder="1234"
-              className="px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-32 text-center font-mono"
+              className="px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none w-32 text-center font-mono"
               min="1"
             />
           </label>
         </div>
-        <p className="text-sm text-[#6b7c95] mt-1">
+        <p className="text-sm text-brand-muted mt-1">
           Lifetime stats are computed from matches saved to your account on the
           <strong> My Matches</strong> tab.
         </p>
       </div>
 
       {authLoading && (
-        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
-          <p className="text-[#445f8b]">Loading account...</p>
+        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
+          <p className="text-brand-accent">Loading account...</p>
         </div>
       )}
 
       {!authLoading && !user && (
-        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
+        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
           <p className="mb-2">
             Sign in and save matches to see your lifetime statistics.
           </p>
-          <p className="text-sm text-[#6b7c95]">
+          <p className="text-sm text-brand-muted">
             Use the <strong>Sign in / Sign up</strong> button in the top right,
             then record matches or bulk import them on the My Matches tab.
           </p>
@@ -514,7 +514,7 @@ function LifetimePage() {
       )}
 
       {!authLoading && user && !loading && !allMatches.length && !error && (
-        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
+        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
           <p className="text-xl">
             No saved matches yet. Record a match or bulk import them on the My
             Matches tab.
@@ -523,8 +523,8 @@ function LifetimePage() {
       )}
 
       {!authLoading && user && error && (
-        <div className="bg-white border-2 border-[#445f8b] p-8 text-center">
-          <p className="text-red-600 text-sm">{error}</p>
+        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
+          <p className="text-brand-accent text-sm">{error}</p>
         </div>
       )}
 
@@ -532,59 +532,59 @@ function LifetimePage() {
         <>
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white border-2 border-[#445f8b] p-5 text-center">
-              <div className="text-4xl font-bold text-[#445f8b] mb-1">{matchStats.length}</div>
-              <div className="text-sm text-[#6b7c95]">Total Matches Recorded</div>
+            <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
+              <div className="text-4xl font-bold text-brand-accent mb-1">{matchStats.length}</div>
+              <div className="text-sm text-brand-muted">Total Matches Recorded</div>
             </div>
-            <div className="bg-white border-2 border-[#445f8b] p-5 text-center">
-              <div className="text-4xl font-bold text-[#445f8b] mb-1">
+            <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
+              <div className="text-4xl font-bold text-brand-accent mb-1">
                 {matchStats.length > 0 ? formatStat(matchStats.reduce((sum, m) => sum + m.accuracy, 0) / matchStats.length) : 0}%
               </div>
-              <div className="text-sm text-[#6b7c95]">Overall Accuracy</div>
+              <div className="text-sm text-brand-muted">Overall Accuracy</div>
             </div>
-            <div className="bg-white border-2 border-[#445f8b] p-5 text-center">
-              <div className="text-4xl font-bold text-[#445f8b] mb-1">
+            <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
+              <div className="text-4xl font-bold text-brand-accent mb-1">
                 {matchStats.reduce((sum, m) => sum + m.scored, 0)}
               </div>
-              <div className="text-sm text-[#6b7c95]">Total Balls Scored</div>
+              <div className="text-sm text-brand-muted">Total Balls Scored</div>
             </div>
           </div>
 
           {/* Points Overview - Full matches only */}
           {fullMatchStats.length > 0 && (
-            <div className="bg-[#445f8b] border-2 border-[#2d3e5c] p-4 sm:p-6 mb-8">
+            <div className="bg-brand-accent border-2 border-brand-accent p-4 sm:p-6 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
-                  <Star size={28} weight="fill" className="text-white" />
-                  <h2 className="text-2xl font-bold text-white">Match Points</h2>
+                  <Star size={28} weight="fill" className="text-brand-mainText" />
+                  <h2 className="text-2xl font-bold text-brand-mainText">Match Points</h2>
                 </div>
-                <span className="text-xs bg-white/20 px-3 py-1.5 rounded text-white/90 w-fit">Full matches only (158s duration)</span>
+                <span className="text-xs bg-brand-accentBg px-3 py-1.5 rounded text-brand-mainText w-fit">Full matches only (158s duration)</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
-                  <div className="text-3xl sm:text-4xl font-bold text-white">{totalPoints}</div>
-                  <div className="text-white/80 text-sm">Total Points</div>
+                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{totalPoints}</div>
+                  <div className="text-brand-mainText text-sm">Total Points</div>
                 </div>
-                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
-                  <div className="text-3xl sm:text-4xl font-bold text-white">{formatStat(avgPoints, 1)}</div>
-                  <div className="text-white/80 text-sm">Avg per Match</div>
+                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{formatStat(avgPoints, 1)}</div>
+                  <div className="text-brand-mainText text-sm">Avg per Match</div>
                 </div>
-                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
-                  <div className="text-3xl sm:text-4xl font-bold text-white">{bestMatchByPoints?.points || 0}</div>
-                  <div className="text-white/80 text-sm">Best Match</div>
+                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{bestMatchByPoints?.points || 0}</div>
+                  <div className="text-brand-mainText text-sm">Best Match</div>
                 </div>
-                <div className="bg-white/10 rounded-lg p-4 text-center border border-white/20">
-                  <div className="text-3xl sm:text-4xl font-bold text-white">{fullMatchStats.length}</div>
-                  <div className="text-white/80 text-sm">Full Matches</div>
+                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{fullMatchStats.length}</div>
+                  <div className="text-brand-mainText text-sm">Full Matches</div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Key Insights Section */}
-          <div className="bg-white border-2 border-[#445f8b] p-5 mb-8">
+          <div className="bg-brand-bg border-2 border-brand-border p-5 mb-8">
             <div className="flex items-center gap-2 mb-4">
-              <Trophy size={24} weight="bold" className="text-[#445f8b]" />
+              <Trophy size={24} weight="bold" className="text-brand-accent" />
               <h2 className="text-2xl font-bold">Performance Insights</h2>
             </div>
 
@@ -592,26 +592,26 @@ function LifetimePage() {
               {/* Best Performance */}
               {bestMatch && bestMatchByPoints && matchStats.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-[#445f8b]">Your Best</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-brand-accent">Your Best</h3>
                   <div className="space-y-3">
-                    <div className="bg-[#445f8b]/10 border border-[#445f8b]/30 rounded-lg p-3">
+                    <div className="bg-brand-accentBg border border-brand-border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-[#2d3e5c]">Highest Points</span>
-                        <Star size={18} className="text-[#445f8b]" weight="fill" />
+                        <span className="text-sm font-semibold text-brand-text">Highest Points</span>
+                        <Star size={18} className="text-brand-accent" weight="fill" />
                       </div>
-                      <div className="text-3xl font-bold text-[#445f8b] mb-1">{bestMatchByPoints?.points || 0}</div>
-                      <div className="text-xs text-[#6b7c95]">
+                      <div className="text-3xl font-bold text-brand-accent mb-1">{bestMatchByPoints?.points || 0}</div>
+                      <div className="text-xs text-brand-muted">
                         {bestMatchByPoints?.name}
                       </div>
                     </div>
 
-                    <div className="bg-[#445f8b]/10 border border-[#445f8b]/30 rounded-lg p-3">
+                    <div className="bg-brand-accentBg border border-brand-border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-[#2d3e5c]">Best Accuracy</span>
-                        <Medal size={18} className="text-[#445f8b]" weight="fill" />
+                        <span className="text-sm font-semibold text-brand-text">Best Accuracy</span>
+                        <Medal size={18} className="text-brand-accent" weight="fill" />
                       </div>
-                      <div className="text-3xl font-bold text-[#445f8b] mb-1">{formatStat(bestMatch.accuracy)}%</div>
-                      <div className="text-xs text-[#6b7c95]">
+                      <div className="text-3xl font-bold text-brand-accent mb-1">{formatStat(bestMatch.accuracy)}%</div>
+                      <div className="text-xs text-brand-muted">
                         {bestMatch.scored} of {bestMatch.total} scored • {bestMatch.name}
                       </div>
                     </div>
@@ -622,23 +622,23 @@ function LifetimePage() {
               {/* Areas for Improvement */}
               {worstMatch && matchStats.length > 1 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-[#6b7c95]">Focus Areas</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-brand-muted">Focus Areas</h3>
                   <div className="space-y-3">
-                    <div className="bg-[#f7f9ff] border border-[#ddd] rounded-lg p-3">
+                    <div className="bg-brand-bg border border-brand-border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-[#6b7c95]">Lowest Accuracy</span>
-                        <Medal size={18} className="text-[#8a99b3]" />
+                        <span className="text-sm font-semibold text-brand-muted">Lowest Accuracy</span>
+                        <Medal size={18} className="text-brand-muted" />
                       </div>
-                      <div className="text-3xl font-bold text-[#6b7c95] mb-1">{formatStat(worstMatch.accuracy)}%</div>
-                      <div className="text-xs text-[#8a99b3]">
+                      <div className="text-3xl font-bold text-brand-muted mb-1">{formatStat(worstMatch.accuracy)}%</div>
+                      <div className="text-xs text-brand-muted">
                         {worstMatch.scored} of {worstMatch.total} scored • {worstMatch.name}
                       </div>
                     </div>
 
                     {/* Actionable insight */}
-                    <div className="bg-[#f7f9ff] border border-[#ddd] rounded-lg p-3">
-                      <div className="text-sm font-semibold text-[#6b7c95] mb-2 flex items-center gap-1"><LightbulbIcon weight="duotone" /> To Improve</div>
-                      <ul className="text-xs text-[#6b7c95] space-y-1.5">
+                    <div className="bg-brand-bg border border-brand-border rounded-lg p-3">
+                      <div className="text-sm font-semibold text-brand-muted mb-2 flex items-center gap-1"><LightbulbIcon weight="duotone" /> To Improve</div>
+                      <ul className="text-xs text-brand-muted space-y-1.5">
                         <li>• Aim for 70%+ accuracy</li>
                         <li>• Focus on cycle efficiency during practice</li>
                         <li>• Review matches with low accuracy for patterns</li>
@@ -652,24 +652,24 @@ function LifetimePage() {
 
           {/* Recent Performance Trend */}
           {recentPerformance && (
-            <div className="bg-white border-2 border-[#445f8b] p-5 mb-8">
+            <div className="bg-brand-bg border-2 border-brand-border p-5 mb-8">
               <div className="flex items-center gap-2 mb-4">
-                <TrendUp size={24} weight="bold" className="text-[#445f8b]" />
+                <TrendUp size={24} weight="bold" className="text-brand-accent" />
                 <h2 className="text-2xl font-bold">Recent Trend</h2>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="text-center p-4 bg-[#445f8b]/10 rounded-lg">
-                  <div className="text-sm text-[#6b7c95] mb-1">
+                <div className="text-center p-4 bg-brand-accentBg rounded-lg">
+                  <div className="text-sm text-brand-muted mb-1">
                     Last {recentPerformance.recentMatches} matches
                   </div>
-                  <div className="text-4xl font-bold text-[#445f8b]">
+                  <div className="text-4xl font-bold text-brand-accent">
                     {formatStat(recentPerformance.recentAccuracy)}%
                   </div>
                 </div>
-                <div className="text-center p-4 bg-[#f7f9ff] rounded-lg">
-                  <div className="text-sm text-[#6b7c95] mb-1">Career average</div>
-                  <div className="text-4xl font-bold text-[#6b7c95]">
+                <div className="text-center p-4 bg-brand-bg rounded-lg">
+                  <div className="text-sm text-brand-muted mb-1">Career average</div>
+                  <div className="text-4xl font-bold text-brand-muted">
                     {formatStat(recentPerformance.overallAccuracy)}%
                   </div>
                 </div>
@@ -678,10 +678,10 @@ function LifetimePage() {
               <div
                 className={`flex items-center gap-2 p-4 rounded-lg ${
                   recentPerformance.trend === "improving"
-                    ? "bg-[#445f8b]/10 text-[#445f8b] border border-[#445f8b]/30"
+                    ? "bg-brand-accentBg text-brand-accent border border-brand-border"
                     : recentPerformance.trend === "declining"
-                      ? "bg-[#f7f9ff] text-[#6b7c95] border border-[#ddd]"
-                      : "bg-[#f7f9ff] text-[#6b7c95] border border-[#ddd]"
+                      ? "bg-brand-bg text-brand-muted border border-brand-border"
+                      : "bg-brand-bg text-brand-muted border border-brand-border"
                 }`}
               >
                 {recentPerformance.trend === "improving" && (
@@ -714,9 +714,9 @@ function LifetimePage() {
 
           {/* Tournament Breakdown */}
           {tournamentStats.length > 1 && (
-            <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
+            <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
               <div className="flex items-center gap-2 mb-5">
-                <ChartBar size={28} weight="bold" className="text-[#445f8b]" />
+                <ChartBar size={28} weight="bold" className="text-brand-accent" />
                 <h2 className="text-2xl font-bold">
                   Performance by Tournament
                 </h2>
@@ -753,8 +753,8 @@ function LifetimePage() {
                           "Accuracy",
                         ]}
                         contentStyle={{
-                          backgroundColor: "white",
-                          border: "2px solid #445f8b",
+                          backgroundColor: "var(--color-brand-bg)",
+                          border: "2px solid var(--color-brand-border)",
                           fontFamily: "League Spartan",
                         }}
                       />
@@ -762,7 +762,7 @@ function LifetimePage() {
                         {tournamentStats.slice(0, 8).map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
-                            fill={index === 0 ? "#2d3e5c" : "#445f8b"}
+                            fill={index === 0 ? "var(--color-brand-text)" : "var(--color-brand-accent)"}
                           />
                         ))}
                       </Bar>
@@ -774,7 +774,7 @@ function LifetimePage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b-2 border-[#445f8b]">
+                      <tr className="border-b-2 border-brand-border">
                         <th className="text-left py-2 px-2">Tournament</th>
                         <th className="text-center py-2 px-2">Matches</th>
                         <th className="text-center py-2 px-2">Scored</th>
@@ -786,7 +786,7 @@ function LifetimePage() {
                       {tournamentStats.map((t, i) => (
                         <tr
                           key={t.name}
-                          className={i % 2 === 0 ? "bg-gray-50" : ""}
+                          className={i % 2 === 0 ? "bg-brand-bg" : ""}
                         >
                           <td className="py-2 px-2 font-medium">{t.name}</td>
                           <td className="text-center py-2 px-2">
@@ -795,10 +795,10 @@ function LifetimePage() {
                           <td className="text-center py-2 px-2">
                             {t.scored}/{t.total}
                           </td>
-                          <td className="text-center py-2 px-2 font-semibold text-[#445f8b]">
+                          <td className="text-center py-2 px-2 font-semibold text-brand-accent">
                             {formatStat(t.accuracy)}%
                           </td>
-                          <td className="text-center py-2 px-2 font-semibold text-[#445f8b]">
+                          <td className="text-center py-2 px-2 font-semibold text-brand-accent">
                             {formatStat(t.avgPoints, 1)}
                           </td>
                         </tr>
@@ -811,7 +811,7 @@ function LifetimePage() {
           )}
 
           {/* Progression Charts */}
-          <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
+          <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
             <h2 className="text-3xl mb-5 flex items-center gap-3">
               <Calendar weight="bold" size={32} />
               Match History
@@ -820,21 +820,21 @@ function LifetimePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xl font-semibold">Points Over Time <span className="text-sm font-normal text-[#6b7c95]">(full matches only)</span></h3>
+                  <h3 className="text-xl font-semibold">Points Over Time <span className="text-sm font-normal text-brand-muted">(full matches only)</span></h3>
                   {tournamentRanges.length > 0 && (
                     <button
                       onClick={() => setShowTournaments(!showTournaments)}
                       className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${
                         showTournaments
-                          ? "bg-[#445f8b] text-white border-[#445f8b]"
-                          : "border-[#445f8b] text-[#445f8b] hover:bg-[#445f8b]/10"
+                          ? "bg-brand-accent text-brand-mainText border-brand-accent"
+                          : "border-brand-accent text-brand-accent hover:bg-brand-accentBg"
                       }`}
                     >
                       {showTournaments ? "Hide" : "Show"} Tournaments
                     </button>
                   )}
                 </div>
-                <div className="h-72 border-2 border-[#445f8b]/20 bg-white">
+                <div className="h-72 border-2 border-brand-border bg-brand-bg">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={fullMatchStatsByDate.map((stat) => ({
@@ -843,25 +843,25 @@ function LifetimePage() {
                       }))}
                       margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                     >
-                      <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+                      <CartesianGrid stroke="var(--color-brand-border)" strokeDasharray="0" />
                       <XAxis
                         dataKey="dateTimestamp"
                         type="number"
                         domain={['dataMin', 'dataMax']}
                         scale="time"
-                        stroke="#6b7c95"
+                        stroke="var(--color-brand-muted)"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
                         tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       />
                       <YAxis
-                        stroke="#6b7c95"
+                        stroke="var(--color-brand-muted)"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
                         tickFormatter={(val) => `${val}`}
                       />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'white',
-                          border: '2px solid #445f8b',
+                          backgroundColor: 'var(--color-brand-bg)',
+                          border: '2px solid var(--color-brand-border)',
                           fontFamily: 'League Spartan'
                         }}
                         formatter={(value, name, props) => {
@@ -881,15 +881,15 @@ function LifetimePage() {
                           key={tournament.name}
                           x1={tournament.start}
                           x2={tournament.end}
-                          fill="#445f8b"
+                          fill="var(--color-brand-accent)"
                           fillOpacity={0.08}
-                          stroke="#445f8b"
+                          stroke="var(--color-brand-accent)"
                           strokeOpacity={0.3}
                           strokeWidth={1}
                           label={{
                             value: tournament.name,
                             position: 'top',
-                            fill: '#445f8b',
+                            fill: 'var(--color-brand-accent)',
                             fontSize: 10,
                             fontFamily: 'League Spartan',
                             fontWeight: 600
@@ -899,7 +899,7 @@ function LifetimePage() {
                       <Line
                         type="monotone"
                         dataKey="value"
-                        stroke="#445f8b"
+                        stroke="var(--color-brand-accent)"
                         strokeWidth={2}
                         dot={(props) => {
                           const { cx, cy, payload, height } = props
@@ -937,9 +937,9 @@ function LifetimePage() {
                             return (
                               <g>
                                 {/* Whiskers */}
-                                <line x1={cx} y1={minY} x2={cx} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
-                                <line x1={cx - 3} y1={minY} x2={cx + 3} y2={minY} stroke="#445f8b" strokeWidth={0.5} />
-                                <line x1={cx - 3} y1={maxY} x2={cx + 3} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
+                                <line x1={cx} y1={minY} x2={cx} y2={maxY} stroke="var(--color-brand-accent)" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={minY} x2={cx + 3} y2={minY} stroke="var(--color-brand-accent)" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={maxY} x2={cx + 3} y2={maxY} stroke="var(--color-brand-accent)" strokeWidth={0.5} />
 
                                 {/* Box */}
                                 <rect
@@ -947,9 +947,9 @@ function LifetimePage() {
                                   y={q3Y}
                                   width={boxWidth}
                                   height={q1Y - q3Y}
-                                  fill="#445f8b"
+                                  fill="var(--color-brand-accent)"
                                   fillOpacity={0.3}
-                                  stroke="#445f8b"
+                                  stroke="var(--color-brand-accent)"
                                   strokeWidth={0.5}
                                 />
 
@@ -959,14 +959,14 @@ function LifetimePage() {
                                   y1={medianY}
                                   x2={cx + boxWidth}
                                   y2={medianY}
-                                  stroke="#445f8b"
+                                  stroke="var(--color-brand-accent)"
                                   strokeWidth={2}
                                 />
                               </g>
                             )
                           } else {
                             // Regular dot
-                            return <circle cx={cx} cy={cy} r={3} fill="#445f8b" stroke="none" />
+                            return <circle cx={cx} cy={cy} r={3} fill="var(--color-brand-accent)" stroke="none" />
                           }
                         }}
                         activeDot={{ r: 5 }}
@@ -985,15 +985,15 @@ function LifetimePage() {
                       onClick={() => setShowTournaments(!showTournaments)}
                       className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${
                         showTournaments
-                          ? "bg-[#445f8b] text-white border-[#445f8b]"
-                          : "border-[#445f8b] text-[#445f8b] hover:bg-[#445f8b]/10"
+                          ? "bg-brand-accent text-brand-mainText border-brand-accent"
+                          : "border-brand-accent text-brand-accent hover:bg-brand-accentBg"
                       }`}
                     >
                       {showTournaments ? "Hide" : "Show"} Tournaments
                     </button>
                   )}
                 </div>
-                <div className="h-72 border-2 border-[#ddd] bg-white">
+                <div className="h-72 border-2 border-brand-border bg-brand-bg">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={matchStatsByDate.map((stat) => ({
@@ -1002,26 +1002,26 @@ function LifetimePage() {
                       }))}
                       margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
                     >
-                      <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+                      <CartesianGrid stroke="var(--color-brand-border)" strokeDasharray="0" />
                       <XAxis
                         dataKey="dateTimestamp"
                         type="number"
                         domain={['dataMin', 'dataMax']}
                         scale="time"
-                        stroke="#6b7c95"
+                        stroke="var(--color-brand-muted)"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
                         tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       />
                       <YAxis
                         domain={[0, 100]}
-                        stroke="#6b7c95"
+                        stroke="var(--color-brand-muted)"
                         style={{ fontSize: '11px', fontFamily: 'League Spartan' }}
                         tickFormatter={(val) => `${val}%`}
                       />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'white',
-                          border: '2px solid #445f8b',
+                          backgroundColor: 'var(--color-brand-bg)',
+                          border: '2px solid var(--color-brand-border)',
                           fontFamily: 'League Spartan'
                         }}
                         formatter={(value, _name, props) => {
@@ -1041,15 +1041,15 @@ function LifetimePage() {
                           key={tournament.name}
                           x1={tournament.start}
                           x2={tournament.end}
-                          fill="#445f8b"
+                          fill="var(--color-brand-accent)"
                           fillOpacity={0.08}
-                          stroke="#445f8b"
+                          stroke="var(--color-brand-accent)"
                           strokeOpacity={0.3}
                           strokeWidth={1}
                           label={{
                             value: tournament.name,
                             position: 'top',
-                            fill: '#445f8b',
+                            fill: 'var(--color-brand-accent)',
                             fontSize: 10,
                             fontFamily: 'League Spartan',
                             fontWeight: 600
@@ -1059,7 +1059,7 @@ function LifetimePage() {
                       <Line
                         type="monotone"
                         dataKey="value"
-                        stroke="#445f8b"
+                        stroke="var(--color-brand-accent)"
                         strokeWidth={2}
                         dot={(props) => {
                           const { cx, cy, payload, height } = props
@@ -1130,9 +1130,9 @@ function LifetimePage() {
                             return (
                               <g>
                                 {/* Whiskers */}
-                                <line x1={cx} y1={minY} x2={cx} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
-                                <line x1={cx - 3} y1={minY} x2={cx + 3} y2={minY} stroke="#445f8b" strokeWidth={0.5} />
-                                <line x1={cx - 3} y1={maxY} x2={cx + 3} y2={maxY} stroke="#445f8b" strokeWidth={0.5} />
+                                <line x1={cx} y1={minY} x2={cx} y2={maxY} stroke="var(--color-brand-accent)" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={minY} x2={cx + 3} y2={minY} stroke="var(--color-brand-accent)" strokeWidth={0.5} />
+                                <line x1={cx - 3} y1={maxY} x2={cx + 3} y2={maxY} stroke="var(--color-brand-accent)" strokeWidth={0.5} />
 
                                 {/* Box */}
                                 <rect
@@ -1140,9 +1140,9 @@ function LifetimePage() {
                                   y={q3Y}
                                   width={boxWidth}
                                   height={q1Y - q3Y}
-                                  fill="#445f8b"
+                                  fill="var(--color-brand-accent)"
                                   fillOpacity={0.3}
-                                  stroke="#445f8b"
+                                  stroke="var(--color-brand-accent)"
                                   strokeWidth={0.5}
                                 />
 
@@ -1152,14 +1152,14 @@ function LifetimePage() {
                                   y1={medianY}
                                   x2={cx + boxWidth}
                                   y2={medianY}
-                                  stroke="#445f8b"
+                                  stroke="var(--color-brand-accent)"
                                   strokeWidth={2}
                                 />
                               </g>
                             )
                           } else {
                             // Regular dot
-                            return <circle cx={cx} cy={cy} r={3} fill="#445f8b" stroke="none" />
+                            return <circle cx={cx} cy={cy} r={3} fill="var(--color-brand-accent)" stroke="none" />
                           }
                         }}
                         activeDot={{ r: 5 }}

@@ -42,7 +42,7 @@ function ProgressionCharts({ matchStats }) {
   }));
 
   return (
-    <div className="bg-white border-2 border-[#445f8b] p-4 sm:p-6 mb-8">
+    <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
       <h2 className="text-3xl mb-5 flex items-center gap-3">
         <TrendUp weight="bold" size={32} />
         Progression
@@ -50,13 +50,13 @@ function ProgressionCharts({ matchStats }) {
 
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-3">Accuracy Over Time</h3>
-        <div className="h-80 border-2 border-[#ddd] bg-white">
+        <div className="h-80 border-2 border-brand-border bg-brand-bg">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
               margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
             >
-              <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+              <CartesianGrid stroke="var(--color-brand-border)" strokeDasharray="0" />
               <XAxis
                 dataKey="timestamp"
                 type="number"
@@ -65,7 +65,7 @@ function ProgressionCharts({ matchStats }) {
                 tickFormatter={(value) =>
                   new Date(value).toLocaleString("en-US")
                 }
-                stroke="#666"
+                stroke="var(--color-brand-muted)"
                 style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                 interval="preserveStartEnd"
                 minTickGap={20}
@@ -75,14 +75,14 @@ function ProgressionCharts({ matchStats }) {
               />
               <YAxis
                 domain={[0, 100]}
-                stroke="#666"
+                stroke="var(--color-brand-muted)"
                 style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                 tickFormatter={(val) => `${val}%`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "2px solid #445f8b",
+                  backgroundColor: "var(--color-brand-bg)",
+                  border: "2px solid var(--color-brand-border)",
                   fontFamily: "League Spartan",
                 }}
                 formatter={(value) => [`${value.toFixed(1)}%`, "Accuracy"]}
@@ -91,7 +91,7 @@ function ProgressionCharts({ matchStats }) {
               <Line
                 type="monotone"
                 dataKey="smoothedAccuracy"
-                stroke="#445f8b"
+                stroke="var(--color-brand-accent)"
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
@@ -105,13 +105,13 @@ function ProgressionCharts({ matchStats }) {
         <h3 className="text-xl font-semibold mb-3">
           Average Cycle Time Over Time
         </h3>
-        <div className="h-80 border-2 border-[#ddd] bg-white">
+        <div className="h-80 border-2 border-brand-border bg-brand-bg">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
               margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
             >
-              <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+              <CartesianGrid stroke="var(--color-brand-border)" strokeDasharray="0" />
               <XAxis
                 dataKey="timestamp"
                 type="number"
@@ -120,7 +120,7 @@ function ProgressionCharts({ matchStats }) {
                 tickFormatter={(value) =>
                   new Date(value).toLocaleString("en-US")
                 }
-                stroke="#666"
+                stroke="var(--color-brand-muted)"
                 style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                 interval="preserveStartEnd"
                 minTickGap={20}
@@ -129,14 +129,14 @@ function ProgressionCharts({ matchStats }) {
                 height={60}
               />
               <YAxis
-                stroke="#666"
+                stroke="var(--color-brand-muted)"
                 style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                 tickFormatter={(val) => `${val}s`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "2px solid #445f8b",
+                  backgroundColor: "var(--color-brand-bg)",
+                  border: "2px solid var(--color-brand-border)",
                   fontFamily: "League Spartan",
                 }}
                 formatter={(value) => [`${value.toFixed(1)}s`, "Avg Cycle Time"]}
@@ -145,7 +145,7 @@ function ProgressionCharts({ matchStats }) {
               <Line
                 type="monotone"
                 dataKey="smoothedAvgCycleTime"
-                stroke="#445f8b"
+                stroke="var(--color-brand-accent)"
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
@@ -159,13 +159,13 @@ function ProgressionCharts({ matchStats }) {
         <h3 className="text-xl font-semibold mb-3">
           Balls Scored per 2 Minutes
         </h3>
-        <div className="h-80 border-2 border-[#ddd] bg-white">
+        <div className="h-80 border-2 border-brand-border bg-brand-bg">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
               margin={{ top: 20, right: 20, left: 10, bottom: 20 }}
             >
-              <CartesianGrid stroke="#e5e7eb" strokeDasharray="0" />
+              <CartesianGrid stroke="var(--color-brand-border)" strokeDasharray="0" />
               <XAxis
                 dataKey="timestamp"
                 type="number"
@@ -174,7 +174,7 @@ function ProgressionCharts({ matchStats }) {
                 tickFormatter={(value) =>
                   new Date(value).toLocaleString("en-US")
                 }
-                stroke="#666"
+                stroke="var(--color-brand-muted)"
                 style={{ fontSize: "12px", fontFamily: "League Spartan" }}
                 interval="preserveStartEnd"
                 minTickGap={20}
@@ -183,13 +183,13 @@ function ProgressionCharts({ matchStats }) {
                 height={60}
               />
               <YAxis
-                stroke="#666"
+                stroke="var(--color-brand-muted)"
                 style={{ fontSize: "12px", fontFamily: "League Spartan" }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "white",
-                  border: "2px solid #445f8b",
+                  backgroundColor: "var(--color-brand-bg)",
+                  border: "2px solid var(--color-brand-border)",
                   fontFamily: "League Spartan",
                 }}
                 formatter={(value) => [
@@ -201,7 +201,7 @@ function ProgressionCharts({ matchStats }) {
               <Line
                 type="monotone"
                 dataKey="smoothedBallsPerTwoMinutes"
-                stroke="#445f8b"
+                stroke="var(--color-brand-accent)"
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}

@@ -9,11 +9,11 @@ function CycleModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-brand-bg flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-white p-4 sm:p-8 max-w-lg w-11/12 border-2 border-[#445f8b]"
+        className="bg-brand-bg p-4 sm:p-8 max-w-lg w-11/12 border-2 border-brand-border"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-2xl mb-5">Record Cycle</h3>
@@ -26,8 +26,8 @@ function CycleModal({
                   key={num}
                   className={`flex-1 p-3 sm:p-4 text-base sm:text-lg border-2 font-semibold transition-colors ${
                     cycleData.total === num
-                      ? "border-[#445f8b] bg-[#445f8b] text-white"
-                      : "border-[#ddd] bg-white hover:border-[#445f8b]"
+                      ? "border-brand-accent bg-brand-accent text-brand-mainText"
+                      : "border-brand-border bg-brand-bg hover:border-brand-accent"
                   }`}
                   onClick={() =>
                     setCycleData({
@@ -51,10 +51,10 @@ function CycleModal({
                 const base =
                   "flex-1 p-3 sm:p-4 text-base sm:text-lg border-2 font-semibold transition-colors";
                 const cls = selected
-                  ? "border-[#445f8b] bg-[#445f8b] text-white"
+                  ? "border-brand-accent bg-brand-accent text-brand-mainText"
                   : disabled
-                  ? "border-[#eee] bg-[#f8f8f8] text-[#aaa] cursor-not-allowed opacity-60"
-                  : "border-[#ddd] bg-white hover:border-[#445f8b]";
+                  ? "border-brand-border bg-brand-bg text-brand-muted cursor-not-allowed opacity-60"
+                  : "border-brand-border bg-brand-bg hover:border-brand-accent";
                 return (
                   <button
                     key={i}
