@@ -2,8 +2,8 @@ function KeyboardEntryToast({ visible, keyEntry }) {
   if (!visible) return null;
 
   return (
-    <div className="fixed top-3 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
-      <div className="card shadow p-4 w-full">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-20 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
+      <div className="card shadow-xl shadow-brand-shadow p-4 w-full">
         <div className="text-sm text-brand-text mb-1">Quick Entry</div>
         <div className="text-lg font-semibold mb-2">
           Shot {keyEntry.total} balls; how many scored?

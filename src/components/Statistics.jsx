@@ -151,24 +151,21 @@ function Statistics({
         Statistics{teamNumber ? <> for <TeamName teamNumber={teamNumber} showNumber /></> : ""}
       </h3>
 
-      {/* Notes Section */}
       {notes && notes.trim() && (
-        <div className="bg-brand-bg border-2 border-brand-border p-4 mb-5 rounded">
-          <h4 className="text-lg font-semibold mb-2 text-brand-accent">
+        <div className="border-2 border-brand-border bg-brand-surface p-4 mb-5 rounded">
+          <h4 className="text-sm font-bold! mb-2 text-brand-accent">
             Match Notes
           </h4>
           <p className="text-brand-text whitespace-pre-wrap">{notes.trim()}</p>
         </div>
       )}
 
-      {/* Summary Section - Most Important */}
       <div className="bg-brand-accent border-2 border-brand-accent p-4 sm:p-8 mb-5">
         <div className="flex items-center gap-3 mb-6 -ml-4 -mt-4">
           <ChartLine size={32} className="text-over-accent" />
           <h4 className="text-2xl text-over-accent">Summary</h4>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 items-center">
-          {/* Total Points - Most prominent */}
           <div className="text-center col-span-2 md:col-span-1 bg-brand-accentBg rounded-lg p-3 border border-brand-border">
             <div className="text-3xl sm:text-4xl font-bold text-over-accent">
               {pointsBreakdown.total}
@@ -189,15 +186,6 @@ function Statistics({
           </div>
           <div className="text-center">
             <div className="text-3xl sm:text-4xl font-bold text-over-accent">
-              {formatStat(overallAccuracy)}%
-            </div>
-            <div className="text-over-accent text-sm flex items-center justify-center gap-1">
-              <Target size={16} weight="fill" />
-              Accuracy
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-over-accent">
               {totalBallsAttempted}
             </div>
             <div className="text-over-accent text-sm flex items-center justify-center gap-1">
@@ -205,9 +193,17 @@ function Statistics({
               Balls
             </div>
           </div>
+          <div className="text-center">
+            <div className="text-3xl sm:text-4xl font-bold text-over-accent">
+              {formatStat(overallAccuracy)}%
+            </div>
+            <div className="text-over-accent text-sm flex items-center justify-center gap-1">
+              <Target size={16} weight="fill" />
+              Accuracy
+            </div>
+          </div>
         </div>
 
-        {/* Points breakdown row - compact */}
         {(hasPointsData || pointsBreakdown.artifact > 0) && (
           <div className="flex flex-wrap items-center justify-center gap-3 mt-4 pt-4 border-t border-brand-border text-xs text-over-accent">
             <span className="flex items-center gap-1">
@@ -252,10 +248,8 @@ function Statistics({
         </div>
       </div>
 
-      {/* Detailed Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Cycle Times */}
-        <div className="bg-brand-bg border-2 border-brand-border p-5">
+        <div className="bg-brand-surface border-2 border-brand-border p-5">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b-2 border-brand-border">
             <Clock size={20} weight="bold" className="text-brand-accent" />
             <h4 className="text-lg font-bold">Cycle Times</h4>
@@ -288,8 +282,7 @@ function Statistics({
           </div>
         </div>
 
-        {/* Balls Scored */}
-        <div className="bg-brand-bg border-2 border-brand-border p-5">
+        <div className="bg-brand-surface border-2 border-brand-border p-5">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b-2 border-brand-border">
             <Target size={20} weight="bold" className="text-brand-accent" />
             <h4 className="text-lg font-bold">Balls Scored per Cycle</h4>
@@ -322,8 +315,7 @@ function Statistics({
           </div>
         </div>
 
-        {/* Accuracy */}
-        <div className="bg-brand-bg border-2 border-brand-border p-5">
+        <div className="bg-brand-surface border-2 border-brand-border p-5">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b-2 border-brand-border">
             <Crosshair size={20} weight="bold" className="text-brand-accent" />
             <h4 className="text-lg font-bold">Accuracy per Cycle</h4>

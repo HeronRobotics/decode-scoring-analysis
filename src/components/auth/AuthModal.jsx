@@ -69,7 +69,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
       onClick={onClose}
     >
       <div
-        className="bg-brand-bg p-4 sm:p-8 max-w-md w-11/12 border-2 border-brand-border shadow-2xl shadow-brand-shadow rounded-lg"
+        className="bg-brand-surface p-4 sm:p-8 max-w-md w-11/12 border-2 border-brand-border shadow-2xl shadow-brand-shadow rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-2xl mb-5 text-center">
@@ -107,7 +107,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
           <button
             type="button"
             onClick={handleGitHubSignIn}
-            className="btn w-fit !bg-brand-bg !text-black hover:!bg-brand-accentBg flex items-center justify-center gap-2 !border-2 !border-brand-border"
+            className="btn w-fit !bg-brand-surface !text-black hover:!bg-brand-accentBg flex items-center justify-center gap-2 !border-2 !border-brand-border"
             disabled={loading}
           >
             <GithubLogo weight="fill" size={18} />
@@ -146,7 +146,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="btn"
+              className="btn bg-brand-surface!"
               disabled={loading}
             >
               Cancel

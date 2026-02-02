@@ -3,7 +3,7 @@
 
 @theme {
   --color-brand-bg: #DFEBFF;
-  --color-brand-surface: #e6edfa;
+  --color-brand-surface: #f5f8ff;
   --color-brand-surfaceStrong: #1d2230;
   --color-brand-outline: #303032;
   --color-brand-border: #6887bc;
@@ -13,11 +13,11 @@
   --color-brand-muted: #949aa6;
   --color-brand-accent: #2D3E5C;
   --color-brand-accentBg: #2D3E5C20;
-  --color-brand-inputbg: #2D3E5C10;
+  --color-brand-inputbg: #2D3E5C09;
   --color-brand-accentStrong: #fba23a;
-  --color-brand-success: #2bd576;
+  --color-brand-success: #1c7528;
   --color-brand-danger: #B87171;
-  --color-brand-shadow: #6887bc40;
+  --color-brand-shadow: #2D3E5C90;
 }
 
 body {
@@ -196,7 +196,7 @@ input:focus, select:focus {
 .btn:hover {
   border-color: var(--color-brand-accent);
   color: var(--color-brand-accent);
-  box-shadow: 0 14px 28px var(--color-brand-shadow);
+  box-shadow: 0 3px 7px var(--color-brand-shadow);
 }
 
 .btn:focus-visible {
@@ -446,19 +446,19 @@ button {
 
 /* Phase colors - softer, on-brand */
 .phase-auto {
-  background: #2d6cdf;
+  background: #313c50;
 }
 
 .phase-buffer {
-  background: #5b6c8f;
+  background: #593e3e;
 }
 
 .phase-teleop {
-  background: #f28c28;
+  background: #173560;
 }
 
 .phase-finished {
-  background: #2fa06b;
+  background: #0a5611;
 }
 
 .phase-default {

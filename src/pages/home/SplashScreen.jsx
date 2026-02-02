@@ -69,9 +69,9 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               className="input min-w-48 sm:w-40 text-center font-mono text-brand-text appearance-none cursor-pointer"
             >
               <option value="" className="text-brand-text">Not set</option>
-              <option value="GPP" className="text-brand-text">GPP (Green-Purple-Purple)</option>
-              <option value="PGP" className="text-brand-text">PGP (Purple-Green-Purple)</option>
-              <option value="PPG" className="text-brand-text">PPG (Purple-Purple-Green)</option>
+              <option value="GPP" className="text-brand-text">GPP</option>
+              <option value="PGP" className="text-brand-text">PGP</option>
+              <option value="PPG" className="text-brand-text">PPG</option>
             </select>
           </label>
         </div>

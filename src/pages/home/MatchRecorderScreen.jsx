@@ -91,7 +91,6 @@ function MatchRecorderScreen({
     teamNumber,
     mode,
     phase,
-    // Scoring state
     motif,
     autoPattern,
     teleopPattern,
@@ -643,7 +642,7 @@ function MatchRecorderScreen({
               <Record size={24} weight="fill" />
               Record Cycle
               <span className="hidden sm:flex items-center gap-1 text-xs font-normal opacity-70 ml-2">
-                <span className="kbd border-brand-border! shadow-none! text-[12px]!">
+                <span className="kbd border-brand-border! shadow-none! text-over-accent! text-[12px]!">
                   1-3
                 </span>
               </span>
@@ -797,9 +796,9 @@ function MatchRecorderScreen({
                     className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm text-brand-text disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <option value="">Not set</option>
-                    <option value="GPP">GPP — Green Purple Purple</option>
-                    <option value="PGP">PGP — Purple Green Purple</option>
-                    <option value="PPG">PPG — Purple Purple Green</option>
+                    <option value="GPP">GPP</option>
+                    <option value="PGP">PGP</option>
+                    <option value="PPG">PPG</option>
                   </select>
                 </div>
 
@@ -1160,7 +1159,7 @@ function StartMatchToBeginToast({ visible }) {
 function SaveMatchPromptToast({ onSave, onDismiss }) {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:bottom-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
-      <div className=" border-2 border-brand-border shadow p-4 w-full">
+      <div className="bg-brand-surface border-2 border-brand-border shadow p-4 w-full">
         <div className="text-sm font-semibold text-brand-text mb-1">
           Save match?
         </div>
@@ -1178,7 +1177,7 @@ function SaveMatchPromptToast({ onSave, onDismiss }) {
           <button
             type="button"
             onClick={onSave}
-            className="btn !py-2 !px-3 !text-xs flex items-center gap-2"
+            className="btn !py-2 !px-3 !text-xs flex items-center gap-2 bg-brand-surface!"
           >
             <FloppyDisk size={14} weight="bold" />
             Save to My Matches
@@ -1192,7 +1191,7 @@ function SaveMatchPromptToast({ onSave, onDismiss }) {
 function SignUpPromptToast({ onSign, onDismiss }) {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:bottom-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
-      <div className=" border-2 border-brand-border shadow p-4 w-full bg-brand-bg shadow-brand-shadow">
+      <div className=" border-2 border-brand-border shadow p-4 w-full bg-brand-surface shadow-brand-shadow">
         <div className="text-sm font-semibold text-brand-main-text mb-1">
           Sign up?
         </div>
@@ -1210,7 +1209,7 @@ function SignUpPromptToast({ onSign, onDismiss }) {
           <button
             type="button"
             onClick={onSign}
-            className="btn !py-2 !px-3 !text-xs flex items-center gap-2"
+            className="btn !py-2 !px-3 !text-xs flex items-center gap-2 bg-brand-surface!"
           >
             <UserPlus size={14} weight="bold" />
             Sign up

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Play, Target } from "@phosphor-icons/react";
+import { HashIcon, PaletteIcon, Play, Target } from "@phosphor-icons/react";
 
 import MatchRecorderScreen from "./home/MatchRecorderScreen";
 import { matchRecorderConstants } from "../hooks/useMatchRecorder";
@@ -10,7 +10,7 @@ import { getMatchForCurrentUser } from "../api/matchesApi.js";
 function MatchPage() {
   const recorder = useMatchRecorderContext();
   const { user } = useAuth();
-  // const userId = user?.id;
+  const [selectedMotif, setSelectedMotif] = useState("");
   const [initialMeta, setInitialMeta] = useState(null);
   const [loadingMatch, setLoadingMatch] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -68,16 +68,16 @@ function MatchPage() {
         <div className="bg" aria-hidden="true" />
         <div className="content min-h-screen p-4 sm:p-8 max-w-5xl mx-auto flex flex-col items-center gap-6">
           <div className="w-full card p-6 sm:p-8">
-            <div className="pill mb-4">Match Recording</div>
-            <h2 className="text-2xl sm:text-3xl font-semibold mb-2">Start a new match session</h2>
-            <p className="text-sm muted mb-5">
-              Start a match to begin recording cycles and gates.
+            <div className="pill mb-4 w-36 text-center">Match Recording</div>
+            <h1 className="text-2xl sm:text-3xl font-semibold mb-2">Start a new match session</h1>
+            <p className="text-sm text-brand-accent mb-5">
+              Will start a new match with full timing (30s Auto + 8s Transition + 2:00 TeleOp).
             </p>
 
-            <div className="card p-4 sm:p-5 mb-5 bg-brand-surface">
-              <label className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <span className="font-medium flex items-center gap-2 text-brand-mainText">
-                  <Target size={18} weight="bold" />
+            <div className="bg-brand-surface flex flex-row flex-wrap justify-around rounded-lg p-4 mb-6 space-y-3">
+              <label className="flex flex-col sm:flex-row sm:items-center gap-3 m-0">
+                <span className="text-brand-text font-medium flex items-center gap-2">
+                  <HashIcon size={20} weight="bold" />
                   Team Number:
                 </span>
                 <input
@@ -85,16 +85,32 @@ function MatchPage() {
                   value={recorder.teamNumber}
                   onChange={(e) => recorder.setTeamNumber(e.target.value)}
                   placeholder="Enter team #"
-                  className="input w-full sm:w-44 text-center font-mono text-lg"
+                  className="input min-w-48 sm:w-40 text-center font-mono text-brand-text placeholder-brand-muted"
                   min="1"
                   max="99999"
                 />
+              </label>
+              <label className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <span className="text-brand-text font-medium flex items-center gap-2">
+                  <PaletteIcon size={20} weight="bold" />
+                  Motif Pattern:
+                </span>
+                <select
+                  value={selectedMotif}
+                  onChange={(e) => setSelectedMotif(e.target.value)}
+                  className="input min-w-48 sm:w-40 text-center font-mono text-brand-text appearance-none cursor-pointer"
+                >
+                  <option value="" className="text-brand-text">Not set</option>
+                  <option value="GPP" className="text-brand-text">GPP</option>
+                  <option value="PGP" className="text-brand-text">PGP</option>
+                  <option value="PPG" className="text-brand-text">PPG</option>
+                </select>
               </label>
             </div>
 
             <button
               onClick={() =>
-                recorder.startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match")
+                recorder.startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match", selectedMotif || null)
               }
               className="button w-full flex items-center justify-center gap-3"
             >
@@ -102,7 +118,7 @@ function MatchPage() {
               Start Full Match
             </button>
 
-            <div className="mt-3 text-xs muted text-center">
+            <div className="mt-3 text-xs text-brand-muted text-center">
               30s Auto + 8s buffer + 2:00 TeleOp
             </div>
           </div>

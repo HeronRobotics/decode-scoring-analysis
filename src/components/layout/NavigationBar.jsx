@@ -32,7 +32,7 @@ function NavigationBar({ currentPage, navigate }) {
             navigate("tournament");
             logEvent(analytics, "navigate_tournament");
           }}
-          className={`px-4 py-2 light ${
+          className={`px-4 text-base! py-2 light ${
             currentPage === "tournament"
               ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
               : "bg-transparent text-brand-text"
@@ -46,7 +46,7 @@ function NavigationBar({ currentPage, navigate }) {
             navigate("lifetime");
             logEvent(analytics, "navigate_lifetime");
           }}
-          className={`px-4 py-2 light ${
+          className={`px-4 text-base! py-2 light ${
             currentPage === "lifetime"
               ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
               : "bg-transparent text-brand-text"
@@ -60,7 +60,7 @@ function NavigationBar({ currentPage, navigate }) {
             navigate("myMatches");
             logEvent(analytics, "navigate_my_matches");
           }}
-          className={`px-4 py-2 light ${
+          className={`px-4 text-base! py-2 light ${
             currentPage === "myMatches"
               ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
               : "bg-transparent text-brand-text"
