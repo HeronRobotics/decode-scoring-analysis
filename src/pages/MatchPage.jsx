@@ -64,43 +64,47 @@ function MatchPage() {
 
   if (!hasSession && !loadingMatch) {
     return (
-      <div className="min-h-screen p-3 sm:p-5 max-w-5xl mx-auto flex flex-col items-center gap-6">
-        <div className="w-full bg-white border-2 border-[#445f8b] p-6 sm:p-8">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Match Recording</h2>
-          <p className="text-sm text-[#555] mb-5">
-            Start a match to begin recording cycles and gates.
-          </p>
+      <div className="page">
+        <div className="bg" aria-hidden="true" />
+        <div className="content min-h-screen p-4 sm:p-8 max-w-5xl mx-auto flex flex-col items-center gap-6">
+          <div className="w-full card p-6 sm:p-8">
+            <div className="pill mb-4">Match Recording</div>
+            <h2 className="text-2xl sm:text-3xl font-semibold mb-2">Start a new match session</h2>
+            <p className="text-sm muted mb-5">
+              Start a match to begin recording cycles and gates.
+            </p>
 
-          <div className="bg-[#f7f9ff] border-2 border-[#445f8b]/30 p-4 sm:p-5 rounded-lg mb-5">
-            <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-32">
-              <span className="font-medium flex items-center gap-2 text-[#2d3e5c]">
-                <Target size={18} weight="bold" />
-                Team Number:
-              </span>
-              <input
-                type="number"
-                value={recorder.teamNumber}
-                onChange={(e) => recorder.setTeamNumber(e.target.value)}
-                placeholder="Enter team #"
-                className="px-4 py-3 border-2 border-[#ddd] focus:border-[#445f8b] outline-none w-full sm:w-44 text-center font-mono text-lg rounded transition-colors"
-                min="1"
-                max="99999"
-              />
-            </label>
-          </div>
+            <div className="card p-4 sm:p-5 mb-5" style={{ background: "rgba(15, 18, 28, 0.6)" }}>
+              <label className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <span className="font-medium flex items-center gap-2 text-white">
+                  <Target size={18} weight="bold" />
+                  Team Number:
+                </span>
+                <input
+                  type="number"
+                  value={recorder.teamNumber}
+                  onChange={(e) => recorder.setTeamNumber(e.target.value)}
+                  placeholder="Enter team #"
+                  className="input w-full sm:w-44 text-center font-mono text-lg"
+                  min="1"
+                  max="99999"
+                />
+              </label>
+            </div>
 
-          <button
-            onClick={() =>
-              recorder.startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match")
-            }
-            className="w-full py-4 px-6 bg-[#445f8b] text-white font-bold text-lg hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-3 shadow-md"
-          >
-            <Play size={26} weight="fill" />
-            Start Full Match
-          </button>
+            <button
+              onClick={() =>
+                recorder.startMatch(matchRecorderConstants.MATCH_TOTAL_DURATION, "match")
+              }
+              className="button w-full flex items-center justify-center gap-3"
+            >
+              <Play size={26} weight="fill" />
+              Start Full Match
+            </button>
 
-          <div className="mt-3 text-xs text-[#666] text-center">
-            30s Auto + 8s buffer + 2:00 TeleOp
+            <div className="mt-3 text-xs muted text-center">
+              30s Auto + 8s buffer + 2:00 TeleOp
+            </div>
           </div>
         </div>
       </div>
@@ -108,21 +112,26 @@ function MatchPage() {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col items-center gap-6 sm:gap-12">
-      {loadingMatch && (
-        <p className="text-sm text-[#445f8b] mb-2 self-start">
-          Loading saved match...
-        </p>
-      )}
-      {loadError && (
-        <p className="text-sm text-red-600 mb-2 self-start">{loadError}</p>
-      )}
-      <MatchRecorderScreen
-        recorder={recorder}
-        loadedMatchId={initialMeta?.id}
-        initialTitle={initialMeta?.title}
-        initialTournamentName={initialMeta?.tournamentName}
-      />
+    <div className="page">
+      <div className="bg" aria-hidden="true" />
+      <div className="content min-h-screen p-4 sm:p-8 max-w-7xl mx-auto flex flex-col items-center gap-6 sm:gap-12">
+        {loadingMatch && (
+          <p className="text-sm muted mb-2 self-start">
+            Loading saved match...
+          </p>
+        )}
+        {loadError && (
+          <p className="text-sm text-red-400 mb-2 self-start">{loadError}</p>
+        )}
+        <div className="w-full card p-4 sm:p-6">
+          <MatchRecorderScreen
+            recorder={recorder}
+            loadedMatchId={initialMeta?.id}
+            initialTitle={initialMeta?.title}
+            initialTournamentName={initialMeta?.tournamentName}
+          />
+        </div>
+      </div>
     </div>
   );
 }

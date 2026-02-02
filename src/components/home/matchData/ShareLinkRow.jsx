@@ -1,6 +1,6 @@
 function ShareLinkRow({ label, onShare, onCopy, copied, shareLabel, copyLabel }) {
   return (
-    <div className="mt-2 text-xs break-all flex flex-col sm:flex-row sm:items-center gap-2">
+    <div className="mt-2 text-xs break-all flex flex-col sm:flex-row sm:items-center gap-2 text-brand-muted">
       <span className="font-semibold">{label}:</span>
       <div className="flex flex-col sm:flex-row gap-2">
         <button

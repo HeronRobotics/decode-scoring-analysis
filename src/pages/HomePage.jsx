@@ -134,14 +134,31 @@ function HomePage() {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 sm:gap-12">
+    <div className="page">
+      <div className="bg" aria-hidden="true" />
+      <div className="content min-h-screen p-4 sm:p-8 max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 sm:gap-12">
+        <div className="w-full text-center sm:text-left max-w-4xl">
+          <div className="pill mb-4 justify-center sm:justify-start">Over <span className="font-bold">750 matches</span> recorded!</div>
+          <h1 className="title">
+            <span className="italic">
+              Data-Based
+            </span>
+            &nbsp;Match Recording and Scouting
+          </h1>
+          <p className="subtitle mt-3">
+            Track accuracy, cycle times, and performance for the FTC <i>DECODE</i> season.
+            Start a match to begin recording, or import existing data!
+          </p>
+        </div>
 
-      <>
-        <SplashScreen
-          recorder={recorder}
-          onImportJson={importMatchFromJson}
-          onOpenTextImport={() => setShowTextImport(true)}
-        />
+        <div className="w-full p-4 sm:p-6">
+          <SplashScreen
+            recorder={recorder}
+            onImportJson={importMatchFromJson}
+            onOpenTextImport={() => setShowTextImport(true)}
+          />
+        </div>
+
         <TextImportModal
           open={showTextImport}
           textInput={textInput}
@@ -152,7 +169,7 @@ function HomePage() {
             setTextInput("");
           }}
         />
-      </>
+      </div>
     </div>
   );
 }

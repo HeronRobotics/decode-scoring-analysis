@@ -8,9 +8,9 @@ import {
 
 
 const motifColor = {
-  "P": "text-[#9b59b6] bg-[#f4ecf7] border-[#9b59b6]/0",
-  "G": "text-[#27ae60] bg-[#e6f4ea] border-[#27ae60]/0",
-}
+  "P": "text-[#d7b4ff] bg-[#2b1f39] border-[#8a63c8]/50",
+  "G": "text-[#7ef0b0] bg-[#1e2f28] border-[#3adf8a]/50",
+};
 
 function PatternInput({ label, value, onChange, motif, disabled }) {
   const targetPattern = useMemo(() => getTargetPattern(motif), [motif]);
@@ -60,27 +60,27 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
 
   return (
     <div className={disabled ? "opacity-50" : ""}>
-      <label className="block text-sm font-semibold mb-1">{label}</label>
+      <label className="block text-sm font-semibold mb-1 text-brand-text">{label}</label>
       <input
         type="text"
         value={value || ""}
         onChange={handleChange}
         placeholder={disabled ? "Set motif first" : "Ex. PPGPP (from bottom to top)"}
         disabled={disabled}
-        className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded font-mono text-sm uppercase tracking-wider disabled:bg-gray-100 disabled:cursor-not-allowed"
+        className="w-full px-3 py-2 input font-mono text-sm uppercase tracking-wider disabled:bg-brand-surfaceStrong/60 disabled:cursor-not-allowed"
         maxLength={9}
       />
       {targetPattern && (
         <div className="mt-2">
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+          <div className="flex items-center justify-between text-xs text-brand-muted mb-1">
             <span>Target: {targetPattern}</span>
             <span className="flex items-center gap-1">
               {matches > 0 ? (
-                <Check size={12} weight="bold" className="text-green-600" />
+                <Check size={12} weight="bold" className="text-brand-success" />
               ) : (
-                <X size={12} weight="bold" className="text-gray-400" />
+                <X size={12} weight="bold" className="text-brand-muted" />
               )}
-              {matches}/9 matches = <strong className="text-[#445f8b]">{points} pts</strong>
+              {matches}/9 matches = <strong className="text-brand-accent">{points} pts</strong>
             </span>
           </div>
           {renderComparison()}

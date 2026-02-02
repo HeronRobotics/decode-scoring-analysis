@@ -8,16 +8,16 @@ const KeyboardShortcuts = () => {
 
     return (
         <div
-          className={`bg-[#f7f9ff] border-2 border-[#445f8b]/30 p-4 sm:p-5 ${
+          className={`card p-4 sm:p-5 ${
             shouldAnimate ? "animate-slide-up" : ""
           }`}
           style={shouldAnimate ? { animationDelay: "0.4s" } : undefined}
         >
           <div className="flex items-center gap-2 mb-3">
-            <KeyboardIcon size={20} weight="duotone" className="text-[#445f8b]" />
+            <KeyboardIcon size={20} weight="duotone" className="text-brand-accent" />
             <span className="font-semibold text-sm">Keyboard Shortcuts (During Recording)</span>
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#555]">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-brand-muted">
             <span className="flex items-center gap-2">
               <span className="kbd">1</span>-<span className="kbd">3</span>
               <span>Balls attempted</span>

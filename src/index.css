@@ -1,24 +1,293 @@
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Serif:wght@400;600;700&family=League+Spartan:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Felipa&family=Roboto+Serif:wght@400;600;700&family=League+Spartan:wght@300;400;500;600;700&family=Manrope:wght@100;200;300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
+
+/* inspired theme (scoped to pages) */
+:root {
+  --bg: #18181B;
+  --bg-2: #141821;
+  --card: #18181B;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #a0a0a0;
+  --main-text: #f8fafc;
+  --muted: rgba(161, 169, 184, 0.85);
+  --accent: #D97706;
+  --accent-strong: #f6a23a;
+  --accent-soft: rgba(246, 162, 58, 0.18);
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
 
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #DFEBFF;
-  font-family: 'League Spartan', sans-serif;
-  color: #2d3e5c;
+  background-color: #18181B;
+  font-family: 'Manrope', 'League Spartan', sans-serif;
+  color: var(--text);
+  letter-spacing: 0.00em;
+  font-weight: 200;
+  width: 100vw;
+  overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Roboto Serif', serif;
-  color: #445f8b;
+h1,
+h2 {
+  font-family: 'Playfair Display', 'Roboto Serif', serif;
+  color: var(--main-text);
+  letter-spacing: 0.01em;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  color: var(--main-text);
+  letter-spacing: 0.01em;
+  font-weight: 200;
+}
+
+.bg {
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 65vh;
+  background:
+    radial-gradient(360px 260px at 20% 20%, rgba(255, 179, 71, 0.28) 0%, transparent 70%),
+    radial-gradient(460px 300px at 65% 30%, rgba(255, 142, 60, 0.32) 0%, transparent 70%),
+    radial-gradient(520px 360px at 85% 10%, rgba(255, 200, 110, 0.25) 0%, transparent 65%);
+  filter: blur(40px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.bg::after {
+  content: '';
+  position: absolute;
+  inset: 55% 5% -40% 5%;
+  background:
+    radial-gradient(500px 320px at 15% 20%, rgba(74, 222, 255, 0.18) 0%, transparent 70%),
+    radial-gradient(600px 360px at 80% 40%, rgba(59, 130, 246, 0.16) 0%, transparent 70%);
+  filter: blur(50px);
+  opacity: 0.8;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.btn {
+  font-family: 'Manrope', 'League Spartan', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.75rem 1.25rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.15;
+}
+
+.subtitle {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--muted);
+}
+
+.fancy {
+  font-family: 'Felipa', cursive;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(246, 162, 58, 0.12);
+  border: 1px solid rgba(246, 162, 58, 0.35);
+  color: var(--accent-strong);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.button {
+  font-family: 'Manrope', 'League Spartan', sans-serif;
+  letter-spacing: 0.02em;
+  padding: 0.9rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 179, 71, 0.6);
+  background: linear-gradient(135deg, rgba(255, 179, 71, 0.4), rgba(255, 149, 74, 0.6));
+  color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(246, 162, 58, 0.45);
+}
+
+.button:focus-visible {
+  outline: 3px solid rgba(255, 179, 71, 0.45);
+  outline-offset: 2px;
+}
+
+.button-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+.input {
+  background: #202024;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-family: 'Manrope', 'League Spartan', sans-serif;
+  font-weight: 500;
+}
+
+.input:focus {
+  outline: none;
+  border-color: rgba(255, 179, 71, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 179, 71, 0.18);
+}
+
+/* Tailwind-driven component styles for dark theme */
+.btn {
+  border: 1px solid #FFFFFF10;
+  background: #18181B;
+  color: #f8fafc;
+}
+
+.btn:hover {
+  border-color: #f6a23a;
+  color: #f6a23a;
+  box-shadow: 0 14px 28px #f6a23a30;
+}
+
+.btn:focus-visible {
+  outline: 3px solid rgba(246, 162, 58, 0.4);
+  outline-offset: 2px;
+}
+
+.error-btn {
+  border: 1px solid #f87171;
+  background: #f87171;
+  color: #f8fafc;
+  box-shadow: 0 10px 22px rgba(248, 113, 113, 0.35);
+}
+
+.error-btn:hover {
+  color: #f87171;
+  background: #141821;
+  border-color: #f87171;
+}
+
+.kbd {
+  background: #141821;
+  border: 1px solid #2a3040;
+  color: #f8fafc;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.export-card {
+  background: #141821;
+  border: 1px solid #2a3040;
+  color: #f8fafc;
+}
+
+/* Global overrides for legacy light classes within dark pages */
+/* Global overrides for legacy light/blue utility classes */
+[class*="bg-white"],
+[class*="bg-\[\#f7f9ff\]"],
+[class*="bg-\[\#f8fafc\]"],
+[class*="bg-\[\#f5f5f5\]"],
+[class*="bg-blue-50"],
+[class*="bg-gray-100"],
+[class*="bg-gray-50"] {
+  background-color: rgba(20, 24, 33, 0.9) !important;
+}
+
+[class*="bg-\[\#445f8b\]"],
+[class*="bg-\[\#2d3e5c\]"] {
+  background-color: rgba(246, 162, 58, 0.18) !important;
+}
+
+[class*="border-\[\#445f8b\]"],
+[class*="border-\[\#ddd\]"],
+[class*="border-\[\#e5e7eb\]"],
+[class*="border-blue-200"],
+[class*="border-\[\#2d3e5c\]"] {
+  border-color: rgba(246, 162, 58, 0.28) !important;
+}
+
+[class*="text-\[\#445f8b\]"],
+[class*="text-\[\#2d3e5c\]"] {
+  color: #ffb347 !important;
+}
+
+[class*="text-\[\#555\]"],
+[class*="text-\[\#666\]"],
+[class*="text-\[\#888\]"],
+[class*="text-\[\#999\]"] {
+  color: rgba(161, 169, 184, 0.9) !important;
+}
+
+/* Override inline styles that still reference the old blue palette */
+[style*="#445f8b"],
+[style*="#2d3e5c"] {
+  color: #ffb347 !important;
+  border-color: rgba(246, 162, 58, 0.28) !important;
+}
+
+[style*="#DFEBFF"],
+[style*="#f7f9ff"],
+[style*="#f8fafc"],
+[style*="#f5f5f5"] {
+  background-color: #141821 !important;
+}
+
+svg [stroke="#445f8b"],
+svg [stroke="#2d3e5c"],
+svg [fill="#445f8b"],
+svg [fill="#2d3e5c"] {
+  stroke: #f6a23a !important;
+  fill: #f6a23a !important;
 }
 
 button {
   font-family: 'League Spartan', sans-serif;
   font-weight: 600;
   letter-spacing: 0.025em;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
@@ -27,18 +296,8 @@ button {
   border-radius: 3px;
 }
 
-button:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 button:focus-visible {
-  outline: 3px solid #445f8b;
+  outline: 3px solid #f6a23a;
   outline-offset: 2px;
 }
 
@@ -61,7 +320,7 @@ button:active::after {
 }
 
 
-.btn {
+/* .btn {
   font-family: 'League Spartan', sans-serif;
   font-weight: 600;
   letter-spacing: 0.025em;
@@ -78,9 +337,9 @@ button:active::after {
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+} */
 
-.btn:hover {
+/* .btn:hover {
   background-color: #445f8b;
   color: white;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
@@ -135,8 +394,8 @@ button:active::after {
 }
 
 .error-btn:hover {
-  background-color: white;
-  color: #2d3e5c;
+  background-color: #141821;
+  color: #f87171;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
 }
@@ -167,7 +426,7 @@ button:active::after {
 .error-btn:active::after {
   width: 300px;
   height: 300px;
-}
+} */
 
 /* Loading Splash Animations */
 @keyframes spin-slow {
@@ -252,7 +511,7 @@ button:active::after {
 
 .feature-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(68, 95, 139, 0.15);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
 }
 
 /* Step indicator styles */
@@ -275,18 +534,18 @@ button:active::after {
   font-family: 'League Spartan', sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
-  background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
-  border: 1px solid #d0d0d0;
+  /* background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%); */
+  border: 1px solid #2a3040;
   border-radius: 4px;
-  box-shadow: 0 2px 0 #d0d0d0;
-  color: #2d3e5c;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+  color: #f8fafc;
 }
 
 /* Modern Timeline Styles */
 .timeline-container {
   position: relative;
-  background: white;
-  border: 2px solid #445f8b;
+  background: rgba(20, 24, 33, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
@@ -294,7 +553,7 @@ button:active::after {
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
-  scrollbar-color: #445f8b #e5e7eb;
+  scrollbar-color: #f6a23a #1d2230;
 }
 
 .timeline-scroll::-webkit-scrollbar {
@@ -302,17 +561,17 @@ button:active::after {
 }
 
 .timeline-scroll::-webkit-scrollbar-track {
-  background: #e5e7eb;
+  background: #1d2230;
   border-radius: 4px;
 }
 
 .timeline-scroll::-webkit-scrollbar-thumb {
-  background: #445f8b;
+  background: #f6a23a;
   border-radius: 4px;
 }
 
 .timeline-scroll::-webkit-scrollbar-thumb:hover {
-  background: #2d3e5c;
+  background: #ffb347;
 }
 
 /* Timeline marker interactions + spawn animations */
@@ -368,37 +627,37 @@ button:active::after {
 
 /* Phase colors - softer, on-brand */
 .phase-auto {
-  background: linear-gradient(135deg, #6b8cae 0%, #445f8b 100%);
+  background: linear-gradient(135deg, #3a2b14 0%, #5a3a18 100%);
 }
 
 .phase-buffer {
-  background: linear-gradient(135deg, #8899aa 0%, #667788 100%);
+  background: linear-gradient(135deg, #2b2f3a 0%, #3a3f4a 100%);
 }
 
 .phase-teleop {
-  background: linear-gradient(135deg, #445f8b 0%, #2d3e5c 100%);
+  background: linear-gradient(135deg, #2f2420 0%, #3f2b1f 100%);
 }
 
 .phase-finished {
-  background: linear-gradient(135deg, #4a7c59 0%, #3d6b4a 100%);
+  background: linear-gradient(135deg, #1f3a2a 0%, #1a2f23 100%);
 }
 
 .phase-default {
-  background: linear-gradient(135deg, #445f8b 0%, #2d3e5c 100%);
+  background: linear-gradient(135deg, #2f2420 0%, #3f2b1f 100%);
 }
 
 /* Export panel card styles */
 .export-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #141821;
+  border: 1px solid #2a3040;
   border-radius: 8px;
   padding: 1rem;
   transition: all 0.2s ease;
 }
 
 .export-card:hover {
-  border-color: #445f8b;
-  box-shadow: 0 4px 12px rgba(68, 95, 139, 0.1);
+  border-color: #f6a23a;
+  box-shadow: 0 10px 22px rgba(246, 162, 58, 0.2);
 }
 
 /* Action button group */
@@ -416,8 +675,8 @@ button:active::after {
 
 /* Playhead animation */
 @keyframes playhead-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(33, 150, 243, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(246, 162, 58, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(246, 162, 58, 0); }
 }
 
 .playhead {

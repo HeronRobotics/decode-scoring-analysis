@@ -26,15 +26,15 @@ function ExportSection({
     <div className="export-card">
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
-          <h4 className="font-semibold text-[#2d3e5c] flex items-center gap-2">
-            <FileText size={16} weight="duotone" className="text-[#445f8b]" />
+          <h4 className="font-semibold text-brand-text flex items-center gap-2">
+            <FileText size={16} weight="duotone" className="text-brand-accent" />
             {title}
           </h4>
-          {subtitle && <p className="text-xs text-[#888] mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-brand-muted mt-0.5">{subtitle}</p>}
         </div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-xs text-[#445f8b] hover:underline flex items-center gap-1"
+          className="text-xs text-brand-accent hover:underline flex items-center gap-1"
         >
           {expanded ? "Hide" : "Show"} data
           <CaretRight
@@ -45,7 +45,7 @@ function ExportSection({
       </div>
 
       {expanded && (
-        <pre className="bg-white p-3 mb-3 font-mono text-[10px] leading-relaxed border border-[#e5e7eb] rounded whitespace-pre-wrap break-words max-h-32 overflow-auto">
+        <pre className="bg-brand-surfaceStrong p-3 mb-3 font-mono text-[10px] leading-relaxed border border-brand-outline rounded whitespace-pre-wrap break-words max-h-32 overflow-auto">
           {text}
         </pre>
       )}
@@ -111,16 +111,16 @@ function MatchDataPanel({
   saveStatus,
 }) {
   return (
-    <div className="bg-white border-2 border-[#445f8b] overflow-hidden">
-      <div className="bg-[#f8fafc] px-5 py-4 border-b border-[#e5e7eb]">
+    <div className="card overflow-hidden">
+      <div className="bg-brand-surfaceStrong px-5 py-4 border-b border-brand-outline">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Export size={24} weight="duotone" className="text-[#445f8b]" />
+            <Export size={24} weight="duotone" className="text-brand-accent" />
             <div>
-              <h3 className="text-lg font-semibold text-[#445f8b]">
+              <h3 className="text-lg font-semibold text-brand-text">
                 Save & Share
               </h3>
-              <p className="text-xs text-[#666]">Export your match data</p>
+              <p className="text-xs text-brand-muted">Export your match data</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -135,11 +135,11 @@ function MatchDataPanel({
             )}
             <button
               onClick={onCopyFullUrl}
-              className="btn !py-2.5 !px-4 !bg-[#445f8b] !text-white !border-[#445f8b] hover:!bg-[#2d3e5c]"
+              className="btn !py-2.5 !px-4 !bg-brand-accent !text-[#111] !border-brand-accent"
             >
               {copiedFullUrl ? (
                 <>
-                  <Check size={16} weight="bold" className="text-green-200" />
+                  <Check size={16} weight="bold" className="text-brand-success" />
                   Link copied!
                 </>
               ) : (
@@ -204,7 +204,7 @@ function MatchDataPanel({
           </div>
         )}
 
-        <div className="text-xs text-[#888] pt-3 border-t border-[#e5e7eb]">
+        <div className="text-xs text-brand-muted pt-3 border-t border-brand-outline">
           <p>
             <strong>Tip:</strong> Save as JSON to import into Tournament
             Analysis or Lifetime Stats later. Share links let others view this
