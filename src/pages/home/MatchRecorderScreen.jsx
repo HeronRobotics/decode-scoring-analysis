@@ -537,12 +537,12 @@ function MatchRecorderScreen({
 
       {/* Timer Display - Full width */}
       <div
-        className={`${getPhaseClass()} text-white p-5 sm:p-6 border-2 border-[#445f8b] shadow-md`}
+        className={`${getPhaseClass()} text-brand-mainText p-5 sm:p-6 border-2 border-brand-border shadow-md`}
       >
         <div className="flex items-center justify-between mb-3">
           {/* Phase badge */}
           {mode === "match" && (
-            <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-2 bg-brand-bg px-3 py-1.5 rounded-full">
               {phaseInfo.icon}
               <span className="text-xs font-bold tracking-wider">
                 {phaseInfo.text}
@@ -564,7 +564,7 @@ function MatchRecorderScreen({
 
         {/* Main timer */}
         <div className="text-center">
-          <h2 className="text-5xl sm:text-6xl font-mono font-bold tracking-tight text-white!">
+          <h2 className="text-5xl sm:text-6xl font-mono font-bold tracking-tight text-brand-mainText">
             {displayTime}
           </h2>
           <p className="text-sm opacity-80 mt-1">
@@ -578,7 +578,7 @@ function MatchRecorderScreen({
         {isReady && !isRecording && (
           <button
             onClick={() => recorder.beginMatch()}
-            className="w-96 mx-auto py-6 px-6 text-xl font-bold bg-[#445f8b] text-white border-2 border-[#445f8b] hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-3 shadow-lg animate-pulse"
+            className="w-96 mx-auto py-6 px-6 text-xl font-bold bg-brand-accent text-brand-mainText border-2 border-brand-accent hover:bg-brand-bg transition-all flex items-center justify-center gap-3 shadow-lg animate-pulse"
           >
             <Play size={32} weight="fill" />
             <span className="mt-0.5">Begin Match</span>
@@ -590,7 +590,7 @@ function MatchRecorderScreen({
           <div className="flex flex-row items-center justify-center space-x-2">
             <button
               onClick={() => setShowCycleModal(true)}
-              className="w-full py-4 px-4 text-base font-bold bg-[#445f8b] text-white border-2 border-[#445f8b] hover:bg-[#2d3e5c] transition-all flex items-center justify-center gap-2 shadow-md"
+              className="w-full py-4 px-4 text-base font-bold bg-brand-accent text-brand-mainText border-2 border-brand-accent hover:bg-brand-bg transition-all flex items-center justify-center gap-2 shadow-md"
             >
               <Record size={24} weight="fill" />
               Record Cycle
@@ -623,7 +623,7 @@ function MatchRecorderScreen({
         ) : (
           <button
             onClick={() => recorder.resetMatch()}
-            className="bg-white border-2 border-[#445f8b] w-48 mx-auto text-sm transition-all flex items-center justify-center gap-1.5 shadow-lg"
+            className="bg-brand-bg border-2 border-brand-border w-48 mx-auto text-sm transition-all flex items-center justify-center gap-1.5 shadow-lg"
           >
             <ArrowClockwise size={20} weight="bold" />
             Start New Match
@@ -632,43 +632,43 @@ function MatchRecorderScreen({
 
         {/* Quick Guide - Inline when recording */}
         {isRecording && (
-          <div className="bg-white border border-[#ddd] rounded-lg overflow-hidden">
+          <div className="bg-brand-bg border border-brand-border rounded-lg overflow-hidden">
             <button
               onClick={() => setShowQuickGuide(!showQuickGuide)}
-              className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-[#f8fafc] transition-colors text-sm"
+              className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-brand-bg transition-colors text-sm"
             >
-              <span className="flex items-center gap-2 text-[#666]">
+              <span className="flex items-center gap-2 text-brand-muted">
                 <Keyboard
                   size={16}
                   weight="duotone"
-                  className="text-[#445f8b]"
+                  className="text-brand-accent"
                 />
                 Keyboard shortcuts
               </span>
               <CaretRight
                 size={14}
                 weight="bold"
-                className={`text-[#445f8b] transition-transform ${
+                className={`text-brand-accent transition-transform ${
                   showQuickGuide ? "rotate-90" : ""
                 }`}
               />
             </button>
 
             {showQuickGuide && (
-              <div className="px-4 pb-3 pt-1 border-t border-[#eee]">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-[#555]">
+              <div className="px-4 pb-3 pt-1 border-t border-brand-border">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-brand-muted">
                   <span className="kbd">1</span>
                   <span className="kbd">2</span>
                   <span className="kbd">3</span>
-                  <span className="text-[#888]">=attempted</span>
-                  <ArrowFatLineRight size={12} className="text-[#445f8b]" />
+                  <span className="text-brand-muted">=attempted</span>
+                  <ArrowFatLineRight size={12} className="text-brand-accent" />
                   <span className="kbd">0</span>-<span className="kbd">3</span>
-                  <span className="text-[#888]">=scored</span>
-                  <ArrowFatLineRight size={12} className="text-[#445f8b]" />
+                  <span className="text-brand-muted">=scored</span>
+                  <ArrowFatLineRight size={12} className="text-brand-accent" />
                   <span className="kbd">Enter</span>
-                  <span className="text-[#888] ml-2">|</span>
+                  <span className="text-brand-muted ml-2">|</span>
                   <span className="kbd ml-2">G</span>
-                  <span className="text-[#888]">=gate</span>
+                  <span className="text-brand-muted">=gate</span>
                 </div>
               </div>
             )}
@@ -677,45 +677,45 @@ function MatchRecorderScreen({
 
         {/* Points Entry - Secondary importance */}
         {
-          <div className="bg-white border border-[#ddd] overflow-hidden">
+          <div className="bg-brand-bg border border-brand-border overflow-hidden">
             <button
               onClick={() => setShowPointsEntry(!showPointsEntry)}
-              className="w-full p-3 flex items-center justify-between hover:bg-[#f8fafc] transition-colors text-left"
+              className="w-full p-3 flex items-center justify-between hover:bg-brand-bg transition-colors text-left"
             >
               <div className="flex items-center gap-2">
                 <Palette
                   size={20}
                   weight="duotone"
-                  className="text-[#445f8b]"
+                  className="text-brand-accent"
                 />
                 <span className="text-base font-semibold">Points Entry</span>
-                <span className="text-xs bg-[#445f8b] text-white px-2 py-0.5 rounded-full font-bold">
+                <span className="text-xs bg-brand-accent text-brand-mainText px-2 py-0.5 rounded-full font-bold">
                   {pointsBreakdown.total} pts
                 </span>
               </div>
               <CaretDown
                 size={18}
                 weight="bold"
-                className={`text-[#445f8b] transition-transform ${showPointsEntry ? "rotate-180" : ""}`}
+                className={`text-brand-accent transition-transform ${showPointsEntry ? "rotate-180" : ""}`}
               />
             </button>
 
             {showPointsEntry && (
-              <div className="p-3 border-t border-[#eee] space-y-4">
+              <div className="p-3 border-t border-brand-border space-y-4">
                 {/* Motif Selector */}
                 <div>
                   <label className="flex items-center gap-2 text-sm font-semibold mb-2">
                     <Palette
                       size={16}
                       weight="bold"
-                      className="text-[#445f8b]"
+                      className="text-brand-accent"
                     />
                     Motif Pattern
                   </label>
                   <select
                     value={motif || ""}
                     onChange={(e) => recorder.setMotif(e.target.value || null)}
-                    className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+                    className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm bg-brand-bg text-brand-text"
                   >
                     <option value="">Not set</option>
                     <option value="GPP">GPP — Green Purple Purple</option>
@@ -746,17 +746,17 @@ function MatchRecorderScreen({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="flex items-center gap-2 text-sm font-semibold mb-2">
-                      <Car size={16} weight="bold" className="text-[#445f8b]" />
+                      <Car size={16} weight="bold" className="text-brand-accent" />
                       Auto Leave
                     </label>
-                    <label className="flex items-center gap-3 p-3 border-2 border-[#ddd] rounded cursor-pointer hover:border-[#445f8b] transition-colors">
+                    <label className="flex items-center gap-3 p-3 border-2 border-brand-border rounded cursor-pointer hover:border-brand-accent transition-colors">
                       <input
                         type="checkbox"
                         checked={autoLeave}
                         onChange={(e) =>
                           recorder.setAutoLeave(e.target.checked)
                         }
-                        className="w-5 h-5 accent-[#445f8b]"
+                        className="w-5 h-5 accent-brand-accent"
                       />
                       <span className="text-sm">
                         Robot left launch line (+3 pts)
@@ -769,14 +769,14 @@ function MatchRecorderScreen({
                       <Flag
                         size={16}
                         weight="bold"
-                        className="text-[#445f8b]"
+                        className="text-brand-accent"
                       />
                       Teleop Park
                     </label>
                     <select
                       value={teleopPark}
                       onChange={(e) => recorder.setTeleopPark(e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+                      className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm bg-brand-bg text-brand-text"
                     >
                       <option value="none">None (0 pts)</option>
                       <option value="partial">Partial (5 pts)</option>
@@ -786,44 +786,44 @@ function MatchRecorderScreen({
                 </div>
 
                 {/* Points Summary */}
-                <div className="bg-[#f7f9ff] border border-[#445f8b]/30 rounded-lg p-4">
-                  <h4 className="font-semibold text-sm mb-3 text-[#445f8b]">
+                <div className="bg-brand-bg border border-brand-border rounded-lg p-4">
+                  <h4 className="font-semibold text-sm mb-3 text-brand-accent">
                     Points Breakdown
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                    <div className="text-center p-2 bg-white rounded border border-[#ddd]">
-                      <div className="text-2xl font-bold text-[#445f8b]">
+                    <div className="text-center p-2 bg-brand-bg rounded border border-brand-border">
+                      <div className="text-2xl font-bold text-brand-accent">
                         {pointsBreakdown.artifact}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-brand-muted">
                         Artifact ({totalScored}×3)
                       </div>
                     </div>
-                    <div className="text-center p-2 bg-white rounded border border-[#ddd]">
-                      <div className="text-2xl font-bold text-[#445f8b]">
+                    <div className="text-center p-2 bg-brand-bg rounded border border-brand-border">
+                      <div className="text-2xl font-bold text-brand-accent">
                         {pointsBreakdown.motif.total}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-brand-muted">
                         Motif ({pointsBreakdown.motif.auto}+
                         {pointsBreakdown.motif.teleop})
                       </div>
                     </div>
-                    <div className="text-center p-2 bg-white rounded border border-[#ddd]">
-                      <div className="text-2xl font-bold text-[#445f8b]">
+                    <div className="text-center p-2 bg-brand-bg rounded border border-brand-border">
+                      <div className="text-2xl font-bold text-brand-accent">
                         {pointsBreakdown.leave}
                       </div>
-                      <div className="text-xs text-gray-500">Leave</div>
+                      <div className="text-xs text-brand-muted">Leave</div>
                     </div>
-                    <div className="text-center p-2 bg-white rounded border border-[#ddd]">
-                      <div className="text-2xl font-bold text-[#445f8b]">
+                    <div className="text-center p-2 bg-brand-bg rounded border border-brand-border">
+                      <div className="text-2xl font-bold text-brand-accent">
                         {pointsBreakdown.park}
                       </div>
-                      <div className="text-xs text-gray-500">Park</div>
+                      <div className="text-xs text-brand-muted">Park</div>
                     </div>
                   </div>
-                  <div className="mt-3 pt-3 border-t border-[#445f8b]/20 text-center">
-                    <span className="text-sm text-gray-600">Total Points:</span>
-                    <span className="text-3xl font-bold text-[#445f8b] ml-2">
+                  <div className="mt-3 pt-3 border-t border-brand-border text-center">
+                    <span className="text-sm text-brand-muted">Total Points:</span>
+                    <span className="text-3xl font-bold text-brand-accent ml-2">
                       {pointsBreakdown.total}
                     </span>
                   </div>
@@ -834,8 +834,8 @@ function MatchRecorderScreen({
         }
 
         {/* Metadata - Reduced visual weight */}
-        <div className="bg-white border border-[#ddd] p-4">
-          <h3 className="text-sm font-semibold text-[#666] mb-3 uppercase tracking-wide">Match Details</h3>
+        <div className="bg-brand-bg border border-brand-border p-4">
+          <h3 className="text-sm font-semibold text-brand-muted mb-3 uppercase tracking-wide">Match Details</h3>
           <div className="space-y-3 flex flex-row flex-wrap justify-start gap-4">
             <div className="w-full">
               <input
@@ -843,12 +843,12 @@ function MatchRecorderScreen({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Match Title (e.g. Driver practice, match 3, etc.)"
-                className="w-full px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none rounded text-lg"
+                className="w-full px-3 py-2 border border-brand-border focus:border-brand-accent outline-none rounded text-lg bg-brand-bg text-brand-text"
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-[#666]">
-                <Target size={14} weight="bold" className="text-[#445f8b]" />
+              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-brand-muted">
+                <Target size={14} weight="bold" className="text-brand-accent" />
                 Team Number
               </label>
               <input
@@ -856,38 +856,38 @@ function MatchRecorderScreen({
                 value={teamNumber}
                 onChange={(e) => recorder.setTeamNumber(e.target.value)}
                 placeholder="Enter team #"
-                className="w-48 p-2 border border-[#ddd] focus:border-[#445f8b] outline-none text-center text-sm font-mono rounded transition-colors"
+                className="w-48 p-2 border border-brand-border focus:border-brand-accent outline-none text-center text-sm font-mono rounded transition-colors bg-brand-bg text-brand-text"
                 min="1"
                 max="99999"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold mb-1 text-[#666] block">
+              <label className="text-xs font-semibold mb-1 text-brand-muted block">
                 Match Date
               </label>
               <input
                 type="date"
                 value={matchDate}
                 onChange={(e) => setMatchDate(e.target.value)}
-                className="w-48 px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+                className="w-48 px-3 py-2 border border-brand-border focus:border-brand-accent outline-none rounded text-sm bg-brand-bg text-brand-text"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold mb-1 text-[#666] block">
-                Tournament Tag <span className="text-[#999] font-normal">(optional)</span>
+              <label className="text-xs font-semibold mb-1 text-brand-muted block">
+                Tournament Tag <span className="text-brand-muted font-normal">(optional)</span>
               </label>
               <input
                 type="text"
                 value={tournamentName}
                 onChange={(e) => setTournamentName(e.target.value)}
                 placeholder="e.g. Play Space Qualifier, Regionals, etc."
-                className="w-full px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none rounded text-sm"
+                className="w-full px-3 py-2 border border-brand-border focus:border-brand-accent outline-none rounded text-sm bg-brand-bg text-brand-text"
               />
               {knownTournaments.length > 0 && (
                 <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                  <span className="text-xs text-[#666]">
+                  <span className="text-xs text-brand-muted">
                     Or pick from previous:
                   </span>
                   <select
@@ -896,7 +896,7 @@ function MatchRecorderScreen({
                       if (!e.target.value) return;
                       setTournamentName(e.target.value);
                     }}
-                    className="px-2 py-1 border border-[#ddd] focus:border-[#445f8b] outline-none text-xs rounded min-w-40"
+                    className="px-2 py-1 border border-brand-border focus:border-brand-accent outline-none text-xs rounded min-w-40 bg-brand-bg text-brand-text"
                   >
                     <option value="">Select tournament...</option>
                     {knownTournaments.map((name) => (
@@ -910,15 +910,15 @@ function MatchRecorderScreen({
             </div>
 
             <div className="w-full">
-              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-[#666]">
-                <Note size={14} weight="bold" className="text-[#445f8b]" />
+              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-brand-muted">
+                <Note size={14} weight="bold" className="text-brand-accent" />
                 Match Notes
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => recorder.setNotes(e.target.value)}
                 placeholder="Defense, robot issues, strategy..."
-                className="w-full px-3 py-2 border border-[#ddd] focus:border-[#445f8b] outline-none resize-none h-20 rounded transition-colors text-sm"
+                className="w-full px-3 py-2 border border-brand-border focus:border-brand-accent outline-none resize-none h-20 rounded transition-colors text-sm bg-brand-bg text-brand-text"
               />
             </div>
           </div>
@@ -1010,18 +1010,18 @@ function MatchRecorderScreen({
 function SaveMatchPromptToast({ onSave, onDismiss }) {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:bottom-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
-      <div className="bg-white border-2 border-[#445f8b] shadow p-4 w-full">
-        <div className="text-sm font-semibold text-[#2d3e5c] mb-1">
+      <div className="bg-brand-bg border-2 border-brand-border shadow p-4 w-full">
+        <div className="text-sm font-semibold text-brand-text mb-1">
           Save match?
         </div>
-        <div className="text-xs text-[#666] mb-3">
+        <div className="text-xs text-brand-muted mb-3">
           You&apos;re viewing a match that isn&apos;t saved to your account.
         </div>
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onDismiss}
-            className="text-xs px-3 py-1.5 border border-[#ddd] rounded hover:bg-[#f3f4f6] text-[#555]"
+            className="text-xs px-3 py-1.5 border border-brand-border rounded hover:bg-brand-bg text-brand-muted"
           >
             Not now
           </button>
@@ -1042,18 +1042,18 @@ function SaveMatchPromptToast({ onSave, onDismiss }) {
 function SignUpPromptToast({ onSign, onDismiss }) {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:bottom-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
-      <div className="bg-white border-2 border-[#445f8b] shadow p-4 w-full">
-        <div className="text-sm font-semibold text-[#2d3e5c] mb-1">
+      <div className="bg-brand-bg border-2 border-brand-border shadow p-4 w-full">
+        <div className="text-sm font-semibold text-brand-text mb-1">
           Sign up?
         </div>
-        <div className="text-xs text-[#666] mb-3">
+        <div className="text-xs text-brand-muted mb-3">
           Sign up to save matches to your team account and access them later.
         </div>
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onDismiss}
-            className="text-xs px-3 py-1.5 border border-[#ddd] rounded hover:bg-[#f3f4f6] text-[#555]"
+            className="text-xs px-3 py-1.5 border border-brand-border rounded hover:bg-brand-bg text-brand-muted"
           >
             Not now
           </button>

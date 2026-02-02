@@ -7,12 +7,12 @@ function LoadingSplash({ message = "Loading match data..." }) {
       <div className="relative mb-8">
         {/* Outer rotating ring */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-brand-outline/60 border-t-brand-accent animate-spin-slow" />
+          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-brand-border border-t-brand-accent animate-spin-slow" />
         </div>
 
         {/* Inner pulsing circle */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-brand-accent/10 animate-pulse-scale" />
+          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-brand-bg animate-pulse-scale" />
         </div>
 
         {/* Center icon */}

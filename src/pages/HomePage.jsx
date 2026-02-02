@@ -138,9 +138,9 @@ function HomePage() {
       <div className="bg" aria-hidden="true" />
       <div className="content min-h-screen p-4 sm:p-8 max-w-7xl mx-auto flex flex-col justify-center items-center gap-6 sm:gap-12">
         <div className="w-full text-center sm:text-left max-w-4xl">
-          <div className="pill mb-4 justify-center sm:justify-start">Over <span className="font-bold">750 matches</span> recorded!</div>
+          <div className="pill mb-4 w-48 border-brand-accentStrong border text-center justify-center sm:justify-start">Over <span className="font-bold">750 matches</span> recorded!</div>
           <h1 className="title">
-            <span className="italic">
+            <span className="fancy">
               Data-Based
             </span>
             &nbsp;Match Recording and Scouting

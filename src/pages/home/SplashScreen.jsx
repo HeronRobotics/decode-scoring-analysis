@@ -45,8 +45,8 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
           <h3 className="text-xl sm:text-2xl font-bold">Start Recording</h3>
         </div>
 
-        <div className="bg-brand-surfaceStrong/70 border border-muted rounded-lg p-4 mb-6 space-y-3">
-          <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+        <div className="bg-brand-bg flex flex-row flex-wrap justify-around border border-brand-border rounded-lg p-4 mb-6 space-y-3">
+          <label className="flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-brand-muted font-medium flex items-center gap-2">
               <HashIcon size={20} weight="bold" />
               Team Number:
@@ -61,7 +61,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               max="99999"
             />
           </label>
-          <label className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+          <label className="flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-brand-muted font-medium flex items-center gap-2">
               <Palette size={20} weight="bold" />
               Motif Pattern:
@@ -71,10 +71,10 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               onChange={(e) => setSelectedMotif(e.target.value)}
               className="input min-w-48 sm:w-40 text-center font-mono text-brand-text appearance-none cursor-pointer"
             >
-              <option value="" className="text-gray-800">Not set</option>
-              <option value="GPP" className="text-gray-800">GPP (Green-Purple-Purple)</option>
-              <option value="PGP" className="text-gray-800">PGP (Purple-Green-Purple)</option>
-              <option value="PPG" className="text-gray-800">PPG (Purple-Purple-Green)</option>
+              <option value="" className="text-brand-text">Not set</option>
+              <option value="GPP" className="text-brand-text">GPP (Green-Purple-Purple)</option>
+              <option value="PGP" className="text-brand-text">PGP (Purple-Green-Purple)</option>
+              <option value="PPG" className="text-brand-text">PPG (Purple-Purple-Green)</option>
             </select>
           </label>
         </div>
@@ -91,7 +91,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               motif: selectedMotif || null,
             });
           }}
-          className="button w-full flex items-center justify-center gap-3 text-white"
+          className="button w-full flex items-center justify-center gap-3 text-brand-mainText"
         >
           <Play size={28} weight="fill" />
           Start Full Match
@@ -128,12 +128,12 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
       <div className="card overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <button
           onClick={() => setShowTutorial(!showTutorial)}
-          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-brand-surfaceStrong/70 transition-colors text-left"
+          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-brand-bg transition-colors text-left"
         >
           <div className="flex items-center gap-3">
             <LightbulbFilament size={24} weight="duotone" className="text-brand-accent" />
             <span className="text-lg font-semibold">How It Works</span>
-            <span className="text-xs bg-brand-accent/10 text-brand-accent px-2 py-1 rounded-full font-medium">
+            <span className="pill text-xs text-brand-accent px-2 py-1 rounded-full font-medium">
               Quick Tutorial
             </span>
           </div>
@@ -145,7 +145,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         </button>
 
         {showTutorial && (
-          <div className="p-4 sm:p-6 border-t border-brand-outline bg-brand-surfaceStrong/80 space-y-6">
+          <div className="p-4 sm:p-6 border-t border-brand-border bg-brand-bg space-y-6">
             <div className="flex gap-4">
               <div className="shrink-0">
                 <NumberCircleOne size={40} weight="duotone" className="text-brand-accent" />
@@ -169,7 +169,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                 <p className="text-brand-muted text-sm mb-3">
                   When the robot scores, record the cycle! You can use the button or keyboard shortcuts:
                 </p>
-                <div className="bg-brand-surface p-3 rounded-lg border border-brand-outline inline-flex flex-wrap gap-3 items-center">
+                <div className="bg-brand-bg p-3 rounded-lg border border-brand-border inline-flex flex-wrap gap-3 items-center">
                   <div className="flex items-center gap-2">
                     <span className="kbd">1</span>
                     <span className="kbd">2</span>
@@ -204,7 +204,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             </div>
 
             {/* Pro Tips */}
-            <div className="bg-brand-accent/10 p-4 rounded-lg">
+            <div className="bg-brand-bg p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Confetti size={20} weight="duotone" className="text-brand-accent" />
                 <span className="info">Pro Tips</span>

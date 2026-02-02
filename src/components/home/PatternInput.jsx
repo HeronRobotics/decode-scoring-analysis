@@ -42,13 +42,13 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
                   hasInput
                     ? isMatch
                       ? " border " + motifColor[char]
-                      : "border border-red-600  " + motifColor[inputChar]
-                    : "bg-gray-100 text-gray-400 border border-gray-200"
+                      : "border border-brand-danger  " + motifColor[inputChar]
+                    : "bg-brand-bg text-brand-muted border border-brand-border"
                 }`}
               >
                 {inputChar || char}
               </span>
-              <span className={`text-[10px] text-gray-400 mt-0.5 ${hasInput ? "" : "italic"} ${isMatch ? "text-green-600" : hasInput ? "text-red-600" : ""}`}>
+              <span className={`text-[10px] text-brand-muted mt-0.5 ${hasInput ? "" : "italic"} ${isMatch ? "text-brand-accent" : hasInput ? "text-brand-danger!" : ""}`}>
                 {char}
               </span>
             </div>
@@ -67,7 +67,7 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
         onChange={handleChange}
         placeholder={disabled ? "Set motif first" : "Ex. PPGPP (from bottom to top)"}
         disabled={disabled}
-        className="w-full px-3 py-2 input font-mono text-sm uppercase tracking-wider disabled:bg-brand-surfaceStrong/60 disabled:cursor-not-allowed"
+        className="w-full px-3 py-2 input font-mono text-sm uppercase tracking-wider disabled:bg-brand-bg disabled:cursor-not-allowed"
         maxLength={9}
       />
       {targetPattern && (

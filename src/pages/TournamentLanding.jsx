@@ -7,7 +7,7 @@ function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
         <h1 className="text-3xl sm:text-5xl font-bold">Tournament Analysis</h1>
       </header>
 
-      <div className="bg-white border-2 border-[#445f8b] flex flex-col items-center p-6 sm:p-16 gap-6 w-full">
+      <div className="bg-brand-bg border-2 border-brand-border flex flex-col items-center p-6 sm:p-16 gap-6 w-full">
         <h2 className="text-3xl text-center">Load or Create Tournament</h2>
         <p className='mb-4 text-center'>
           Scout teams at tournaments (or other multi-match events like scrimmages) and import them here!
@@ -17,16 +17,16 @@ function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
         
         <button
           onClick={onCreateNew}
-          className="btn !py-3 !bg-[#445f8b] !text-white !px-6"
+          className="btn !py-3 !bg-brand-accent !text-brand-mainText !px-6"
         >
           <Calendar weight="bold" size={24} />
           Create New Tournament From Game Files
         </button>
 
         <div className="flex gap-4 items-center my-4">
-          <hr className="w-12 grow border-t border-gray-300" />
-          <span className="mx-2 text-gray-500">or</span>
-          <hr className="grow w-12 border-t border-gray-300" />
+          <hr className="w-12 grow border-t border-brand-border" />
+          <span className="mx-2 text-brand-muted">or</span>
+          <hr className="grow w-12 border-t border-brand-border" />
         </div>
 
         <label className="btn !py-3">

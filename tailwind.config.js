@@ -4,18 +4,18 @@ export default {
     extend: {
       colors: {
         brand: {
-          bg: "#18181B",
-          surface: "#18181B",
-          surfaceStrong: "#1d2230",
-          outline: "#2a3040",
-          border: "#2a3040",
-          text: "#f8fafc",
-          muted: "#a1a9b8",
-          accent: "#f6a23a",
-          accentStrong: "#ffb347",
-          accentSoft: "#3b2a14",
-          success: "#2bd576",
-          danger: "#f87171"
+          bg: "var(--color-brand-bg)",
+          surface: "var(--color-brand-surface)",
+          surfaceStrong: "var(--color-brand-surfaceStrong)",
+          outline: "var(--color-brand-outline)",
+          border: "var(--color-brand-border)",
+          text: "var(--color-brand-text)",
+          mainText: "var(--color-brand-main-text)",
+          muted: "var(--color-brand-muted)",
+          accent: "var(--color-brand-accent)",
+          accentStrong: "var(--color-brand-accentStrong)",
+          success: "var(--color-brand-success)",
+          danger: "var(--color-brand-danger)"
         }
       },
       fontFamily: {

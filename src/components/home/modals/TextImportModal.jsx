@@ -3,7 +3,7 @@ function TextImportModal({ open, textInput, setTextInput, onImport, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-brand-bg flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
@@ -32,7 +32,7 @@ function TextImportModal({ open, textInput, setTextInput, onImport, onClose }) {
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-brand-muted hover:text-brand-text hover:bg-brand-surfaceStrong rounded transition-colors"
+            className="px-4 py-2 text-sm font-medium text-brand-muted hover:text-brand-text hover:bg-brand-bg rounded transition-colors"
           >
             Cancel
           </button>

@@ -45,7 +45,7 @@ function ExportSection({
       </div>
 
       {expanded && (
-        <pre className="bg-brand-surfaceStrong p-3 mb-3 font-mono text-[10px] leading-relaxed border border-brand-outline rounded whitespace-pre-wrap break-words max-h-32 overflow-auto">
+        <pre className="bg-brand-bg p-3 mb-3 font-mono text-[10px] leading-relaxed border border-brand-border rounded whitespace-pre-wrap break-words max-h-32 overflow-auto">
           {text}
         </pre>
       )}
@@ -54,7 +54,7 @@ function ExportSection({
         <button onClick={onCopyLink} className="btn !py-2 !px-3 !text-xs">
           {copiedLink ? (
             <>
-              <Check size={14} weight="bold" className="text-green-600" />
+              <Check size={14} weight="bold" className="text-brand-accent" />
               Link copied!
             </>
           ) : (
@@ -67,7 +67,7 @@ function ExportSection({
         <button onClick={onCopyText} className="btn !py-2 !px-3 !text-xs">
           {copiedText ? (
             <>
-              <Check size={14} weight="bold" className="text-green-600" />
+              <Check size={14} weight="bold" className="text-brand-accent" />
               Copied!
             </>
           ) : (
@@ -112,7 +112,7 @@ function MatchDataPanel({
 }) {
   return (
     <div className="card overflow-hidden">
-      <div className="bg-brand-surfaceStrong px-5 py-4 border-b border-brand-outline">
+      <div className="bg-brand-bg px-5 py-4 border-b border-brand-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Export size={24} weight="duotone" className="text-brand-accent" />
@@ -135,7 +135,7 @@ function MatchDataPanel({
             )}
             <button
               onClick={onCopyFullUrl}
-              className="btn !py-2.5 !px-4 !bg-brand-accent !text-[#111] !border-brand-accent"
+              className="btn !py-2.5 !px-4 !bg-brand-accent !text-brand-bg !border-brand-accent"
             >
               {copiedFullUrl ? (
                 <>
@@ -180,7 +180,7 @@ function MatchDataPanel({
         />
 
         {mode === "match" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#e5e7eb]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-brand-border">
             <ExportSection
               title="Auto Only"
               subtitle="Autonomous period (0:00-0:30)"

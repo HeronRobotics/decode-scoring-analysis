@@ -16,7 +16,7 @@ function NavigationBar({ currentPage, navigate }) {
   const { user, authLoading, signOut } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   return (
-    <div className="bg-brand-bg/95 border-b border-brand-outline z-20 sticky top-0 backdrop-blur">
+    <div className="bg-brand-bg border-b border-brand-border z-20 sticky top-0">
       <div className="max-w-7xl mx-auto px-2 sm:px-5 py-2 sm:py-4 flex flex-wrap items-center gap-2 sm:gap-4 text-brand-text">
         <button
           onClick={() => {
@@ -25,7 +25,7 @@ function NavigationBar({ currentPage, navigate }) {
           }}
           className={`btn ${
             currentPage === "home"
-              ? "!bg-brand-accent !text-[#111] !border-brand-accent"
+              ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
               : "bg-transparent text-brand-text hover:bg-brand-surfaceStrong"
           }`}
         >
@@ -39,7 +39,7 @@ function NavigationBar({ currentPage, navigate }) {
           }}
           className={`btn ${
             currentPage === "tournament"
-              ? "!bg-brand-accent !text-[#111] !border-brand-accent"
+              ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
               : "bg-transparent text-brand-text hover:bg-brand-surfaceStrong"
           }`}
         >
@@ -53,7 +53,7 @@ function NavigationBar({ currentPage, navigate }) {
           }}
           className={`btn ${
             currentPage === "lifetime"
-              ? "!bg-brand-accent !text-[#111] !border-brand-accent"
+              ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
               : "bg-transparent text-brand-text hover:bg-brand-surfaceStrong"
           }`}
         >
@@ -67,7 +67,7 @@ function NavigationBar({ currentPage, navigate }) {
           }}
           className={`btn ${
             currentPage === "myMatches"
-              ? "!bg-brand-accent !text-[#111] !border-brand-accent"
+              ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
               : "bg-transparent text-brand-text hover:bg-brand-surfaceStrong"
           }`}
         >
