@@ -164,43 +164,43 @@ function Statistics({
       {/* Summary Section - Most Important */}
       <div className="bg-brand-accent border-2 border-brand-accent p-4 sm:p-8 mb-5">
         <div className="flex items-center gap-3 mb-6 -ml-4 -mt-4">
-          <ChartLine size={32} className="text-brand-mainText" />
-          <h4 className="text-2xl text-brand-mainText">Summary</h4>
+          <ChartLine size={32} className="text-over-accent" />
+          <h4 className="text-2xl text-over-accent">Summary</h4>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 items-center">
           {/* Total Points - Most prominent */}
           <div className="text-center col-span-2 md:col-span-1 bg-brand-accentBg rounded-lg p-3 border border-brand-border">
-            <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">
+            <div className="text-3xl sm:text-4xl font-bold text-over-accent">
               {pointsBreakdown.total}
             </div>
-            <div className="text-brand-mainText text-sm flex items-center justify-center gap-1">
+            <div className="text-over-accent text-sm flex items-center justify-center gap-1">
               <Star size={16} weight="fill" />
               Total Pts
             </div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">
+            <div className="text-3xl sm:text-4xl font-bold text-over-accent">
               {totalBallsScored}
             </div>
-            <div className="text-brand-mainText text-sm flex items-center justify-center gap-1">
+            <div className="text-over-accent text-sm flex items-center justify-center gap-1">
               <Crosshair size={16} />
               Scored
             </div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">
+            <div className="text-3xl sm:text-4xl font-bold text-over-accent">
               {formatStat(overallAccuracy)}%
             </div>
-            <div className="text-brand-mainText text-sm flex items-center justify-center gap-1">
+            <div className="text-over-accent text-sm flex items-center justify-center gap-1">
               <Target size={16} weight="fill" />
               Accuracy
             </div>
           </div>
           <div className="text-center">
-            <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">
+            <div className="text-3xl sm:text-4xl font-bold text-over-accent">
               {totalBallsAttempted}
             </div>
-            <div className="text-brand-mainText text-sm flex items-center justify-center gap-1">
+            <div className="text-over-accent text-sm flex items-center justify-center gap-1">
               <Target size={16} />
               Balls
             </div>
@@ -209,41 +209,41 @@ function Statistics({
 
         {/* Points breakdown row - compact */}
         {(hasPointsData || pointsBreakdown.artifact > 0) && (
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-4 pt-4 border-t border-brand-border text-xs text-brand-mainText">
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-4 pt-4 border-t border-brand-border text-xs text-over-accent">
             <span className="flex items-center gap-1">
-              <span className="font-semibold text-brand-mainText">{pointsBreakdown.artifact}</span> artifact
+              <span className="font-semibold text-over-accent">{pointsBreakdown.artifact}</span> artifact
             </span>
-            <span className="text-brand-mainText">+</span>
+            <span className="text-over-accent">+</span>
             <span className="flex items-center gap-1">
-              <span className="font-semibold text-brand-mainText">{pointsBreakdown.motif.total}</span> motif
+              <span className="font-semibold text-over-accent">{pointsBreakdown.motif.total}</span> motif
             </span>
-            <span className="text-brand-mainText">+</span>
+            <span className="text-over-accent">+</span>
             <span className="flex items-center gap-1">
-              <span className="font-semibold text-brand-mainText">{pointsBreakdown.leave}</span> leave
+              <span className="font-semibold text-over-accent">{pointsBreakdown.leave}</span> leave
             </span>
-            <span className="text-brand-mainText">+</span>
+            <span className="text-over-accent">+</span>
             <span className="flex items-center gap-1">
-              <span className="font-semibold text-brand-mainText">{pointsBreakdown.park}</span> park
+              <span className="font-semibold text-over-accent">{pointsBreakdown.park}</span> park
             </span>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="bg-brand-accentBg border border-brand-border rounded-lg p-3 text-center">
-            <div className="text-brand-mainText text-xs tracking-wide uppercase mb-1">
+            <div className="text-over-accent text-xs tracking-wide uppercase mb-1">
               Seconds per 3 Balls
             </div>
-            <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
+            <div className="text-2xl sm:text-3xl font-bold text-over-accent">
               {secondsPerThreeBalls != null
                 ? `${formatStat(secondsPerThreeBalls, 1)}s`
                 : "—"}
             </div>
           </div>
           <div className="bg-brand-accentBg border border-brand-border rounded-lg p-3 text-center">
-            <div className="text-brand-mainText text-xs tracking-wide uppercase mb-1">
+            <div className="text-over-accent text-xs tracking-wide uppercase mb-1">
               Balls Scored per 2 Min
             </div>
-            <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
+            <div className="text-2xl sm:text-3xl font-bold text-over-accent">
               {ballsScoredPerTwoMinutes != null
                 ? formatStat(ballsScoredPerTwoMinutes, 1)
                 : "—"}
@@ -262,7 +262,7 @@ function Statistics({
           </div>
 
           <div className="mb-4 pb-3 border-b-2 border-brand-border">
-            <div className="text-xs text-brand-muted mb-1">AVERAGE</div>
+            <div className="text-xs text-brand-text mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-brand-accent">
               {formatStat(timeStats.avg)}s
               <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">
@@ -273,14 +273,14 @@ function Statistics({
 
           <div className="flex gap-3 pt-2">
             <div className="flex-1 text-center">
-              <div className="text-xs text-brand-muted mb-1">MIN</div>
+              <div className="text-xs text-brand-text mb-1">MIN</div>
               <div className="text-lg font-bold text-brand-text">
                 {formatStat(timeStats.min)}s
               </div>
             </div>
             <div className="w-px bg-brand-border"></div>
             <div className="flex-1 text-center">
-              <div className="text-xs text-brand-muted mb-1">MAX</div>
+              <div className="text-xs text-brand-text mb-1">MAX</div>
               <div className="text-lg font-bold text-brand-text">
                 {formatStat(timeStats.max)}s
               </div>
@@ -296,7 +296,7 @@ function Statistics({
           </div>
 
           <div className="mb-4 pb-3 border-b-2 border-brand-border">
-            <div className="text-xs text-brand-muted mb-1">AVERAGE</div>
+            <div className="text-xs text-brand-text mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-brand-accent">
               {formatStat(ballStats.avg)}
               <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">
@@ -307,14 +307,14 @@ function Statistics({
 
           <div className="flex gap-3 pt-2 ">
             <div className="flex-1 text-center">
-              <div className="text-xs text-brand-muted mb-1">MIN</div>
+              <div className="text-xs text-brand-text mb-1">MIN</div>
               <div className="text-lg font-bold text-brand-text">
                 {formatStat(ballStats.min, 0)}
               </div>
             </div>
             <div className="w-px bg-brand-border"></div>
             <div className="flex-1 text-center">
-              <div className="text-xs text-brand-muted mb-1">MAX</div>
+              <div className="text-xs text-brand-text mb-1">MAX</div>
               <div className="text-lg font-bold text-brand-text">
                 {formatStat(ballStats.max, 0)}
               </div>
@@ -330,7 +330,7 @@ function Statistics({
           </div>
 
           <div className="mb-4 pb-3 border-b-2 border-brand-border">
-            <div className="text-xs text-brand-muted mb-1">AVERAGE</div>
+            <div className="text-xs text-brand-text mb-1">AVERAGE</div>
             <div className="text-3xl font-bold text-brand-accent">
               {formatStat(accuracyStats.avg)}%
               <span className="ml-2 inline-flex items-center justify-between text-sm font-semibold">
@@ -341,14 +341,14 @@ function Statistics({
 
           <div className="flex gap-3 pt-2">
             <div className="flex-1 text-center">
-              <div className="text-xs text-brand-muted mb-1">MIN</div>
+              <div className="text-xs text-brand-text mb-1">MIN</div>
               <div className="text-lg font-bold text-brand-text">
                 {formatStat(accuracyStats.min)}%
               </div>
             </div>
             <div className="w-px bg-brand-border"></div>
             <div className="flex-1 text-center">
-              <div className="text-xs text-brand-muted mb-1">MAX</div>
+              <div className="text-xs text-brand-text mb-1">MAX</div>
               <div className="text-lg font-bold text-brand-text">
                 {formatStat(accuracyStats.max)}%
               </div>

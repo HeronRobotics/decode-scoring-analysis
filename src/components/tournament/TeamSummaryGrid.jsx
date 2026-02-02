@@ -14,9 +14,9 @@ function TeamSummaryGrid({ teamStats }) {
               <div className="font-semibold">
                 <TeamName teamNumber={ts.team} />
               </div>
-              <div className="text-sm text-brand-muted">Median: <strong>{ts.median}</strong></div>
+              <div className="text-sm text-brand-text">Median: <strong>{ts.median}</strong></div>
             </div>
-            <div className="text-sm text-brand-muted space-y-1">
+            <div className="text-sm text-brand-text space-y-1">
               <div>Avg: <strong>{ts.avg.toFixed(1)}</strong> • Accuracy: <strong>{ts.accuracy.toFixed(1)}%</strong></div>
               {ts.fullMatchCount > 0 && (
                 <div className="text-brand-accent">

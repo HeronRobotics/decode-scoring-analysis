@@ -65,11 +65,11 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
 
   return (
     <div
-      className="fixed inset-0 bg-brand-bg flex items-center justify-center z-50"
+      className="fixed w-screen h-screen inset-0 bg-brand-bg/90 flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-brand-bg p-4 sm:p-8 max-w-md w-11/12 border-2 border-brand-border"
+        className="bg-brand-bg p-4 sm:p-8 max-w-md w-11/12 border-2 border-brand-border shadow-2xl shadow-brand-shadow rounded-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-2xl mb-5 text-center">
@@ -80,10 +80,10 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
           <button
             type="button"
             onClick={() => switchMode("signin")}
-            className={`flex-1 py-2 text-sm font-semibold ${
+            className={`flex-1 py-2 text-sm rounded-none! border-b-2 font-semibold ${
               mode === "signin"
-                ? "border-b-2 border-brand-accent text-brand-accent"
-                : "text-brand-muted"
+                ? "border-brand-accent text-brand-accent"
+                : "border-brand-bg text-brand-text"
             }`}
           >
             Sign In
@@ -91,10 +91,10 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
           <button
             type="button"
             onClick={() => switchMode("signup")}
-            className={`flex-1 py-2 text-sm font-semibold ${
+            className={`flex-1 py-2 text-sm rounded-none! border-b-2 font-semibold ${
               mode === "signup"
-                ? "border-b-2 border-brand-accent text-brand-accent"
-                : "text-brand-muted"
+                ? "border-brand-accent text-brand-accent"
+                : "border-brand-bg text-brand-text"
             }`}
           >
             Sign Up
@@ -107,13 +107,13 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
           <button
             type="button"
             onClick={handleGitHubSignIn}
-            className="btn w-fit !bg-brand-bg !text-brand-mainText hover:!bg-brand-accentBg flex items-center justify-center gap-2 !border-2 !border-brand-border"
+            className="btn w-fit !bg-brand-bg !text-black hover:!bg-brand-accentBg flex items-center justify-center gap-2 !border-2 !border-brand-border"
             disabled={loading}
           >
             <GithubLogo weight="fill" size={18} />
             <span>Continue with GitHub</span>
           </button>
-          <div className="flex items-center gap-2 text-xs text-brand-muted">
+          <div className="flex items-center gap-2 text-xs text-brand-text">
             <div className="flex-1 h-px bg-brand-border" />
             <span>or</span>
             <div className="flex-1 h-px bg-brand-border" />
@@ -153,7 +153,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
             </button>
             <button
               type="submit"
-              className="btn !bg-brand-accent !text-brand-mainText"
+              className="btn !bg-brand-accent !text-over-accent"
               disabled={loading}
             >
               {loading

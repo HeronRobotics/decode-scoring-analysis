@@ -3,7 +3,7 @@ function PrivacyPolicyPage() {
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
       <div className="my-6 sm:my-8">
         <h1 className="text-3xl sm:text-5xl font-bold">Privacy Policy</h1>
-        <p className="mt-4 text-sm text-brand-muted">
+        <p className="mt-4 text-sm text-brand-text">
           Last updated: January 19, 2026
         </p>
       </div>

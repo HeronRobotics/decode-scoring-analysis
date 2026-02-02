@@ -573,7 +573,7 @@ function MyMatchesPage() {
               {/* Saved Matches Header */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Saved Matches</h2>
-                <span className="text-sm text-brand-muted">
+                <span className="text-sm text-brand-text">
                   {filteredMatches.length === matches.length
                     ? `${matches.length} ${matches.length === 1 ? "match" : "matches"}`
                     : `${filteredMatches.length} of ${matches.length}`}
@@ -587,7 +587,7 @@ function MyMatchesPage() {
                   <div className="relative">
                     <MagnifyingGlass
                       size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text"
                     />
                     <input
                       type="text"
@@ -663,11 +663,11 @@ function MyMatchesPage() {
                 </div>
               )}
 
-              {loading && <p className="text-brand-muted">Loading matches...</p>}
+              {loading && <p className="text-brand-text">Loading matches...</p>}
               {error && <p className="text-brand-accent text-sm mb-2">{error}</p>}
 
               {!loading && matches.length === 0 && !error && (
-                <div className="text-center py-8 text-brand-muted">
+                <div className="text-center py-8 text-brand-text">
                   <Target size={48} className="mx-auto mb-3 opacity-30" />
                   <p className="text-sm">No saved matches yet.</p>
                   <p className="text-xs mt-1">
@@ -683,7 +683,7 @@ function MyMatchesPage() {
                 {!loading &&
                   filteredMatches.length === 0 &&
                   matches.length > 0 && (
-                    <div className="text-center py-8 text-brand-muted">
+                    <div className="text-center py-8 text-brand-text">
                       <MagnifyingGlass
                         size={48}
                         className="mx-auto mb-3 opacity-30"
@@ -722,7 +722,7 @@ function MyMatchesPage() {
                             {group.label}
                           </span>
                         </div>
-                        <span className="text-sm text-brand-muted">
+                        <span className="text-sm text-brand-text">
                           {group.matches.length}{" "}
                           {group.matches.length === 1 ? "match" : "matches"}
                         </span>
@@ -787,7 +787,7 @@ function MyMatchesPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    className="p-1.5 text-brand-muted hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
+                                    className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
                                     title="Open in new tab"
                                   >
                                     <ArrowSquareOut size={16} weight="bold" />
@@ -798,7 +798,7 @@ function MyMatchesPage() {
                                       e.stopPropagation();
                                       handleDelete(m.id);
                                     }}
-                                    className="p-1.5 text-brand-muted hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
+                                    className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
                                     title="Delete match"
                                   >
                                     <Trash size={16} weight="bold" />
@@ -810,7 +810,7 @@ function MyMatchesPage() {
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-brand-text">
                                 {groupBy !== "team" && (
                                   <span className="flex items-center gap-1.5">
-                                    <Users size={14} className="text-brand-muted" />
+                                    <Users size={14} className="text-brand-text" />
                                     {m.teamNumber ? `${getTeamName(m.teamNumber)} (${m.teamNumber})` : "No Team"}
                                   </span>
                                 )}
@@ -818,15 +818,15 @@ function MyMatchesPage() {
                                   <span className="flex items-center gap-1.5">
                                     <CalendarBlank
                                       size={14}
-                                      className="text-brand-muted"
+                                      className="text-brand-text"
                                     />
                                     {dateStr}
                                   </span>
                                 )}
                                 <span className="flex items-center gap-1.5">
-                                <Target size={14} className="text-brand-muted" />
+                                <Target size={14} className="text-brand-text" />
                                 <span className="font-semibold text-brand-mainText">{formatStat(points.total, 0)}</span>
-                                <span className="text-xs text-brand-muted">pts</span>
+                                <span className="text-xs text-brand-text">pts</span>
                               </span>
                             </div>
 
@@ -840,7 +840,7 @@ function MyMatchesPage() {
                                   <span className="font-semibold text-brand-mainText">
                                     {stats.scored}/{stats.total}
                                   </span>
-                                  <span className="text-xs text-brand-muted hidden sm:inline">
+                                  <span className="text-xs text-brand-text hidden sm:inline">
                                     scored
                                   </span>
                                 </div>
@@ -852,7 +852,7 @@ function MyMatchesPage() {
                                   <span className="font-semibold text-brand-mainText">
                                     {stats.cycles}
                                   </span>
-                                  <span className="text-xs text-brand-muted hidden sm:inline">
+                                  <span className="text-xs text-brand-text hidden sm:inline">
                                     cycles
                                   </span>
                                 </div>
@@ -860,7 +860,7 @@ function MyMatchesPage() {
                                   <span className="font-semibold text-brand-mainText">
                                     {formatStat(stats.accuracy, 0)}%
                                   </span>
-                                  <span className="text-xs text-brand-muted ml-1 hidden sm:inline">
+                                  <span className="text-xs text-brand-text ml-1 hidden sm:inline">
                                     acc
                                   </span>
                                 </div>
@@ -1001,7 +1001,7 @@ function MyMatchesPage() {
                         <label className="block text-sm font-medium text-brand-text mb-1 flex items-center gap-1.5">
                           <CalendarBlank
                             size={14}
-                            className="text-brand-muted"
+                            className="text-brand-text"
                           />
                           Match Date
                         </label>
@@ -1043,7 +1043,7 @@ function MyMatchesPage() {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-brand-muted">
+                <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-brand-text">
                   <Target size={64} className="mb-4 opacity-20" />
                   <p className="text-lg font-medium">No match selected</p>
                   <p className="text-sm mt-1">

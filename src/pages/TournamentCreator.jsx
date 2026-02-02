@@ -217,7 +217,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                     <div key={index} className="border-2 border-brand-border p-3 flex justify-between items-center">
                       <div>
                         <span className="font-semibold">Match {index + 1} ({match.teamNumber || 'No Team'})</span>
-                        <span className="text-sm text-brand-muted ml-4">
+                        <span className="text-sm text-brand-text ml-4">
                           {scored}/{total} balls scored
                         </span>
                       </div>
@@ -254,7 +254,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl mb-5">Paste Match Codes</h3>
-            <p className="text-sm mb-4 text-brand-muted">
+            <p className="text-sm mb-4 text-brand-text">
               Paste one or more match codes below (one per line). Format: hmadv2/teamNum/...;; 0:00.000; 1/2 at 0:10.123; ... (hmadv1 also supported)
             </p>
             <textarea

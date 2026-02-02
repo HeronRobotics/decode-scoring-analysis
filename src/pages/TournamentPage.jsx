@@ -267,7 +267,7 @@ function TournamentPage({ onBack }) {
         <div className="my-6 sm:my-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-3xl sm:text-5xl font-bold">Tournament Analysis</h1>
-            <p className="text-sm text-brand-muted mt-2">
+            <p className="text-sm text-brand-text mt-2">
               Build a tournament from matches you have saved in <strong>My Matches</strong>,
               grouped by their tournament tag.
             </p>
@@ -284,7 +284,7 @@ function TournamentPage({ onBack }) {
           ) : matchesError ? (
             <p className="text-brand-accent text-sm">{matchesError}</p>
           ) : !tournamentNames.length ? (
-            <p className="text-sm text-brand-muted">
+            <p className="text-sm text-brand-text">
               No tournaments found. Add a <strong>tournament tag</strong> to your matches
               on the My Matches page, then come back here to analyze them.
             </p>
@@ -316,7 +316,7 @@ function TournamentPage({ onBack }) {
                 <Calendar weight="bold" size={20} />
                 Analyze Selected Tournament
               </button>
-              <p className="text-xs text-brand-muted mt-3">
+              <p className="text-xs text-brand-text mt-3">
                 Tournament tags are set when recording matches or editing them on the My
                 Matches page.
               </p>
@@ -355,7 +355,7 @@ function TournamentPage({ onBack }) {
       <div className="my-6 sm:my-8 flex flex-row flex-wrap gap-3 items-center justify-between">
         <div>
           <h1 className="text-3xl sm:text-5xl font-bold">{tournament.name}</h1>
-          <p className="text-lg text-brand-muted mt-2">
+          <p className="text-lg text-brand-text mt-2">
             {new Date(tournament.date).toLocaleDateString()}
           </p>
         </div>
@@ -393,7 +393,7 @@ function TournamentPage({ onBack }) {
           <h3 className="text-xl font-semibold mb-3">
             Match Scores — All Teams
           </h3>
-          <div className="mb-2 text-sm text-brand-muted">
+          <div className="mb-2 text-sm text-brand-text">
             Sorted by median scored (highest first). Hover teams for score
             distributions.
           </div>
@@ -405,7 +405,7 @@ function TournamentPage({ onBack }) {
             teamColors={teamColors}
           />
           <TeamSummaryGrid teamStats={teamStats} />
-          <p className="mt-4 italic text-sm text-brand-muted">
+          <p className="mt-4 italic text-sm text-brand-text">
             ^ Hover over a box above!
           </p>
         </div>
@@ -436,7 +436,7 @@ function TournamentPage({ onBack }) {
         <div className="bg-brand-bg p-4 sm:p-6 border-2 border-brand-border mt-8">
           <h3 className="text-xl font-semibold mb-3">Team Statistics</h3>
           <div className={`mt-5 ${selectedTeam && "mb-5"}`}>
-            <p className="text-brand-muted">
+            <p className="text-brand-text">
               Select a team to view detailed graphs for that team.
             </p>
           </div>
@@ -492,7 +492,7 @@ function TournamentPage({ onBack }) {
                   </span>
                   <span
                     className={`ml-1 text-xs ${
-                      selectedMatch == index ? "text-brand-mainText" : "text-brand-muted"
+                      selectedMatch == index ? "text-brand-mainText" : "text-brand-text"
                     }`}
                   >
                     {matchStats.scored}/{matchStats.total}
@@ -525,7 +525,7 @@ function TournamentPage({ onBack }) {
               />
             </>
           ) : (
-            <div className="bg-brand-bg border-2 border-brand-border p-6 text-center text-brand-muted">
+            <div className="bg-brand-bg border-2 border-brand-border p-6 text-center text-brand-text">
               No matches for selected team.
             </div>
           )}

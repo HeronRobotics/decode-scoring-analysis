@@ -11,13 +11,13 @@ function TextImportModal({ open, textInput, setTextInput, onImport, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-2xl font-bold mb-2">Import from Links or Text</h3>
-        <p className="text-sm mb-5 text-brand-muted">
+        <p className="text-sm mb-5 text-brand-text">
           Paste match URLs or exported match data below. You can paste multiple
           links on separate lines.
         </p>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-brand-muted mb-2">
+          <label className="block text-sm font-medium text-brand-text mb-2">
             Match Data
           </label>
           <textarea
@@ -32,7 +32,7 @@ function TextImportModal({ open, textInput, setTextInput, onImport, onClose }) {
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-brand-muted hover:text-brand-text hover:bg-brand-bg rounded transition-colors"
+            className="px-4 py-2 text-sm font-medium text-brand-text hover:text-brand-text hover:bg-brand-bg rounded transition-colors"
           >
             Cancel
           </button>

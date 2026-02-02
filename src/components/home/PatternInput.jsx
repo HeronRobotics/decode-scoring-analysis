@@ -8,9 +8,9 @@ import {
 
 
 const motifColor = {
-  "P": "text-brand-mainText bg-brand-accent border-brand-accent",
-  "G": "text-brand-text bg-brand-bg border-brand-border",
-};
+  "P": "text-[#9b59b6] bg-[#f4ecf7] border-[#9b59b6]/20",
+  "G": "text-[#27ae60] bg-[#e6f4ea] border-[#27ae60]/20",
+}
 
 function PatternInput({ label, value, onChange, motif, disabled }) {
   const targetPattern = useMemo(() => getTargetPattern(motif), [motif]);
@@ -41,14 +41,14 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
                 className={`w-7 h-7 flex items-center justify-center rounded text-sm font-bold ${
                   hasInput
                     ? isMatch
-                      ? " border " + motifColor[char]
-                      : "border border-brand-border " + motifColor[inputChar]
-                    : "bg-brand-bg text-brand-muted border border-brand-border"
+                      ? "border " + motifColor[char]
+                      : "border border-brand-danger " + motifColor[inputChar]
+                    : "bg-brand-muted/30 text-brand-muted border border-brand-muted"
                 }`}
               >
                 {inputChar || char}
               </span>
-              <span className={`text-[10px] text-brand-muted mt-0.5 ${hasInput ? "" : "italic"} ${isMatch ? "text-brand-accent" : ""}`}>
+              <span className={`text-[10px] mt-0.5 ${hasInput ? "" : "italic"} ${hasInput ? (isMatch ? "text-brand-accent" : "text-brand-danger") : "text-brand-muted"}`}>
                 {char}
               </span>
             </div>
@@ -72,13 +72,13 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
       />
       {targetPattern && (
         <div className="mt-2">
-          <div className="flex items-center justify-between text-xs text-brand-muted mb-1">
+          <div className="flex items-center justify-between text-xs text-brand-text mb-1">
             <span>Target: {targetPattern}</span>
             <span className="flex items-center gap-1">
               {matches > 0 ? (
                 <Check size={12} weight="bold" className="text-brand-accent" />
               ) : (
-                <X size={12} weight="bold" className="text-brand-muted" />
+                <X size={12} weight="bold" className="text-brand-text" />
               )}
               {matches}/9 matches = <strong className="text-brand-accent">{points} pts</strong>
             </span>

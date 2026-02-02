@@ -21,7 +21,7 @@ export function BoxPlot({
 }) {
   if (data.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-brand-muted">
+      <div className="w-full h-full flex items-center justify-center text-brand-text">
         No data available
       </div>
     );
@@ -46,7 +46,7 @@ export function BoxPlot({
 
   return (
     <div className="mt-4">
-      <div className="text-xs text-brand-muted mb-2">{title.toUpperCase()} ({unit.trim()})</div>
+      <div className="text-xs text-brand-text mb-2">{title.toUpperCase()} ({unit.trim()})</div>
       <div className="w-full" style={{ height }}>
         <ResponsiveContainer width={width} height={height}>
           <ComposedChart
@@ -158,7 +158,7 @@ export function BoxPlot({
         </ResponsiveContainer>
       </div>
 
-      <div className="text-sm text-brand-muted mt-2 flex flex-row flex-wrap justify-center items-center">
+      <div className="text-sm text-brand-text mt-2 flex flex-row flex-wrap justify-center items-center">
         <strong>Q1:</strong>&nbsp;{formatStat(boxQ1)}
         {unit} <strong className="ml-3">Median:</strong>&nbsp;{formatStat(boxMedian)}
         {unit} <strong className="ml-3">Q3:</strong>&nbsp;{formatStat(boxQ3)}

@@ -34,7 +34,7 @@ function LoadingSplash({ message = "Loading match data..." }) {
       <h1 className="text-3xl sm:text-4xl font-bold font-display text-brand-text mb-2 animate-fade-in">
         Heron Scout
       </h1>
-      <p className="text-base sm:text-lg text-brand-muted mb-8 animate-fade-in-delay">
+      <p className="text-base sm:text-lg text-brand-text mb-8 animate-fade-in-delay">
         Match Analysis for DECODE
       </p>
 

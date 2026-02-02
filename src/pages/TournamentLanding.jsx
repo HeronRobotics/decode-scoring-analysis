@@ -17,7 +17,7 @@ function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
         
         <button
           onClick={onCreateNew}
-          className="btn !py-3 !bg-brand-accent !text-brand-mainText !px-6"
+          className="btn !py-3 !bg-brand-accent !text-over-accent !px-6"
         >
           <Calendar weight="bold" size={24} />
           Create New Tournament From Game Files
@@ -25,7 +25,7 @@ function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
 
         <div className="flex gap-4 items-center my-4">
           <hr className="w-12 grow border-t border-brand-border" />
-          <span className="mx-2 text-brand-muted">or</span>
+          <span className="mx-2 text-brand-text">or</span>
           <hr className="grow w-12 border-t border-brand-border" />
         </div>
 

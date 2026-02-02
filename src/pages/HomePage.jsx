@@ -146,7 +146,7 @@ function HomePage() {
             &nbsp;Match Recording and Scouting
           </h1>
           <p className="subtitle mt-3">
-            Track accuracy, cycle times, and performance for the FTC <i>DECODE</i> season.
+            OPR can't lie if you don&apos;t use it. Track performance over time and compare teams for the FTC <i>DECODE</i> season with Heron Scout.
             Start a match to begin recording, or import existing data!
           </p>
         </div>

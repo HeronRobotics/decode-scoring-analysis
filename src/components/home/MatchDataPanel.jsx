@@ -30,7 +30,7 @@ function ExportSection({
             <FileText size={16} weight="duotone" className="text-brand-accent" />
             {title}
           </h4>
-          {subtitle && <p className="text-xs text-brand-muted mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-brand-text mt-0.5">{subtitle}</p>}
         </div>
         <button
           onClick={() => setExpanded(!expanded)}
@@ -120,7 +120,7 @@ function MatchDataPanel({
               <h3 className="text-lg font-semibold text-brand-text">
                 Save & Share
               </h3>
-              <p className="text-xs text-brand-muted">Export your match data</p>
+              <p className="text-xs text-brand-text">Export your match data</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -204,7 +204,7 @@ function MatchDataPanel({
           </div>
         )}
 
-        <div className="text-xs text-brand-muted pt-3 border-t border-brand-outline">
+        <div className="text-xs text-brand-text pt-3 border-t border-brand-outline">
           <p>
             <strong>Tip:</strong> Save as JSON to import into Tournament
             Analysis or Lifetime Stats later. Share links let others view this

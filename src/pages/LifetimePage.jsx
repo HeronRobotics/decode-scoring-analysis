@@ -489,7 +489,7 @@ function LifetimePage() {
             />
           </label>
         </div>
-        <p className="text-sm text-brand-muted mt-1">
+        <p className="text-sm text-brand-text mt-1">
           Lifetime stats are computed from matches saved to your account on the
           <strong> My Matches</strong> tab.
         </p>
@@ -506,7 +506,7 @@ function LifetimePage() {
           <p className="mb-2">
             Sign in and save matches to see your lifetime statistics.
           </p>
-          <p className="text-sm text-brand-muted">
+          <p className="text-sm text-brand-text">
             Use the <strong>Sign in / Sign up</strong> button in the top right,
             then record matches or bulk import them on the My Matches tab.
           </p>
@@ -534,19 +534,19 @@ function LifetimePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
               <div className="text-4xl font-bold text-brand-accent mb-1">{matchStats.length}</div>
-              <div className="text-sm text-brand-muted">Total Matches Recorded</div>
+              <div className="text-sm text-brand-text">Total Matches Recorded</div>
             </div>
             <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
               <div className="text-4xl font-bold text-brand-accent mb-1">
                 {matchStats.length > 0 ? formatStat(matchStats.reduce((sum, m) => sum + m.accuracy, 0) / matchStats.length) : 0}%
               </div>
-              <div className="text-sm text-brand-muted">Overall Accuracy</div>
+              <div className="text-sm text-brand-text">Overall Accuracy</div>
             </div>
             <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
               <div className="text-4xl font-bold text-brand-accent mb-1">
                 {matchStats.reduce((sum, m) => sum + m.scored, 0)}
               </div>
-              <div className="text-sm text-brand-muted">Total Balls Scored</div>
+              <div className="text-sm text-brand-text">Total Balls Scored</div>
             </div>
           </div>
 
@@ -600,7 +600,7 @@ function LifetimePage() {
                         <Star size={18} className="text-brand-accent" weight="fill" />
                       </div>
                       <div className="text-3xl font-bold text-brand-accent mb-1">{bestMatchByPoints?.points || 0}</div>
-                      <div className="text-xs text-brand-muted">
+                      <div className="text-xs text-brand-text">
                         {bestMatchByPoints?.name}
                       </div>
                     </div>
@@ -611,7 +611,7 @@ function LifetimePage() {
                         <Medal size={18} className="text-brand-accent" weight="fill" />
                       </div>
                       <div className="text-3xl font-bold text-brand-accent mb-1">{formatStat(bestMatch.accuracy)}%</div>
-                      <div className="text-xs text-brand-muted">
+                      <div className="text-xs text-brand-text">
                         {bestMatch.scored} of {bestMatch.total} scored • {bestMatch.name}
                       </div>
                     </div>
@@ -622,23 +622,23 @@ function LifetimePage() {
               {/* Areas for Improvement */}
               {worstMatch && matchStats.length > 1 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3 text-brand-muted">Focus Areas</h3>
+                  <h3 className="text-lg font-semibold mb-3 text-brand-text">Focus Areas</h3>
                   <div className="space-y-3">
                     <div className="bg-brand-bg border border-brand-border rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-semibold text-brand-muted">Lowest Accuracy</span>
-                        <Medal size={18} className="text-brand-muted" />
+                        <span className="text-sm font-semibold text-brand-text">Lowest Accuracy</span>
+                        <Medal size={18} className="text-brand-text" />
                       </div>
-                      <div className="text-3xl font-bold text-brand-muted mb-1">{formatStat(worstMatch.accuracy)}%</div>
-                      <div className="text-xs text-brand-muted">
+                      <div className="text-3xl font-bold text-brand-text mb-1">{formatStat(worstMatch.accuracy)}%</div>
+                      <div className="text-xs text-brand-text">
                         {worstMatch.scored} of {worstMatch.total} scored • {worstMatch.name}
                       </div>
                     </div>
 
                     {/* Actionable insight */}
                     <div className="bg-brand-bg border border-brand-border rounded-lg p-3">
-                      <div className="text-sm font-semibold text-brand-muted mb-2 flex items-center gap-1"><LightbulbIcon weight="duotone" /> To Improve</div>
-                      <ul className="text-xs text-brand-muted space-y-1.5">
+                      <div className="text-sm font-semibold text-brand-text mb-2 flex items-center gap-1"><LightbulbIcon weight="duotone" /> To Improve</div>
+                      <ul className="text-xs text-brand-text space-y-1.5">
                         <li>• Aim for 70%+ accuracy</li>
                         <li>• Focus on cycle efficiency during practice</li>
                         <li>• Review matches with low accuracy for patterns</li>
@@ -660,7 +660,7 @@ function LifetimePage() {
 
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="text-center p-4 bg-brand-accentBg rounded-lg">
-                  <div className="text-sm text-brand-muted mb-1">
+                  <div className="text-sm text-brand-text mb-1">
                     Last {recentPerformance.recentMatches} matches
                   </div>
                   <div className="text-4xl font-bold text-brand-accent">
@@ -668,8 +668,8 @@ function LifetimePage() {
                   </div>
                 </div>
                 <div className="text-center p-4 bg-brand-bg rounded-lg">
-                  <div className="text-sm text-brand-muted mb-1">Career average</div>
-                  <div className="text-4xl font-bold text-brand-muted">
+                  <div className="text-sm text-brand-text mb-1">Career average</div>
+                  <div className="text-4xl font-bold text-brand-text">
                     {formatStat(recentPerformance.overallAccuracy)}%
                   </div>
                 </div>
@@ -680,8 +680,8 @@ function LifetimePage() {
                   recentPerformance.trend === "improving"
                     ? "bg-brand-accentBg text-brand-accent border border-brand-border"
                     : recentPerformance.trend === "declining"
-                      ? "bg-brand-bg text-brand-muted border border-brand-border"
-                      : "bg-brand-bg text-brand-muted border border-brand-border"
+                      ? "bg-brand-bg text-brand-text border border-brand-border"
+                      : "bg-brand-bg text-brand-text border border-brand-border"
                 }`}
               >
                 {recentPerformance.trend === "improving" && (
@@ -820,7 +820,7 @@ function LifetimePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xl font-semibold">Points Over Time <span className="text-sm font-normal text-brand-muted">(full matches only)</span></h3>
+                  <h3 className="text-xl font-semibold">Points Over Time <span className="text-sm font-normal text-brand-text">(full matches only)</span></h3>
                   {tournamentRanges.length > 0 && (
                     <button
                       onClick={() => setShowTournaments(!showTournaments)}

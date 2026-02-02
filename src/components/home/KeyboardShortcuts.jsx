@@ -17,7 +17,7 @@ const KeyboardShortcuts = () => {
             <KeyboardIcon size={20} weight="duotone" className="text-brand-accent" />
             <span className="font-semibold text-sm">Keyboard Shortcuts (During Recording)</span>
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-brand-muted">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-brand-text">
             <span className="flex items-center gap-2">
               <span className="kbd">1</span>-<span className="kbd">3</span>
               <span>Balls attempted</span>

@@ -123,7 +123,7 @@ function MatchPage() {
         {loadError && (
           <p className="text-sm text-red-400 mb-2 self-start">{loadError}</p>
         )}
-        <div className="w-full card p-4 sm:p-6">
+        <div className="w-full p-4 sm:p-6 flex flex-col items-center">
           <MatchRecorderScreen
             recorder={recorder}
             loadedMatchId={initialMeta?.id}

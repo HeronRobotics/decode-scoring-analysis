@@ -71,10 +71,10 @@ function NavigationBar({ currentPage, navigate }) {
         </button>
         <div className="ml-auto flex items-center justify-center gap-2">
           {authLoading ? (
-            <span className="text-xs text-brand-muted ml-1">Loading...</span>
+            <span className="text-xs text-brand-text ml-1">Loading...</span>
           ) : user ? (
             <>
-              <span className="text-xs sm:text-sm text-brand-muted truncate max-w-[120px] sm:max-w-xs">
+              <span className="text-xs sm:text-sm text-brand-text truncate max-w-[120px] sm:max-w-xs">
                 {user.email}
               </span>
               <button

@@ -183,7 +183,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
           <Timer size={20} weight="duotone" className="text-brand-accent" />
           <h3 className="text-lg font-semibold text-brand-accent">Match Timeline</h3>
         </div>
-        <div className="flex items-center gap-4 text-xs text-brand-muted">
+        <div className="flex items-center gap-4 text-xs text-brand-text">
           {mode === "match" && phaseScoreSummary && (
             <span className="font-mono text-brand-accent">
               {phaseScoreSummary.total} scored
@@ -231,7 +231,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
               <div className="mt-1 font-mono text-sm text-brand-text">
                 {phaseScoreSummary.auto.scored} scored
               </div>
-              <div className="mt-0.5 text-[11px] text-brand-muted">
+              <div className="mt-0.5 text-[11px] text-brand-text">
                 0–{matchRecorderConstants.AUTO_DURATION}s
               </div>
             </button>
@@ -248,7 +248,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
               <div className="mt-1 font-mono text-sm text-brand-text">
                 {phaseScoreSummary.buffer.scored} scored
               </div>
-              <div className="mt-0.5 text-[11px] text-brand-muted">
+              <div className="mt-0.5 text-[11px] text-brand-text">
                 {matchRecorderConstants.AUTO_DURATION}–
                 {matchRecorderConstants.AUTO_DURATION +
                   matchRecorderConstants.BUFFER_DURATION}
@@ -268,7 +268,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
               <div className="mt-1 font-mono text-sm text-brand-text">
                 {phaseScoreSummary.teleop.scored} scored
               </div>
-              <div className="mt-0.5 text-[11px] text-brand-muted">
+              <div className="mt-0.5 text-[11px] text-brand-text">
                 {matchRecorderConstants.AUTO_DURATION +
                   matchRecorderConstants.BUFFER_DURATION}
                 –{matchRecorderConstants.MATCH_TOTAL_DURATION}s
@@ -276,7 +276,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
             </button>
           </div>
 
-          <div className="mt-3 text-xs text-brand-muted">
+          <div className="mt-3 text-xs text-brand-text">
             Click any section to expand into the full timeline.
           </div>
         </div>
@@ -305,7 +305,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                 width: `${(widthMs / maxTimeMs) * 100}%`,
               }}
             >
-              <span className="absolute top-2 left-2 text-[10px] font-bold text-brand-muted tracking-wider">
+              <span className="absolute top-2 left-2 text-[10px] font-bold text-brand-text tracking-wider">
                 {region.label}
               </span>
             </div>
@@ -340,7 +340,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
                       size={20}
                       weight="fill"
                       className={`timeline-ball-enter ${
-                        isScored ? "text-brand-accent" : "text-brand-muted"
+                        isScored ? "text-brand-accent" : "text-brand-text"
                       }`}
                       style={{ animationDelay: `${markerDelayMs + i * 70}ms` }}
                     />
@@ -413,7 +413,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
             {timeMarkers.map((time) => (
               <div
                 key={time}
-                className="absolute text-[10px] text-brand-muted font-mono -translate-x-1/2"
+                className="absolute text-[10px] text-brand-text font-mono -translate-x-1/2"
                 style={{ left: `${(time / maxTimeMs) * 100}%` }}
               >
                 {formatTime(time)}
@@ -425,7 +425,7 @@ function Timeline({ events = [], currentTime = 0, mode = null }) {
       )}
 
       {/* Footer stats */}
-      <div className="flex items-center justify-between px-4 py-2 border-t border-brand-border bg-brand-bg text-xs text-brand-muted">
+      <div className="flex items-center justify-between px-4 py-2 border-t border-brand-border bg-brand-bg text-xs text-brand-text">
         <span>
           {safeEvents.filter(e => e.type === 'cycle').length} cycles recorded
         </span>

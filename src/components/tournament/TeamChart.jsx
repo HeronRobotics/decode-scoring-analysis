@@ -96,7 +96,7 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
   if (!chartData || chartData.length === 0 || !teamStats || teamStats.length === 0) {
     return (
       <div className="h-[600px] flex items-center justify-center border-2 border-brand-border bg-brand-bg">
-        <p className="text-brand-muted">No team data available for chart</p>
+        <p className="text-brand-text">No team data available for chart</p>
       </div>
     )
   }

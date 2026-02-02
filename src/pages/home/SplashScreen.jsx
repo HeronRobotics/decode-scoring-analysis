@@ -20,6 +20,7 @@ import {
   Bird,
   HashIcon,
   Palette,
+  PlayIcon,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -41,9 +42,9 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
           <h3 className="text-xl sm:text-2xl font-bold">Start Recording</h3>
         </div>
 
-        <div className="bg-brand-bg flex flex-row flex-wrap justify-around border border-brand-border rounded-lg p-4 mb-6 space-y-3">
+        <div className="bg-brand-surface flex flex-row flex-wrap justify-around border border-brand-border rounded-lg p-4 mb-6 space-y-3">
           <label className="flex flex-col sm:flex-row sm:items-center gap-3 m-0">
-            <span className="text-brand-muted font-medium flex items-center gap-2">
+            <span className="text-brand-text font-medium flex items-center gap-2">
               <HashIcon size={20} weight="bold" />
               Team Number:
             </span>
@@ -58,7 +59,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
             />
           </label>
           <label className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <span className="text-brand-muted font-medium flex items-center gap-2">
+            <span className="text-brand-text font-medium flex items-center gap-2">
               <Palette size={20} weight="bold" />
               Motif Pattern:
             </span>
@@ -87,19 +88,19 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               motif: selectedMotif || null,
             });
           }}
-          className="button w-full flex items-center justify-center gap-3 text-brand-mainText"
+          className="button w-full flex items-center justify-center gap-3 font-bold"
         >
-          <Play size={28} weight="fill" />
-          Start Full Match
+          <PlayIcon size={28} weight="fill" />
+          <p className="mt-0.5">Start Full Match</p>
         </button>
 
-        <div className="flex items-center gap-2 mt-4 text-brand-muted text-sm justify-center">
+        <div className="flex items-center gap-2 mt-4 text-brand-text text-sm justify-center">
           <Timer size={18} />
           <span>30s Auto + 8s buffer + 2:00 TeleOp</span>
         </div>
 
         <div className="flex items-center flex-row justify-center gap-2">
-          <p>
+          <p className="mt-1">
             Or
           </p>
           <button
@@ -114,9 +115,10 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                 motif: selectedMotif || null,
               });
             }}
-            className="text-brand-accent font-semibold hover:underline flex items-center gap-2"
+            className="text-brand-accent font-semibold flex items-center justify-center hover:underline transition-colors gap-1 mt-1"
           >
-            Start No-Timer Match
+            <PlayIcon weight="fill" />
+            <p className="mt-0.5">Start No-Timer Match</p>
           </button>
         </div>
       </div>
@@ -127,7 +129,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
       <div className="card overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <button
           onClick={() => setShowTutorial(!showTutorial)}
-          className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-brand-bg transition-colors text-left"
+          className="w-full p-4 sm:p-5 flex items-center justify-between transition-colors text-left"
         >
           <div className="flex items-center gap-3">
             <LightbulbFilament size={24} weight="duotone" className="text-brand-accent" />
@@ -144,14 +146,14 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         </button>
 
         {showTutorial && (
-          <div className="p-4 sm:p-6 border-t border-brand-border bg-brand-bg space-y-6">
+          <div className="p-4 sm:p-6 border-t border-brand-border bg-brand-surface space-y-6">
             <div className="flex gap-4">
               <div className="shrink-0">
                 <NumberCircleOne size={40} weight="duotone" className="text-brand-accent" />
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-1">Start Recording</h4>
-                <p className="text-brand-muted text-sm">
+                <p className="text-brand-text text-sm">
                   Enter the team number and press "Start Full Match". The timer will automatically
                   handle Auto (30s), buffer (8s), and TeleOp (2:00) phases.
                 </p>
@@ -165,7 +167,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-1">Record Cycles</h4>
-                <p className="text-brand-muted text-sm mb-3">
+                <p className="text-brand-text text-sm mb-3">
                   When the robot scores, record the cycle! You can use the button or keyboard shortcuts:
                 </p>
                 <div className="bg-brand-bg p-3 rounded-lg border border-brand-border inline-flex flex-wrap gap-3 items-center">
@@ -173,14 +175,14 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                     <span className="kbd">1</span>
                     <span className="kbd">2</span>
                     <span className="kbd">3</span>
-                    <span className="text-xs text-brand-muted">= balls attempted</span>
+                    <span className="text-xs text-brand-text">= balls attempted</span>
                   </div>
                   <ArrowRight size={16} className="text-brand-accent" />
                   <div className="flex items-center gap-2">
                     <span className="kbd">0</span>
                     <span className="text-xs">to</span>
                     <span className="kbd">3</span>
-                    <span className="text-xs text-brand-muted">= balls scored</span>
+                    <span className="text-xs text-brand-text">= balls scored</span>
                   </div>
                   <ArrowRight size={16} className="text-brand-accent" />
                   <span className="kbd">Enter</span>
@@ -195,7 +197,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-1">Export & Analyze</h4>
-                <p className="text-brand-muted text-sm">
+                <p className="text-brand-text text-sm">
                   After the match, export your data as JSON or shareable text. Import matches into
                   Tournament Analysis to compare teams, or Lifetime Stats to track progress over time!
                 </p>
@@ -208,7 +210,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
                 <Confetti size={20} weight="duotone" className="text-brand-accent" />
                 <span className="info">Pro Tips</span>
               </div>
-              <ul className="text-sm text-brand-muted space-y-1.5">
+              <ul className="text-sm text-brand-text space-y-1.5">
                 <li className="flex items-start gap-2">
                   <CaretRight size={14} className="text-brand-accent mt-1 shrink-0" />
                   Use keyboard shortcuts for faster recording during live matches
@@ -232,7 +234,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         <div className="feature-card card p-5 flex flex-col items-center text-center">
           <ChartLineUp size={36} weight="duotone" className="text-brand-accent mb-3" />
           <h4 className="font-bold mb-1">Live Statistics</h4>
-          <p className="text-sm text-brand-muted">
+          <p className="text-sm text-brand-text">
             Real-time cycle times, accuracy rates, and performance metrics
           </p>
         </div>
@@ -240,7 +242,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         <div className="feature-card card p-5 flex flex-col items-center text-center">
           <Users size={36} weight="duotone" className="text-brand-accent mb-3" />
           <h4 className="font-bold mb-1">Team Comparison</h4>
-          <p className="text-sm text-brand-muted">
+          <p className="text-sm text-brand-text">
             Compare multiple teams at tournaments with aggregated data
           </p>
         </div>
@@ -248,7 +250,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
         <div className="feature-card card p-5 flex flex-col items-center text-center">
           <Trophy size={36} weight="duotone" className="text-brand-accent mb-3" />
           <h4 className="font-bold mb-1">Season Tracking</h4>
-          <p className="text-sm text-brand-muted">
+          <p className="text-sm text-brand-text">
             Track your robot's progress throughout the entire season
           </p>
         </div>
@@ -263,7 +265,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
 
         {/* Manual Session Options */}
         <div className="mb-5">
-          <p className="text-sm text-brand-muted mb-3 flex items-center gap-2">
+          <p className="text-sm text-brand-text mb-3 flex items-center gap-2">
             <Timer size={16} />
             Manual Session (Legacy) - Custom timer modes:
           </p>
@@ -321,7 +323,7 @@ function SplashScreen({ recorder, onImportJson, onOpenTextImport }) {
 
         {/* Import Options */}
         <div className="pt-4 border-t border-brand-outline">
-          <p className="text-sm text-brand-muted mb-3 flex items-center gap-2">
+          <p className="text-sm text-brand-text mb-3 flex items-center gap-2">
             <UploadSimple size={16} />
             Import existing match data:
           </p>

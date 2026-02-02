@@ -2,19 +2,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Felipa&family=Roboto+Serif:wght@400;500;600;700&family=League+Spartan:wght@300;400;500;600;700&family=Manrope:wght@100;200;300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
 
 @theme {
-  --color-brand-bg: #18181B;
-  --color-brand-surface: #18181B;
+  --color-brand-bg: #DFEBFF;
+  --color-brand-surface: #e6edfa;
   --color-brand-surfaceStrong: #1d2230;
   --color-brand-outline: #303032;
-  --color-brand-border: #303032;
-  --color-brand-text: #A0A0A9;
-  --color-brand-main-text: #f8fafc;
-  --color-brand-muted: #A0A0A9;
-  --color-brand-accent: #E17F1F;
-  --color-brand-accentBg: #E17F1F10;
+  --color-brand-border: #6887bc;
+  --color-brand-text: #445F8B;
+  --color-brand-main-text: #2D3E5C;
+  --color-over-accent: #FFFFFF;
+  --color-brand-muted: #949aa6;
+  --color-brand-accent: #2D3E5C;
+  --color-brand-accentBg: #2D3E5C20;
+  --color-brand-inputbg: #2D3E5C10;
   --color-brand-accentStrong: #fba23a;
   --color-brand-success: #2bd576;
   --color-brand-danger: #B87171;
+  --color-brand-shadow: #6887bc40;
 }
 
 body {
@@ -23,6 +26,7 @@ body {
   background-color: var(--color-brand-bg);
   font-family: 'Manrope', 'League Spartan', sans-serif;
   color: var(--color-brand-text);
+  /* background-color: #6887bc; */
   letter-spacing: 0.00em;
   font-weight: 200;
   width: 100vw;
@@ -112,7 +116,7 @@ h6 {
 
 .subtitle {
   font-size: clamp(1rem, 2vw, 1.25rem);
-  color: var(--color-brand-muted);
+  color: var(--color-brand-text);
 }
 
 .fancy {
@@ -139,7 +143,7 @@ h6 {
   border-radius: 12px;
   border: 1px solid var(--color-brand-accent);
   background: var(--color-brand-accent);
-  color: var(--color-brand-main-text);
+  color: var(--color-over-accent);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -151,7 +155,7 @@ h6 {
 
 .button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 40px var(--color-brand-bg);
+  box-shadow: 0 18px 40px var(--color-brand-shadow);
 }
 
 .button:focus-visible {
@@ -166,8 +170,8 @@ h6 {
   box-shadow: none;
 }
 
-.input {
-  background: var(--color-brand-bg);
+input, select {
+  background: var(--color-brand-inputbg);
   border: 1px solid var(--color-brand-border);
   color: var(--color-brand-text);
   border-radius: 12px;
@@ -176,10 +180,10 @@ h6 {
   font-weight: 500;
 }
 
-.input:focus {
+input:focus, select:focus {
   outline: none;
   border-color: var(--color-brand-accent);
-  box-shadow: 0 0 0 3px var(--color-brand-bg);
+  box-shadow: 0 0 0 3px var(--color-brand-inputbg);
 }
 
 /* Tailwind-driven component styles for dark theme */
@@ -192,7 +196,7 @@ h6 {
 .btn:hover {
   border-color: var(--color-brand-accent);
   color: var(--color-brand-accent);
-  box-shadow: 0 14px 28px var(--color-brand-bg);
+  box-shadow: 0 14px 28px var(--color-brand-shadow);
 }
 
 .btn:focus-visible {
@@ -203,8 +207,8 @@ h6 {
 .error-btn {
   border: 1px solid var(--color-brand-accent);
   background: var(--color-brand-accent);
-  color: var(--color-brand-main-text);
-  box-shadow: 0 10px 22px var(--color-brand-bg);
+  color: var(--color-over-accent);
+  box-shadow: 0 10px 22px var(--color-brand-shadow);
 }
 
 .error-btn:hover {
@@ -214,15 +218,15 @@ h6 {
 }
 
 .kbd {
-  background: var(--color-brand-bg);
+  background: var(--color-brand-accentBg);
   border: 1px solid var(--color-brand-border);
-  color: var(--color-brand-text);
+  color: var(--color-over-accent);
 }
 
 .export-card {
   background: var(--color-brand-bg);
   border: 1px solid var(--color-brand-border);
-  color: var(--color-brand-text);
+  color: var(--color-over-accent);
 }
 
 .light {
@@ -442,23 +446,23 @@ button {
 
 /* Phase colors - softer, on-brand */
 .phase-auto {
-  background: var(--color-brand-accent);
+  background: #2d6cdf;
 }
 
 .phase-buffer {
-  background: var(--color-brand-bg);
+  background: #5b6c8f;
 }
 
 .phase-teleop {
-  background: var(--color-brand-accent);
+  background: #f28c28;
 }
 
 .phase-finished {
-  background: var(--color-brand-bg);
+  background: #2fa06b;
 }
 
 .phase-default {
-  background: var(--color-brand-bg);
+  background: #6b7280;
 }
 
 /* Export panel card styles */

@@ -53,7 +53,7 @@ function CycleModal({
                 const cls = selected
                   ? "border-brand-accent bg-brand-accent text-brand-mainText"
                   : disabled
-                  ? "border-brand-border bg-brand-bg text-brand-muted cursor-not-allowed opacity-60"
+                  ? "border-brand-border bg-brand-bg text-brand-text cursor-not-allowed opacity-60"
                   : "border-brand-border bg-brand-bg hover:border-brand-accent";
                 return (
                   <button

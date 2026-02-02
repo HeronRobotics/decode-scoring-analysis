@@ -24,7 +24,7 @@ function TournamentList({ tournaments, tournamentStats, selectedTournament, setS
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-2xl font-bold">{tournament.name}</h3>
-                  <p className="text-brand-muted mb-3">{new Date(tournament.date).toLocaleDateString()}</p>
+                  <p className="text-brand-text mb-3">{new Date(tournament.date).toLocaleDateString()}</p>
                   <div className="flex gap-6 text-sm">
                     <span><strong>{stat.matchCount}</strong> match{stat.matchCount !== 1 ? 'es' : ''}</span>
                     <span><strong>{stat.scored}/{stat.total}</strong> scored</span>
