@@ -56,6 +56,10 @@ function MatchRecorderScreen({
   const [cycleData, setCycleData] = useState({ total: 1, scored: 0 });
   const [showQuickGuide, setShowQuickGuide] = useState(false);
 
+  const beginMatchButtonRef = useRef(null);
+  const startMatchToastTimeoutRef = useRef(null);
+  const [startMatchToastVisible, setStartMatchToastVisible] = useState(false);
+
   const [copiedFull, setCopiedFull] = useState(false);
   const [copiedAuto, setCopiedAuto] = useState(false);
   const [copiedTeleop, setCopiedTeleop] = useState(false);
@@ -94,6 +98,50 @@ function MatchRecorderScreen({
     autoLeave,
     teleopPark,
   } = recorder;
+
+  const mustBeginMatch = isReady && !isRecording;
+
+  const nudgeToBeginMatch = useCallback(() => {
+    if (!mustBeginMatch) return;
+
+    beginMatchButtonRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "center",
+    });
+
+    requestAnimationFrame(() => {
+      beginMatchButtonRef.current?.focus?.();
+    });
+
+    setStartMatchToastVisible(true);
+    if (startMatchToastTimeoutRef.current) {
+      clearTimeout(startMatchToastTimeoutRef.current);
+    }
+    startMatchToastTimeoutRef.current = setTimeout(() => {
+      setStartMatchToastVisible(false);
+    }, 2200);
+  }, [mustBeginMatch]);
+
+  useEffect(() => {
+    if (!mustBeginMatch) setStartMatchToastVisible(false);
+  }, [mustBeginMatch]);
+
+  useEffect(() => {
+    return () => {
+      if (startMatchToastTimeoutRef.current) {
+        clearTimeout(startMatchToastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (startMatchToastTimeoutRef.current) {
+        clearTimeout(startMatchToastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const { keyEntry, keyEntryVisible } = useKeyboardCycleEntry({
     enabled: isRecording,
@@ -576,6 +624,7 @@ function MatchRecorderScreen({
       <div className="space-y-4">
         {isReady && !isRecording && (
           <button
+            ref={beginMatchButtonRef}
             onClick={() => recorder.beginMatch()}
             className="w-96 mx-auto button font-bold transition-all flex items-center justify-center gap-3 shadow-lg animate-pulse hover:animate-none"
           >
@@ -676,10 +725,36 @@ function MatchRecorderScreen({
 
         {/* Points Entry - Secondary importance */}
         {
-          <div className="bg-brand-surface border border-brand-border overflow-hidden">
+          <div className="bg-brand-surface border border-brand-border overflow-hidden relative">
+            {mustBeginMatch && (
+              <button
+                type="button"
+                aria-label="Start match to enable points entry"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  nudgeToBeginMatch();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    nudgeToBeginMatch();
+                  }
+                }}
+                className="absolute inset-0 z-20 cursor-not-allowed bg-transparent"
+              />
+            )}
+
             <button
-              onClick={() => setShowPointsEntry(!showPointsEntry)}
-              className="w-full p-3 flex items-center justify-between hover: transition-colors text-left"
+              onClick={() => {
+                if (mustBeginMatch) {
+                  nudgeToBeginMatch();
+                  return;
+                }
+                setShowPointsEntry(!showPointsEntry);
+              }}
+              className={`w-full p-3 flex items-center justify-between hover: transition-colors text-left ${
+                mustBeginMatch ? "opacity-60" : ""
+              }`}
             >
               <div className="flex items-center gap-2">
                 <Palette
@@ -700,7 +775,11 @@ function MatchRecorderScreen({
             </button>
 
             {showPointsEntry && (
-              <div className="p-3 border-t border-brand-border space-y-4">
+              <div
+                className={`p-3 border-t border-brand-border space-y-4 ${
+                  mustBeginMatch ? "opacity-60" : ""
+                }`}
+              >
                 {/* Motif Selector */}
                 <div>
                   <label className="flex items-center gap-2 text-sm font-semibold mb-2">
@@ -714,7 +793,8 @@ function MatchRecorderScreen({
                   <select
                     value={motif || ""}
                     onChange={(e) => recorder.setMotif(e.target.value || null)}
-                    className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm text-brand-text"
+                    disabled={mustBeginMatch}
+                    className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm text-brand-text disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <option value="">Not set</option>
                     <option value="GPP">GPP — Green Purple Purple</option>
@@ -729,14 +809,14 @@ function MatchRecorderScreen({
                     value={autoPattern}
                     onChange={recorder.setAutoPattern}
                     motif={motif}
-                    disabled={!motif}
+                    disabled={mustBeginMatch || !motif}
                   />
                   <PatternInput
                     label="Teleop Pattern (end of teleop)"
                     value={teleopPattern}
                     onChange={recorder.setTeleopPattern}
                     motif={motif}
-                    disabled={!motif}
+                    disabled={mustBeginMatch || !motif}
                   />
                 </div>
 
@@ -746,14 +826,21 @@ function MatchRecorderScreen({
                       <Car size={16} weight="bold" className="text-brand-accent" />
                       Auto Leave
                     </label>
-                    <label className="flex items-center gap-3 p-3 border-2 border-brand-border rounded-xl cursor-pointer hover:border-brand-accent transition-colors">
+                    <label
+                      className={`flex items-center gap-3 p-3 border-2 border-brand-border rounded-xl transition-colors ${
+                        mustBeginMatch
+                          ? "cursor-not-allowed opacity-60"
+                          : "cursor-pointer hover:border-brand-accent"
+                      }`}
+                    >
                       <input
                         type="checkbox"
                         checked={autoLeave}
                         onChange={(e) =>
                           recorder.setAutoLeave(e.target.checked)
                         }
-                        className="w-5 h-5 accent-brand-accent"
+                        disabled={mustBeginMatch}
+                        className="w-5 h-5 accent-brand-accent disabled:cursor-not-allowed"
                       />
                       <span className="text-sm">
                         Robot left launch line (+3 pts)
@@ -773,7 +860,8 @@ function MatchRecorderScreen({
                     <select
                       value={teleopPark}
                       onChange={(e) => recorder.setTeleopPark(e.target.value)}
-                      className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm  text-brand-text"
+                      disabled={mustBeginMatch}
+                      className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm  text-brand-text disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       <option value="none">None (0 pts)</option>
                       <option value="partial">Partial (5 pts)</option>
@@ -1043,6 +1131,7 @@ function MatchRecorderScreen({
         )}
 
       <KeyboardEntryToast visible={keyEntryVisible} keyEntry={keyEntry} />
+      <StartMatchToBeginToast visible={startMatchToastVisible} />
       <CycleModal
         open={showCycleModal}
         cycleData={cycleData}
@@ -1050,6 +1139,20 @@ function MatchRecorderScreen({
         onConfirm={confirmCycle}
         onClose={() => setShowCycleModal(false)}
       />
+    </div>
+  );
+}
+
+function StartMatchToBeginToast({ visible }) {
+  if (!visible) return null;
+
+  return (
+    <div className="fixed top-14 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:top-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
+      <div className="card shadow p-4 w-full">
+        <div className="text-sm font-semibold text-brand-text">
+          Start the match to begin recording.
+        </div>
+      </div>
     </div>
   );
 }

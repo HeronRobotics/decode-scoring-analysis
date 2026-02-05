@@ -156,7 +156,7 @@ function MyMatchesPage() {
   }, [matches]);
 
   // Load team names for all teams in matches
-  const teamNumbersKey = teamNumbers.join(',');
+  const teamNumbersKey = teamNumbers.join(",");
   useEffect(() => {
     if (teamNumbers.length > 0) {
       loadTeamNames(teamNumbers);
@@ -209,7 +209,9 @@ function MyMatchesPage() {
         label = m.tournamentName || "No Tournament";
       } else if (groupBy === "team") {
         key = (m.teamNumber || "").toString() || "__none__";
-        label = m.teamNumber ? `${getTeamName(m.teamNumber)} (${m.teamNumber})` : "No Team";
+        label = m.teamNumber
+          ? `${getTeamName(m.teamNumber)} (${m.teamNumber})`
+          : "No Team";
       } else if (groupBy === "date") {
         const date = m.startTime
           ? new Date(m.startTime)
@@ -664,7 +666,9 @@ function MyMatchesPage() {
               )}
 
               {loading && <p className="text-brand-text">Loading matches...</p>}
-              {error && <p className="text-brand-accent text-sm mb-2">{error}</p>}
+              {error && (
+                <p className="text-brand-accent text-sm mb-2">{error}</p>
+              )}
 
               {!loading && matches.length === 0 && !error && (
                 <div className="text-center py-8 text-brand-text">
@@ -747,7 +751,7 @@ function MyMatchesPage() {
                             : "Unknown date";
                           const stats = getMatchStats(m.events);
                           const points = calculateTotalPoints(m);
-                        const isSelected = selectedMatchId === m.id;
+                          const isSelected = selectedMatchId === m.id;
 
                           return (
                             <div
@@ -772,7 +776,9 @@ function MyMatchesPage() {
                                 <div className="flex-1 min-w-0">
                                   <div className="font-semibold text-brand-mainText truncate">
                                     {m.title ||
-                                      (m.teamNumber ? `${getTeamName(m.teamNumber)} Match` : "Match")}
+                                      (m.teamNumber
+                                        ? `${getTeamName(m.teamNumber)} Match`
+                                        : "Match")}
                                   </div>
                                   {m.tournamentName &&
                                     groupBy !== "tournament" && (
@@ -810,8 +816,13 @@ function MyMatchesPage() {
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-brand-text">
                                 {groupBy !== "team" && (
                                   <span className="flex items-center gap-1.5">
-                                    <Users size={14} className="text-brand-text" />
-                                    {m.teamNumber ? `${getTeamName(m.teamNumber)} (${m.teamNumber})` : "No Team"}
+                                    <Users
+                                      size={14}
+                                      className="text-brand-text"
+                                    />
+                                    {m.teamNumber
+                                      ? `${getTeamName(m.teamNumber)} (${m.teamNumber})`
+                                      : "No Team"}
                                   </span>
                                 )}
                                 {groupBy !== "date" && (
@@ -824,11 +835,18 @@ function MyMatchesPage() {
                                   </span>
                                 )}
                                 <span className="flex items-center gap-1.5">
-                                <Target size={14} className="text-brand-text" />
-                                <span className="font-semibold text-brand-mainText">{formatStat(points.total, 0)}</span>
-                                <span className="text-xs text-brand-text">pts</span>
-                              </span>
-                            </div>
+                                  <Target
+                                    size={14}
+                                    className="text-brand-text"
+                                  />
+                                  <span className="font-semibold text-brand-mainText">
+                                    {formatStat(points.total, 0)}
+                                  </span>
+                                  <span className="text-xs text-brand-text">
+                                    pts
+                                  </span>
+                                </span>
+                              </div>
 
                               {/* Score Summary */}
                               <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-3 pt-3 border-t border-brand-border">
@@ -883,7 +901,15 @@ function MyMatchesPage() {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-brand-mainText">
-                        {selectedMatch.title || (selectedMatch.teamNumber ? <><TeamName teamNumber={selectedMatch.teamNumber} /> Match</> : "Match")}
+                        {selectedMatch.title ||
+                          (selectedMatch.teamNumber ? (
+                            <>
+                              <TeamName teamNumber={selectedMatch.teamNumber} />{" "}
+                              Match
+                            </>
+                          ) : (
+                            "Match"
+                          ))}
                       </h2>
                       {selectedMatch.tournamentName && (
                         <p className="text-brand-accent font-medium mt-1">
@@ -902,47 +928,46 @@ function MyMatchesPage() {
                     </a>
                   </div>
 
-                  {/* Condensed Stats Summary */}
                   {selectedStats && selectedStats.cycles > 0 && (
                     <div className="bg-brand-accent rounded-lg p-5 mb-6">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
                             {selectedStats.cycles}
                           </div>
-                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
                             <ListNumbers size={14} />
                             Cycles
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
                             {selectedStats.scored}
-                            <span className="text-lg text-brand-mainText">
+                            <span className="text-lg text-brand-surface">
                               /{selectedStats.total}
                             </span>
                           </div>
-                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
                             <Target size={14} />
                             Scored
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
                             {formatStat(selectedStats.accuracy, 0)}%
                           </div>
-                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
                             <Target size={14} weight="fill" />
                             Accuracy
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-mainText">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
                             {selectedStats.avgCycleTime
                               ? `${formatStat(selectedStats.avgCycleTime, 1)}s`
                               : "—"}
                           </div>
-                          <div className="text-brand-mainText text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
                             <Clock size={14} />
                             Avg Cycle
                           </div>
