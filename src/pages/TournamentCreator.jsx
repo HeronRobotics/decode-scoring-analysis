@@ -161,7 +161,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
         </button>
       </div>
 
-      <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-8">
+      <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-8">
         <div className="space-y-6 mb-8">
           <div>
             <label className="block font-semibold mb-2">Tournament Name</label>
@@ -214,7 +214,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                   const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0)
                   const total = cycleEvents.reduce((sum, e) => sum + e.total, 0)
                   return (
-                    <div key={index} className="border-2 border-brand-border p-3 flex justify-between items-center">
+                    <div key={index} className="bg-brand-bg border border-brand-border rounded-lg p-3 flex justify-between items-center">
                       <div>
                         <span className="font-semibold">Match {index + 1} ({match.teamNumber || 'No Team'})</span>
                         <span className="text-sm text-brand-text ml-4">
@@ -246,11 +246,11 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
 
       {showTextImport && (
         <div
-          className="fixed inset-0 bg-brand-bg flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowTextImport(false)}
         >
           <div
-            className="bg-brand-bg p-4 sm:p-8 max-w-2xl w-11/12 border-2 border-brand-border"
+            className="bg-brand-surface p-4 sm:p-8 max-w-2xl w-11/12 border border-brand-border rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl mb-5">Paste Match Codes</h3>

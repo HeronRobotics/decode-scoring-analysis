@@ -474,7 +474,7 @@ function LifetimePage() {
         <h1 className="text-3xl sm:text-5xl font-bold">Lifetime Statistics</h1>
       </div>
 
-      <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
+      <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-6 mb-8">
         <h2 className="text-2xl sm:text-3xl mb-4">Filters</h2>
         <div className="flex flex-col sm:flex-row gap-4 items-center mb-2">
           <label className="flex items-center gap-2 font-semibold">
@@ -496,13 +496,13 @@ function LifetimePage() {
       </div>
 
       {authLoading && (
-        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
+        <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center">
           <p className="text-brand-accent">Loading account...</p>
         </div>
       )}
 
       {!authLoading && !user && (
-        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
+        <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center">
           <p className="mb-2">
             Sign in and save matches to see your lifetime statistics.
           </p>
@@ -514,7 +514,7 @@ function LifetimePage() {
       )}
 
       {!authLoading && user && !loading && !allMatches.length && !error && (
-        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
+        <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center">
           <p className="text-xl">
             No saved matches yet. Record a match or bulk import them on the My
             Matches tab.
@@ -523,7 +523,7 @@ function LifetimePage() {
       )}
 
       {!authLoading && user && error && (
-        <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
+        <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center">
           <p className="text-brand-accent text-sm">{error}</p>
         </div>
       )}
@@ -532,17 +532,17 @@ function LifetimePage() {
         <>
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 text-center">
               <div className="text-4xl font-bold text-brand-accent mb-1">{matchStats.length}</div>
               <div className="text-sm text-brand-text">Total Matches Recorded</div>
             </div>
-            <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 text-center">
               <div className="text-4xl font-bold text-brand-accent mb-1">
                 {matchStats.length > 0 ? formatStat(matchStats.reduce((sum, m) => sum + m.accuracy, 0) / matchStats.length) : 0}%
               </div>
               <div className="text-sm text-brand-text">Overall Accuracy</div>
             </div>
-            <div className="bg-brand-bg border-2 border-brand-border p-5 text-center">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 text-center">
               <div className="text-4xl font-bold text-brand-accent mb-1">
                 {matchStats.reduce((sum, m) => sum + m.scored, 0)}
               </div>
@@ -552,7 +552,7 @@ function LifetimePage() {
 
           {/* Points Overview - Full matches only */}
           {fullMatchStats.length > 0 && (
-            <div className="bg-brand-accent border-2 border-brand-accent p-4 sm:p-6 mb-8">
+            <div className="bg-brand-accent border border-brand-accent rounded-2xl p-4 sm:p-6 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
                   <Star size={28} weight="fill" className="text-brand-mainText" />
@@ -582,7 +582,7 @@ function LifetimePage() {
           )}
 
           {/* Key Insights Section */}
-          <div className="bg-brand-bg border-2 border-brand-border p-5 mb-8">
+          <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Trophy size={24} weight="bold" className="text-brand-accent" />
               <h2 className="text-2xl font-bold">Performance Insights</h2>
@@ -652,7 +652,7 @@ function LifetimePage() {
 
           {/* Recent Performance Trend */}
           {recentPerformance && (
-            <div className="bg-brand-bg border-2 border-brand-border p-5 mb-8">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 mb-8">
               <div className="flex items-center gap-2 mb-4">
                 <TrendUp size={24} weight="bold" className="text-brand-accent" />
                 <h2 className="text-2xl font-bold">Recent Trend</h2>
@@ -714,7 +714,7 @@ function LifetimePage() {
 
           {/* Tournament Breakdown */}
           {tournamentStats.length > 1 && (
-            <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-6 mb-8">
               <div className="flex items-center gap-2 mb-5">
                 <ChartBar size={28} weight="bold" className="text-brand-accent" />
                 <h2 className="text-2xl font-bold">
@@ -811,7 +811,7 @@ function LifetimePage() {
           )}
 
           {/* Progression Charts */}
-          <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
+          <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-6 mb-8">
             <h2 className="text-3xl mb-5 flex items-center gap-3">
               <Calendar weight="bold" size={32} />
               Match History
@@ -834,7 +834,7 @@ function LifetimePage() {
                     </button>
                   )}
                 </div>
-                <div className="h-72 border-2 border-brand-border bg-brand-bg">
+                <div className="h-72 border border-brand-border rounded-xl bg-brand-bg">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={fullMatchStatsByDate.map((stat) => ({
@@ -993,7 +993,7 @@ function LifetimePage() {
                     </button>
                   )}
                 </div>
-                <div className="h-72 border-2 border-brand-border bg-brand-bg">
+                <div className="h-72 border border-brand-border rounded-xl bg-brand-bg">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={matchStatsByDate.map((stat) => ({

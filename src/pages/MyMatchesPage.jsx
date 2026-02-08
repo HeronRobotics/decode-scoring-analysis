@@ -461,7 +461,7 @@ function MyMatchesPage() {
       )}
 
       {!authLoading && !user && (
-        <div className="bg-brand-bg border-2 border-brand-border p-6 text-center">
+        <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 text-center">
           <p className="mb-4">
             Sign in to view and manage matches saved to your account.
           </p>
@@ -475,7 +475,7 @@ function MyMatchesPage() {
       {!authLoading && user && (
         <>
           {/* Import Section - Full Width at Top */}
-          <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-5 mb-6">
+          <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-5 mb-6">
             <button
               type="button"
               onClick={() => setShowImportSection(!showImportSection)}
@@ -571,7 +571,7 @@ function MyMatchesPage() {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] lg:items-start">
             {/* Left Column - Match List */}
-            <div className="bg-brand-bg border-2 border-brand-border p-5 sm:p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 sm:p-6">
               {/* Saved Matches Header */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Saved Matches</h2>
@@ -894,7 +894,7 @@ function MyMatchesPage() {
             </div>
 
             {/* Right Column - Match Preview */}
-            <div className="bg-brand-bg border-2 border-brand-border p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
               {selectedMatch ? (
                 <>
                   {/* Header with title and actions */}
@@ -929,7 +929,7 @@ function MyMatchesPage() {
                   </div>
 
                   {selectedStats && selectedStats.cycles > 0 && (
-                    <div className="bg-brand-accent rounded-lg p-5 mb-6">
+                    <div className="bg-brand-accent rounded-xl p-5 mb-6">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="text-center">
                           <div className="text-2xl sm:text-3xl font-bold text-brand-surface">

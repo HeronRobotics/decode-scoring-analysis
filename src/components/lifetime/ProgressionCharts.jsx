@@ -42,7 +42,7 @@ function ProgressionCharts({ matchStats }) {
   }));
 
   return (
-    <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
+    <div className="bg-brand-bg border border-brand-border rounded-xl p-4 sm:p-6 mb-8">
       <h2 className="text-3xl mb-5 flex items-center gap-3">
         <TrendUp weight="bold" size={32} />
         Progression
@@ -50,7 +50,7 @@ function ProgressionCharts({ matchStats }) {
 
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-3">Accuracy Over Time</h3>
-        <div className="h-80 border-2 border-brand-border bg-brand-bg">
+        <div className="h-80 border border-brand-border rounded-lg bg-brand-bg">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
@@ -105,7 +105,7 @@ function ProgressionCharts({ matchStats }) {
         <h3 className="text-xl font-semibold mb-3">
           Average Cycle Time Over Time
         </h3>
-        <div className="h-80 border-2 border-brand-border bg-brand-bg">
+        <div className="h-80 border border-brand-border rounded-lg bg-brand-bg">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
@@ -159,7 +159,7 @@ function ProgressionCharts({ matchStats }) {
         <h3 className="text-xl font-semibold mb-3">
           Balls Scored per 2 Minutes
         </h3>
-        <div className="h-80 border-2 border-brand-border bg-brand-bg">
+        <div className="h-80 border border-brand-border rounded-lg bg-brand-bg">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}

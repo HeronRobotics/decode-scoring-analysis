@@ -7,7 +7,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
   
   if (cycleEvents.length === 0) {
     return (
-      <div className="bg-brand-bg border-2 border-brand-border p-8 text-center">
+      <div className="bg-brand-bg border border-brand-border rounded-xl p-8 text-center">
         <p className="text-lg text-brand-text">No cycle data available for graphs</p>
       </div>
     )
@@ -29,7 +29,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
     <div className="space-y-8">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-brand-bg border-2 border-brand-border p-6">
+        <div className="bg-brand-bg border border-brand-border rounded-xl p-6">
           <div className="flex items-center gap-3 mb-3">
             <Target weight="bold" size={28} className="text-brand-accent" />
             <h3 className="text-2xl font-bold">Accuracy</h3>
@@ -38,7 +38,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
           <p className="text-sm text-brand-text mt-2">{totalScored}/{totalBalls} balls scored</p>
         </div>
 
-        <div className="bg-brand-bg border-2 border-brand-border p-6">
+        <div className="bg-brand-bg border border-brand-border rounded-xl p-6">
           <div className="flex items-center gap-3 mb-3">
             <Clock weight="bold" size={28} className="text-brand-accent" />
             <h3 className="text-2xl font-bold">Avg Cycle Time</h3>
@@ -47,7 +47,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
           <p className="text-sm text-brand-text mt-2">{cycleTimes.length} cycles measured</p>
         </div>
 
-        <div className="bg-brand-bg border-2 border-brand-border p-6">
+        <div className="bg-brand-bg border border-brand-border rounded-xl p-6">
           <div className="flex items-center gap-3 mb-3">
             <ChartLine weight="bold" size={28} className="text-brand-accent" />
             <h3 className="text-2xl font-bold">Avg Balls Per Match</h3>
@@ -58,7 +58,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
       </div>
 
       {/* Distribution Graphs */}
-      <div className="bg-brand-bg border-2 border-brand-border p-6">
+      <div className="bg-brand-bg border border-brand-border rounded-xl p-6">
         <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
           <ChartLine weight="bold" size={28} className="text-brand-accent" />
           Scoring Distribution
@@ -158,7 +158,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
       </div>
 
       {/* Accuracy breakdown by ball count */}
-      <div className="bg-brand-bg border-2 border-brand-border p-6">
+      <div className="bg-brand-bg border border-brand-border rounded-xl p-6">
         <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
           <Target weight="bold" size={28} className="text-brand-accent" />
           Accuracy Breakdown

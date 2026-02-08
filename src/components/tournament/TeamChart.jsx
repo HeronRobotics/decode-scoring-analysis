@@ -109,7 +109,7 @@ function TeamChart({ matchesOrdered, teamStats, teamColors }) {
     const displayLabel = row.matchTime ? new Date(row.matchTime).toLocaleString() : label
     
     return (
-      <div className="bg-brand-bg border-2 border-brand-border p-2 text-sm">
+      <div className="bg-brand-surface border border-brand-border rounded-lg p-2 text-sm">
         <div className="font-semibold mb-1">{displayLabel}</div>
         <div className="space-y-1">
           {teamStats.filter(ts => visibleTeams[ts.team] !== false).map(ts => {

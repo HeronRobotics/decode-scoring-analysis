@@ -7,7 +7,7 @@ function TournamentLanding({ onCreateNew, onImportTournament, onBack }) {
         <h1 className="text-3xl sm:text-5xl font-bold">Tournament Analysis</h1>
       </header>
 
-      <div className="bg-brand-bg border-2 border-brand-border flex flex-col items-center p-6 sm:p-16 gap-6 w-full">
+      <div className="bg-brand-surface border border-brand-border rounded-2xl flex flex-col items-center p-6 sm:p-16 gap-6 w-full">
         <h2 className="text-3xl text-center">Load or Create Tournament</h2>
         <p className='mb-4 text-center'>
           Scout teams at tournaments (or other multi-match events like scrimmages) and import them here!

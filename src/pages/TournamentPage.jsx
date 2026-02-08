@@ -278,7 +278,7 @@ function TournamentPage({ onBack }) {
           </button>
         </div>
 
-        <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6">
+        <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-6">
           {authLoading || loadingMatches ? (
             <p className="text-brand-accent">Loading your matches...</p>
           ) : matchesError ? (
@@ -311,7 +311,7 @@ function TournamentPage({ onBack }) {
                 type="button"
                 onClick={handleLoadFromMyMatches}
                 disabled={!selectedTournamentName}
-                className="btn !py-3 !bg-brand-accent !text-brand-mainText !px-6 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="btn !py-3 !bg-brand-accent !text-over-accent !px-6 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Calendar weight="bold" size={20} />
                 Analyze Selected Tournament
@@ -389,7 +389,7 @@ function TournamentPage({ onBack }) {
           <h2 className="text-3xl">Tournament Summary</h2>
         </div>
 
-        <div className="bg-brand-bg p-4 sm:p-6 border-2 border-brand-border mt-5">
+        <div className="bg-brand-surface p-4 sm:p-6 border border-brand-border rounded-2xl mt-5">
           <h3 className="text-xl font-semibold mb-3">
             Match Scores — All Teams
           </h3>
@@ -433,7 +433,7 @@ function TournamentPage({ onBack }) {
             </div>
           )}
         </div>
-        <div className="bg-brand-bg p-4 sm:p-6 border-2 border-brand-border mt-8">
+        <div className="bg-brand-surface p-4 sm:p-6 border border-brand-border rounded-2xl mt-8">
           <h3 className="text-xl font-semibold mb-3">Team Statistics</h3>
           <div className={`mt-5 ${selectedTeam && "mb-5"}`}>
             <p className="text-brand-text">
@@ -445,7 +445,7 @@ function TournamentPage({ onBack }) {
         </div>
       </div>
 
-      <div className="w-full flex flex-col items-start p-4 sm:p-8 bg-brand-bg">
+      <div className="w-full flex flex-col items-start p-4 sm:p-8 bg-brand-surface border border-brand-border rounded-2xl">
         <h2 className="mb-8">
           <span className="text-3xl mb-5">
             {selectedTeam
@@ -454,7 +454,7 @@ function TournamentPage({ onBack }) {
           </span>
         </h2>
 
-        <div className="w-full bg-brand-bg border-2 border-brand-border p-4 sm:p-6 mb-8">
+        <div className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 sm:p-6 mb-8">
           <h3 className="text-2xl mb-4">
             Select Match ({filteredMatches.length} total)
           </h3>
@@ -525,7 +525,7 @@ function TournamentPage({ onBack }) {
               />
             </>
           ) : (
-            <div className="bg-brand-bg border-2 border-brand-border p-6 text-center text-brand-text">
+            <div className="bg-brand-bg border border-brand-border rounded-xl p-6 text-center text-brand-text">
               No matches for selected team.
             </div>
           )}

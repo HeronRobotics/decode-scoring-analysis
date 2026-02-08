@@ -3,7 +3,7 @@ import Statistics from '../Statistics'
 
 function TournamentList({ tournaments, tournamentStats, selectedTournament, setSelectedTournament, removeTournament }) {
   return (
-    <div className="bg-brand-bg border-2 border-brand-border p-6">
+    <div className="bg-brand-bg border border-brand-border rounded-xl p-6">
       <h2 className="text-3xl mb-5 flex items-center gap-3">
         <Calendar weight="bold" size={32} />
         Uploads ({tournaments.length})

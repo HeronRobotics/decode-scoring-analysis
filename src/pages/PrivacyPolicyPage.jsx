@@ -8,7 +8,7 @@ function PrivacyPolicyPage() {
         </p>
       </div>
 
-      <div className="bg-brand-bg border-2 border-brand-border p-4 sm:p-6 space-y-5 text-sm sm:text-base leading-relaxed">
+      <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-6 space-y-5 text-sm sm:text-base leading-relaxed">
         <section>
           <h2 className="text-xl font-semibold mb-2">1. Overview</h2>
           <p>
