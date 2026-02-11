@@ -27,33 +27,43 @@ createRoot(document.getElementById("root")).render(
               <App />
             </TeamNamesProvider>
           </AuthProvider>
-          <footer className="text-center text-sm text-brand-accent my-4">
-            <div className="w-full flex flex-row justify-center items-center gap-2">
-              <p className="font-semibold">
-                <img
-                  src="https://heronrobotics.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fheronlogo.b712bcb0.png&w=828&q=75"
-                  className="inline-block w-6 h-6 mx-2"
-                />{" "}
-                Heron Robotics, FTC 27621. &copy; 2025. All rights reserved.
-              </p>
-              <a
-                href="https://heronscout.me/privacy"
-                className="block underline"
-              >
-                Privacy Policy
-              </a>
-            </div>
-            <div className="text-sm">
-              Made with late nights and free time —{" "}
-              <a
-                className="underline"
-                href="https://github.com/HeronRobotics/decode-scoring-analysis"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Contribute on GitHub
-              </a>
-              !
+          <footer className="border-t border-brand-muted/20 text-center text-sm text-brand-muted mt-6 py-4">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <img
+                    src="public/heronicon.png"
+                    className="h-8"
+                    alt="Heron Robotics"
+                  />
+                  <span className="font-semibold">
+                    Heron Robotics, FTC 27621.
+                  </span>
+                </div>
+                <span className="text-brand-muted/70">&copy; 2025</span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <a
+                  href="https://heronscout.me/privacy"
+                  className="underline underline-offset-4"
+                >
+                  Privacy Policy
+                </a>
+                <span className="hidden sm:inline text-brand-muted/40">·</span>
+                <a
+                  className="underline underline-offset-4"
+                  href="https://github.com/HeronRobotics/decode-scoring-analysis"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Contribute on GitHub
+                </a>
+              </div>
+
+              <div className="text-xs text-brand-muted/70">
+                Made with late nights and free time.
+              </div>
             </div>
           </footer>
         </MatchRecorderProvider>

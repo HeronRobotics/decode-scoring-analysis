@@ -138,7 +138,7 @@ function HomePage() {
       <div className="bg" aria-hidden="true" />
       <div className="content min-h-screen p-4 sm:p-8 max-w-7xl mx-auto flex flex-col justify-center items-center gap-8 sm:gap-12">
         <div className="w-full text-center sm:text-left max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-accentBg border-2 border-brand-accent rounded-full mb-6 font-semibold text-brand-accent text-sm">
+          <div className="inline-flex items-center gap-1 px-4 py-2 bg-brand-accentBg border-1 border-brand-accent rounded-full mb-6 font-light text-brand-accent text-sm">
             <span className="w-2 h-2 bg-brand-accent rounded-full animate-pulse" />
             Over <span className="font-bold">750 matches</span> recorded!
           </div>
