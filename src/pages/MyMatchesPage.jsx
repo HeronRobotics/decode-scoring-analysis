@@ -1131,7 +1131,7 @@ function MyMatchesPage() {
                   </div>
 
                   {selectedStats && selectedStats.cycles > 0 && (
-                    <div className="bg-gradient-to-br from-brand-accent to-brand-accentStrong rounded-2xl p-6 mb-6 shadow-lg">
+                    <div className="bg-brand-invert-bg rounded-2xl p-6 mb-6 shadow-lg">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="text-center">
                           <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
