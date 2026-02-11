@@ -24,30 +24,35 @@ function QuickCycleGrid({ onAddCycle, onUndo, eventCount }) {
   );
 
   return (
-    <div className="space-y-2">
-      <div className="space-y-1.5">
+    <div className="space-y-3">
+      <div className="space-y-2.5">
         {GRID_ROWS.map((row) => (
-          <div key={row.attempted} className="flex items-center gap-1.5">
-            <span className="text-xs text-brand-text w-12 sm:w-14 text-right pr-1 font-medium shrink-0">
-              {row.attempted} ball{row.attempted > 1 ? "s" : ""}
-            </span>
-            <div className="flex gap-1.5 flex-1">
+          <div key={row.attempted} className="flex items-stretch gap-2">
+            <div className="flex items-center justify-center min-w-[4rem] bg-brand-bg rounded-xl border border-brand-border px-3">
+              <span className="text-sm font-bold text-brand-accent">
+                {row.attempted} ball{row.attempted > 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex gap-2 flex-1">
               {row.options.map((scored) => {
                 const key = `${row.attempted}-${scored}`;
                 const isFlashing = flashKey === key;
+                const allScored = scored === row.attempted && scored > 0;
                 return (
                   <button
                     key={key}
                     onClick={() => handleTap(row.attempted, scored)}
-                    className={`flex-1 min-h-[56px] rounded-lg border-2 font-bold text-base transition-all active:scale-95 ${
+                    className={`flex-1 min-h-[64px] rounded-xl border-2 font-bold text-lg transition-all flex flex-col items-center justify-center gap-0.5 ${
                       isFlashing
-                        ? "bg-green-500 border-green-400 text-white scale-95"
-                        : "border-brand-border bg-brand-surface text-brand-main-text hover:border-brand-accent active:bg-brand-accent active:text-over-accent"
+                        ? "bg-green-500 border-green-400 text-white scale-95 shadow-lg"
+                        : allScored
+                          ? "border-brand-accent bg-brand-accentBg text-brand-accent hover:bg-brand-accent hover:text-over-accent active:scale-95"
+                          : "border-brand-border bg-brand-surface text-brand-main-text hover:border-brand-accent hover:bg-brand-surfaceStrong active:scale-95"
                     }`}
                   >
-                    <span className="text-lg font-mono">{scored}</span>
-                    <span className="text-brand-text font-normal text-xs">
-                      /{row.attempted}
+                    <span className="text-2xl font-mono font-bold">{scored}</span>
+                    <span className="text-xs font-normal text-brand-text">
+                      scored
                     </span>
                   </button>
                 );
@@ -60,10 +65,10 @@ function QuickCycleGrid({ onAddCycle, onUndo, eventCount }) {
       {eventCount > 0 && (
         <button
           onClick={onUndo}
-          className="btn w-full py-2 text-sm flex items-center justify-center gap-2"
+          className="btn w-full py-3 text-base flex items-center justify-center gap-2 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400"
         >
-          <ArrowCounterClockwise size={16} weight="bold" />
-          Undo last
+          <ArrowCounterClockwise size={18} weight="bold" />
+          Undo Last Entry
         </button>
       )}
     </div>

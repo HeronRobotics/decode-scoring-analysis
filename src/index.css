@@ -2,22 +2,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Felipa&family=Roboto+Serif:wght@400;500;600;700&family=League+Spartan:wght@300;400;500;600;700&family=Manrope:wght@100;200;300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
 
 @theme {
-  --color-brand-bg: #DFEBFF;
-  --color-brand-surface: #f5f8ff;
-  --color-brand-surfaceStrong: #1d2230;
+  --color-brand-bg: #18181B;
+  --color-brand-surface: #1B1B1E;
+  --color-brand-surfaceStrong: #202024;
+  --color-brand-inputbg: #202024;
+
   --color-brand-outline: #303032;
-  --color-brand-border: #6887bc;
-  --color-brand-text: #445F8B;
-  --color-brand-main-text: #2D3E5C;
-  --color-over-accent: #FFFFFF;
+  --color-brand-border: #27272A;
+
+  --color-brand-text: #C4C4CA;
+  --color-brand-main-text: #FFFFFF;
+  --color-over-accent: #000;
   --color-brand-muted: #949aa6;
-  --color-brand-accent: #2D3E5C;
-  --color-brand-accentBg: #2D3E5C20;
-  --color-brand-inputbg: #2D3E5C09;
-  --color-brand-accentStrong: #fba23a;
-  --color-brand-success: #1c7528;
-  --color-brand-danger: #B87171;
-  --color-brand-shadow: #2D3E5C90;
+
+  --color-brand-invert-text: #000;
+  --color-brand-invert-bg: #fff2e8;
+  --color-brand-invert-border: #c9b4a3;
+  --color-brand-invert-muted: #6b7280;
+  --color-brand-invert-surface: #c9b4a350;
+
+  --color-brand-accent: #F58A22;
+  --color-brand-accentBg: #F58A2220;
+  --color-brand-accentStrong: #D97706;
+  --color-brand-shadow: #24160b;
+
+  --color-brand-success: #22c55e;
+  --color-brand-successBg: #22c55e20;
+  --color-brand-danger: #ef4444;
+  --color-brand-dangerBg: #ef444420;
+
+  --color-brand-info: #3b82f6;
+  --color-brand-infoBg: #3b82f620;
 }
 
 body {
@@ -90,10 +105,30 @@ h6 {
 
 .card {
   background: var(--color-brand-surface);
+  border: 1.5px solid var(--color-brand-border);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--color-brand-accent);
+  box-shadow: 0 4px 16px rgba(245, 138, 34, 0.1);
+}
+
+.card-compact {
+  background: var(--color-brand-surface);
   border: 1px solid var(--color-brand-border);
-  border-radius: 18px;
-  box-shadow: 0 30px 80px var(--color-brand-bg);
-  backdrop-filter: blur(18px);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.section-card {
+  background: var(--color-brand-surface);
+  border: 1.5px solid var(--color-brand-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .muted {
@@ -139,12 +174,26 @@ h6 {
 .button {
   font-family: 'Manrope', 'League Spartan', sans-serif;
   letter-spacing: 0.02em;
-  padding: 0.9rem 1.5rem;
+  padding: 0.875rem 1.75rem;
   border-radius: 12px;
-  border: 1px solid var(--color-brand-accent);
+  border: none;
   background: var(--color-brand-accent);
   color: var(--color-over-accent);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px var(--color-brand-shadow);
+}
+
+.button-large {
+  padding: 1.25rem 2rem;
+  font-size: 1.125rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px var(--color-brand-shadow);
+}
+
+.button-sm {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
 }
 
 .info {
@@ -153,9 +202,19 @@ h6 {
   font-size: 0.875rem;
 }
 
-.button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 40px var(--color-brand-shadow);
+.button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px var(--color-brand-shadow);
+  background: var(--color-brand-accentStrong);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .button:focus-visible {
@@ -170,51 +229,98 @@ h6 {
   box-shadow: none;
 }
 
-input, select {
+.button-ghost:hover:not(:disabled) {
+  background: var(--color-brand-accentBg);
+  border-color: var(--color-brand-accent);
+  color: var(--color-brand-accent);
+  box-shadow: none;
+}
+
+input, select, textarea {
   background: var(--color-brand-inputbg);
-  border: 1px solid var(--color-brand-border);
-  color: var(--color-brand-text);
+  border: 1.5px solid var(--color-brand-border);
+  color: var(--color-brand-main-text);
   border-radius: 12px;
   padding: 0.75rem 1rem;
   font-family: 'Manrope', 'League Spartan', sans-serif;
   font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--color-brand-accent);
-  box-shadow: 0 0 0 3px var(--color-brand-inputbg);
+  box-shadow: 0 0 0 3px var(--color-brand-accentBg);
+  background: var(--color-brand-surface);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-brand-muted);
+}
+
+/* Better mobile input styling */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px; /* Prevents iOS zoom */
+  }
 }
 
 /* Tailwind-driven component styles for dark theme */
 .btn {
-  border: 1px solid var(--color-brand-border);
-  background: var(--color-brand-bg);
-  color: var(--color-brand-text);
+  border: 1.5px solid var(--color-brand-border);
+  background: var(--color-brand-surface);
+  color: var(--color-brand-main-text);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
   border-color: var(--color-brand-accent);
+  background: var(--color-brand-surfaceStrong);
   color: var(--color-brand-accent);
-  box-shadow: 0 3px 7px var(--color-brand-shadow);
+  box-shadow: 0 4px 12px rgba(245, 138, 34, 0.15);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn:focus-visible {
-  outline: 3px solid var(--color-brand-accent);
+  outline: 2px solid var(--color-brand-accent);
   outline-offset: 2px;
 }
 
 .error-btn {
-  border: 1px solid var(--color-brand-accent);
-  background: var(--color-brand-accent);
-  color: var(--color-over-accent);
-  box-shadow: 0 10px 22px var(--color-brand-shadow);
+  border: none;
+  background: rgba(239, 68, 68, 0.12);
+  color: rgb(239, 68, 68);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
 }
 
-.error-btn:hover {
-  color: var(--color-brand-accent);
-  background: var(--color-brand-bg);
-  border-color: var(--color-brand-accent);
+.error-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgb(239, 68, 68);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.error-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.error-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .kbd {
@@ -243,7 +349,24 @@ button {
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 8px;
+}
+
+/* Mobile touch improvements */
+@media (max-width: 640px) {
+  button {
+    min-height: 44px; /* iOS minimum touch target */
+  }
+
+  .button {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .btn {
+    padding: 0.875rem 1.25rem;
+    min-height: 44px;
+  }
 }
 
 /* Loading Splash Animations */
@@ -444,21 +567,20 @@ button {
   z-index: 10;
 }
 
-/* Phase colors - softer, on-brand */
 .phase-auto {
-  background: #313c50;
+  background: #495031;
 }
 
 .phase-buffer {
-  background: #593e3e;
+  background: #431C1F;
 }
 
 .phase-teleop {
-  background: #173560;
+  background: #495031;
 }
 
 .phase-finished {
-  background: #0a5611;
+  background: #365031;
 }
 
 .phase-default {
@@ -508,3 +630,28 @@ button {
 .stagger-3 { animation-delay: 0.15s; }
 .stagger-4 { animation-delay: 0.2s; }
 .stagger-5 { animation-delay: 0.25s; }
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-brand-surface) 0%,
+    var(--color-brand-surfaceStrong) 50%,
+    var(--color-brand-surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Smooth page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}

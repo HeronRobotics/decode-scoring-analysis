@@ -21,6 +21,7 @@ import {
   UserPlus,
   Play,
   ShareNetwork,
+  ArrowUpIcon,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -603,63 +604,82 @@ function MatchRecorderScreen({
   }, [elapsedTime, mode, phase]);
 
   return (
-    <div className="w-full max-w-5xl space-y-4">
+    <div className="w-full max-w-6xl space-y-5">
       {/* Timeline - Full width anchor at top */}
       <Timeline events={events} currentTime={elapsedTime} mode={mode} />
 
-      {/* Timer Display - Full width */}
-      <div
-        className={`${getPhaseClass()} relative text-white p-5 sm:p-6 md:py-12 shadow-md`}
-      >
-        <div className="flex items-center justify-between mb-3">
-          {/* Phase badge */}
-          {mode === "match" && (
-            <div className="flex items-center gap-2 text-white absolute top-5 left-5 px-3 py-1.5 rounded-full">
-              {phaseInfo.icon}
-              <span className="text-xs font-bold tracking-wider">
-                {phaseInfo.text}
-              </span>
-            </div>
-          )}
-          {/* Live stats */}
-          <div className="flex items-center gap-3 text-sm absolute right-5 top-5">
-            <span className="flex items-center gap-1.5 text-white">
-              <Target size={16} weight="bold" />
-              <span className="font-mono font-bold">
-                {totalScored}/{totalBalls}
-              </span>
-            </span>
-            <span className="opacity-60">|</span>
-            <span className="font-mono">{accuracy}%</span>
-          </div>
-        </div>
+      {/* Timer Display - Prominent and centered */}
+      <div className={`${getPhaseClass()} relative overflow-hidden rounded-2xl shadow-lg`}>
+        {/* Gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20 pointer-events-none" />
 
-        {/* Main timer */}
-        <div className="text-center">
-          <h2 className="text-5xl sm:text-6xl font-mono font-bold tracking-tight text-white!">
-            {displayTime}
-          </h2>
-          <p className="text-sm opacity-80 mt-1 text-white">
-            {cycleCount} cycle{cycleCount !== 1 ? "s" : ""} recorded
-          </p>
+        <div className="relative p-6 pb-15">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            {/* Phase badge */}
+            {mode === "match" && (
+              <div className="flex items-center gap-2.5 text-white bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                {phaseInfo.icon}
+                <span className="text-sm font-bold tracking-wider">
+                  {phaseInfo.text}
+                </span>
+              </div>
+            )}
+
+            {/* Live stats */}
+            <div className="flex items-center gap-5 text-white">
+              <div className="flex items-center gap-2 bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                <Target size={18} weight="bold" />
+                <span className="font-mono font-bold text-lg">
+                  {totalScored}/{totalBalls}
+                </span>
+              </div>
+              <div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                <span className="font-mono font-bold text-lg">{accuracy}%</span>
+              </div>
+              <div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                <span className="text-sm font-semibold">{cycleCount} cycles</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Main timer - Centered and huge */}
+          <div className="text-center">
+            <h2 className="text-6xl sm:text-7xl md:text-8xl font-mono font-bold tracking-tight text-white drop-shadow-lg">
+              {displayTime}
+            </h2>
+          </div>
         </div>
       </div>
 
+      {/* Recording Controls - Clear action area */}
       <div className="space-y-4">
         {isReady && !isRecording && (
-          <button
-            ref={beginMatchButtonRef}
-            onClick={() => recorder.beginMatch()}
-            className="w-96 mx-auto button font-bold transition-all flex items-center justify-center gap-3 shadow-lg animate-pulse hover:animate-none"
-          >
-            <Play size={32} weight="fill" />
-            <span className="mt-0.5">Begin Match</span>
-          </button>
+          <div className="section-card bg-gradient-to-br from-brand-accent/10 to-brand-accent/5 border-brand-accent">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-brand-accent mb-2">Ready to Record</h3>
+              <p className="text-sm text-brand-text">Click below to start the match timer</p>
+            </div>
+            <button
+              ref={beginMatchButtonRef}
+              onClick={() => recorder.beginMatch()}
+              className="button button-large w-full max-w-md mx-auto flex items-center justify-center gap-3 animate-pulse hover:animate-none"
+            >
+              <Play size={28} weight="fill" />
+              <span>Begin Match</span>
+            </button>
+          </div>
         )}
 
-        {/* Action Buttons (Full width) */}
-        {isRecording ? (
-          <div className="space-y-3">
+        {/* Recording Active - Prominent controls */}
+        {isRecording && (
+          <div className="section-card border-brand-accent bg-gradient-to-br from-brand-surface to-brand-surfaceStrong">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-brand-border">
+              <h3 className="text-lg font-bold text-brand-accent flex items-center gap-2">
+                <Record size={20} weight="fill" className="animate-pulse" />
+                Recording in Progress
+              </h3>
+            </div>
+
             {/* Quick Cycle Grid */}
             <QuickCycleGrid
               onAddCycle={({ total, scored }) =>
@@ -670,13 +690,13 @@ function MatchRecorderScreen({
             />
 
             {/* Gate and Stop row */}
-            <div className="flex flex-row items-center justify-center gap-2">
+            <div className="grid grid-cols-2 gap-3 mt-4">
               <button
                 onClick={() => recorder.addGate()}
-                className="btn w-full py-3! justify-center"
+                className="btn py-4 justify-center text-base"
               >
-                <DoorOpen size={20} weight="bold" />
-                Gate
+                <DoorOpen size={22} weight="bold" />
+                Add Gate
               </button>
 
               <button
@@ -684,105 +704,130 @@ function MatchRecorderScreen({
                   wasManualStopRef.current = true;
                   recorder.stopMatch();
                 }}
-                className="error-btn w-full py-3! justify-center"
+                className="error-btn py-4 justify-center text-base"
               >
-                <Stop size={18} weight="fill" />
+                <Stop size={20} weight="fill" />
                 Stop Match
               </button>
             </div>
           </div>
-        ) : !isReady && events.length > 0 ? (
-          /* Post-match action buttons */
-          <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row gap-2">
+        )}
+
+        {/* Post-match actions */}
+        {!isReady && events.length > 0 && (
+          <div className="section-card bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/30">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-bold text-green-400 mb-2 flex items-center justify-center gap-2">
+                <CheckCircle size={24} weight="fill" />
+                Match Complete!
+              </h3>
+              <p className="text-sm text-brand-text">Share your results or start a new match</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div></div>
               <button
                 onClick={() => shareUrl(matchText, "Match data link")}
-                className="button flex-1 py-3 flex items-center justify-center gap-2 text-base font-semibold"
+                className="button py-4 flex items-center justify-center gap-2"
               >
-                <ShareNetwork size={22} weight="bold" />
-                Share Match
+                <ShareNetwork size={20} weight="bold" />
+                Share
               </button>
+
               {user && (
                 <button
                   onClick={handleSaveToAccount}
                   disabled={saveStatus === "saving"}
-                  className="btn flex-1 py-3! flex items-center justify-center gap-2"
+                  className="btn py-4 flex items-center justify-center gap-2"
                 >
                   <FloppyDisk size={20} weight="bold" />
                   {saveStatus === "saving"
                     ? "Saving..."
                     : saveStatus === "saved"
                       ? "Saved"
-                      : "Save to Account"}
+                      : "Save"}
                 </button>
               )}
+
               <button
                 onClick={() => recorder.resetMatch()}
-                className="btn flex-1 py-3! flex items-center justify-center gap-2"
+                className="btn py-4 flex items-center justify-center gap-2"
               >
                 <ArrowClockwise size={20} weight="bold" />
                 New Match
               </button>
             </div>
           </div>
-        ) : !isReady ? (
-          <button
-            onClick={() => recorder.resetMatch()}
-            className="btn px-4 py-2 w-48 mx-auto text-sm "
-          >
-            <ArrowClockwise size={20} weight="bold" />
-            Start New Match
-          </button>
-        ) : null}
+        )}
+
+        {!isReady && events.length === 0 && (
+          <div className="text-center">
+            <button
+              onClick={() => recorder.resetMatch()}
+              className="btn px-6 py-3"
+            >
+              <ArrowClockwise size={20} weight="bold" />
+              Start New Match
+            </button>
+          </div>
+        )}
 
         {/* Quick Guide - Inline when recording, hidden on mobile */}
         {isRecording && (
-          <div className="hidden sm:block border border-brand-border rounded-lg overflow-hidden">
+          <div className="hidden sm:block card-compact bg-brand-bg/50">
             <button
               onClick={() => setShowQuickGuide(!showQuickGuide)}
-              className="w-full px-4 py-2.5 flex items-center justify-between hover: transition-colors text-sm"
+              className="w-full flex items-center justify-between transition-colors"
             >
-              <span className="flex items-center gap-2 text-brand-text">
+              <span className="flex items-center gap-2.5 text-brand-text font-medium">
                 <Keyboard
-                  size={16}
+                  size={18}
                   weight="duotone"
                   className="text-brand-accent"
                 />
-                Keyboard shortcuts
+                Keyboard Shortcuts
               </span>
-              <CaretRight
-                size={14}
+              <CaretDown
+                size={16}
                 weight="bold"
                 className={`text-brand-accent transition-transform ${
-                  showQuickGuide ? "rotate-90" : ""
+                  showQuickGuide ? "" : "-rotate-90"
                 }`}
               />
             </button>
 
             {showQuickGuide && (
-              <div className="px-4 pb-3 pt-1 border-t border-brand-border">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-brand-text">
-                  <span className="kbd">1</span>
-                  <span className="kbd">2</span>
-                  <span className="kbd">3</span>
-                  <span className="text-brand-text">=attempted</span>
-                  <ArrowFatLineRight size={12} className="text-brand-accent" />
-                  <span className="kbd">0</span>-<span className="kbd">3</span>
-                  <span className="text-brand-text">=scored</span>
-                  <ArrowFatLineRight size={12} className="text-brand-accent" />
-                  <span className="kbd">Enter</span>
-                  <span className="text-brand-text ml-2">|</span>
-                  <span className="kbd ml-2">G</span>
-                  <span className="text-brand-text">=gate</span>
+              <div className="mt-3 pt-3 border-t border-brand-border">
+                <div className="flex flex-wrap items-center gap-2.5 text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="kbd">1</span>
+                    <span className="kbd">2</span>
+                    <span className="kbd">3</span>
+                    <span className="text-brand-text text-xs">=balls</span>
+                  </div>
+                  <ArrowFatLineRight size={14} className="text-brand-accent" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="kbd">0</span>
+                    <span className="text-xs text-brand-text">to</span>
+                    <span className="kbd">3</span>
+                    <span className="text-brand-text text-xs">=scored</span>
+                  </div>
+                  <ArrowFatLineRight size={14} className="text-brand-accent" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="kbd">Enter</span>
+                  </div>
+                  <div className="h-4 w-px bg-brand-border" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="kbd">G</span>
+                    <span className="text-brand-text text-xs">=gate</span>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         )}
-
-        {/* Points Entry - Secondary importance */}
         {
-          <div className="bg-brand-surface border border-brand-border overflow-hidden relative">
+          <div className="section-card relative">
             {mustBeginMatch && (
               <button
                 type="button"
@@ -797,8 +842,15 @@ function MatchRecorderScreen({
                     nudgeToBeginMatch();
                   }
                 }}
-                className="absolute inset-0 z-20 cursor-not-allowed bg-transparent"
-              />
+                className="mx-auto inset-0 z-20 cursor-not-allowed bg-brand-bg/60 backdrop-blur-[2px] rounded-2xl flex items-center justify-center"
+              >
+                <div className="bg-brand-dangerBg border-1 border-brand-danger px-6 py-3 text-brand-danger font-semibold flex flex-row items-center justify-center gap-2 rounded-xl shadow-lg">
+                  <p className="">
+                    Start the match first
+                  </p>
+                  <ArrowUpIcon weight="bold" />
+                </div>
+              </button>
             )}
 
             <button
@@ -809,41 +861,41 @@ function MatchRecorderScreen({
                 }
                 setShowPointsEntry(!showPointsEntry);
               }}
-              className={`w-full p-3 flex items-center justify-between hover: transition-colors text-left ${
-                mustBeginMatch ? "opacity-60" : ""
-              }`}
+              className="w-full flex items-center justify-between transition-colors"
             >
-              <div className="flex items-center gap-2">
-                <Palette
-                  size={20}
-                  weight="duotone"
-                  className="text-brand-accent"
-                />
-                <span className="text-base font-semibold">Points Entry</span>
-                <span className="text-xs bg-brand-accentBg text-brand-mainText px-2 py-0.5 rounded-full font-bold">
-                  {pointsBreakdown.total} pts
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-accentBg flex items-center justify-center">
+                  <Palette
+                    size={20}
+                    weight="duotone"
+                    className="text-brand-accent"
+                  />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-brand-main-text">Scoring Details</h3>
+                  <p className="text-xs text-brand-text">Motif patterns & bonus points</p>
+                </div>
               </div>
-              <CaretDown
-                size={18}
-                weight="bold"
-                className={`text-brand-accent transition-transform ${showPointsEntry ? "rotate-180" : ""}`}
-              />
+              <div className="flex items-center gap-3">
+                <div className="bg-brand-accent text-over-accent px-4 py-2 rounded-lg font-bold">
+                  {pointsBreakdown.total} pts
+                </div>
+                <CaretDown
+                  size={18}
+                  weight="bold"
+                  className={`text-brand-accent transition-transform ${showPointsEntry ? "" : "-rotate-90"}`}
+                />
+              </div>
             </button>
 
             {showPointsEntry && (
-              <div
-                className={`p-3 border-t border-brand-border space-y-4 ${
-                  mustBeginMatch ? "opacity-60" : ""
-                }`}
-              >
+              <div className="mt-6 pt-6 border-t border-brand-border space-y-5">
                 {/* Motif Selector */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold mb-2">
+                <div className="bg-brand-bg/50 rounded-xl p-4 border border-brand-border">
+                  <label className="flex items-center gap-2 text-sm font-bold mb-3 text-brand-accent">
                     <Palette
-                      size={16}
+                      size={18}
                       weight="bold"
-                      className="text-brand-accent"
                     />
                     Motif Pattern
                   </label>
@@ -851,9 +903,9 @@ function MatchRecorderScreen({
                     value={motif || ""}
                     onChange={(e) => recorder.setMotif(e.target.value || null)}
                     disabled={mustBeginMatch}
-                    className="w-full px-3 py-2 border-2 border-brand-border focus:border-brand-accent outline-none rounded text-sm text-brand-text disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 border-2 border-brand-border focus:border-brand-accent outline-none rounded-xl text-base font-medium text-brand-main-text disabled:opacity-60 disabled:cursor-not-allowed bg-brand-surface"
                   >
-                    <option value="">Not set</option>
+                    <option value="">Select motif pattern...</option>
                     <option value="GPP">GPP</option>
                     <option value="PGP">PGP</option>
                     <option value="PPG">PPG</option>
@@ -1026,91 +1078,98 @@ function MatchRecorderScreen({
           )}
           </div>
         }
-        <div className=" border border-brand-border bg-brand-surface p-4">
-          <h3 className="text-sm font-semibold text-brand-text mb-3 uppercase tracking-wide">Match Details</h3>
-          <div className="space-y-3 flex flex-row flex-wrap justify-start gap-4">
-            <div className="w-full">
+
+        {/* Match Details - Organized section */}
+        <div className="section-card">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-brand-accentBg flex items-center justify-center">
+              <Note size={20} weight="duotone" className="text-brand-accent" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-brand-main-text">Match Information</h3>
+              <p className="text-xs text-brand-text">Team, tournament, and notes</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-brand-accent mb-2">Match Title</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Match Title (e.g. Driver practice, match 3, etc.)"
-                className="w-full px-3 py-2 border border-brand-border focus:border-brand-accent outline-none rounded text-lg  text-brand-text"
+                placeholder="e.g. Quals 12, Finals 2, Practice Match"
+                className="w-full px-4 py-3 border-2 border-brand-border focus:border-brand-accent outline-none rounded-xl text-base text-brand-main-text bg-brand-surface font-medium"
               />
             </div>
-            <div>
-              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-brand-text">
-                <Target size={14} weight="bold" className="text-brand-accent" />
-                Team Number
-              </label>
-              <input
-                type="number"
-                value={teamNumber}
-                onChange={(e) => recorder.setTeamNumber(e.target.value)}
-                placeholder="Enter team #"
-                className="w-48 p-2 border border-brand-border focus:border-brand-accent outline-none text-center text-sm font-mono rounded transition-colors  text-brand-text"
-                min="1"
-                max="99999"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-brand-accent mb-2">
+                  Team Number
+                </label>
+                <input
+                  type="number"
+                  value={teamNumber}
+                  onChange={(e) => recorder.setTeamNumber(e.target.value)}
+                  placeholder="e.g. 12345"
+                  className="w-full px-4 py-3 border-2 border-brand-border focus:border-brand-accent outline-none rounded-xl text-base font-mono text-brand-main-text bg-brand-surface"
+                  min="1"
+                  max="99999"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-brand-accent mb-2">
+                  Match Date
+                </label>
+                <input
+                  type="date"
+                  value={matchDate}
+                  onChange={(e) => setMatchDate(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-brand-border focus:border-brand-accent outline-none rounded-xl text-base text-brand-main-text bg-brand-surface"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold mb-1 text-brand-text block">
-                Match Date
-              </label>
-              <input
-                type="date"
-                value={matchDate}
-                onChange={(e) => setMatchDate(e.target.value)}
-                className="w-48 px-3 py-2 border border-brand-border focus:border-brand-accent outline-none rounded text-sm  text-brand-text"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold mb-1 text-brand-text block">
-                Tournament Tag <span className="text-brand-text font-normal">(optional)</span>
+              <label className="block text-sm font-semibold text-brand-accent mb-2">
+                Tournament <span className="text-brand-text font-normal text-xs">(optional)</span>
               </label>
               <input
                 type="text"
                 value={tournamentName}
                 onChange={(e) => setTournamentName(e.target.value)}
-                placeholder="e.g. Play Space Qualifier, Regionals, etc."
-                className="w-full px-3 py-2 border border-brand-border focus:border-brand-accent outline-none rounded text-sm  text-brand-text"
+                placeholder="e.g. State Championship, League Meet"
+                className="w-full px-4 py-3 border-2 border-brand-border focus:border-brand-accent outline-none rounded-xl text-base text-brand-main-text bg-brand-surface"
               />
               {knownTournaments.length > 0 && (
-                <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                  <span className="text-xs text-brand-text">
-                    Or pick from previous:
-                  </span>
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      if (!e.target.value) return;
-                      setTournamentName(e.target.value);
-                    }}
-                    className="px-2 py-1 border border-brand-border focus:border-brand-accent outline-none text-xs rounded min-w-40  text-brand-text"
-                  >
-                    <option value="">Select tournament...</option>
-                    {knownTournaments.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    setTournamentName(e.target.value);
+                  }}
+                  className="mt-2 w-full sm:w-auto px-3 py-2 border border-brand-border focus:border-brand-accent outline-none rounded-lg text-sm text-brand-text bg-brand-bg"
+                >
+                  <option value="">Select from previous tournaments...</option>
+                  {knownTournaments.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
               )}
             </div>
 
-            <div className="w-full">
-              <label className="flex items-center gap-2 text-xs font-semibold mb-1 text-brand-text">
-                <Note size={14} weight="bold" className="text-brand-accent" />
+            <div>
+              <label className="block text-sm font-semibold text-brand-accent mb-2">
                 Match Notes
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => recorder.setNotes(e.target.value)}
-                placeholder="Defense, robot issues, strategy..."
-                className="w-full px-3 py-2 border border-brand-border focus:border-brand-accent outline-none resize-none h-20 rounded transition-colors text-sm  text-brand-text"
+                placeholder="Add notes about defense, robot performance, strategy..."
+                className="w-full px-4 py-3 border-2 border-brand-border focus:border-brand-accent outline-none resize-none rounded-xl text-base text-brand-main-text bg-brand-surface min-h-[100px]"
               />
             </div>
           </div>
@@ -1250,7 +1309,7 @@ function SaveMatchPromptToast({ onSave, onDismiss }) {
 function SignUpPromptToast({ onSign, onDismiss }) {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:bottom-4 sm:right-4 z-50 w-[min(22rem,calc(100vw-1.5rem))]">
-      <div className=" border-2 border-brand-border shadow p-4 w-full bg-brand-surface shadow-brand-shadow">
+      <div className=" border-2 border-brand-border shadow-lg p-4 w-full bg-brand-surface shadow-brand-shadow">
         <div className="text-sm font-semibold text-brand-main-text mb-1">
           Sign up?
         </div>

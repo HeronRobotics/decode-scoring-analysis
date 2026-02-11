@@ -624,27 +624,30 @@ function MyMatchesPage() {
       {!authLoading && user && (
         <>
           {/* Import Section - Full Width at Top */}
-          <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-5 mb-6">
+          <div className="section-card mb-6">
             <button
               type="button"
               onClick={() => setShowImportSection(!showImportSection)}
               className="w-full flex items-center justify-between text-left"
             >
-              <div className="flex items-center gap-2">
-                <UploadSimple
-                  size={20}
-                  weight="bold"
-                  className="text-brand-accent"
-                />
-                <span className="font-semibold text-brand-accent">
-                  Import Matches
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-accentBg flex items-center justify-center">
+                  <UploadSimple
+                    size={20}
+                    weight="bold"
+                    className="text-brand-accent"
+                  />
+                </div>
+                <div>
+                  <span className="font-bold text-brand-main-text block">Import Matches</span>
+                  <span className="text-xs text-brand-text">Upload JSON or paste links</span>
+                </div>
               </div>
-              <CaretRight
+              <CaretDown
                 size={18}
                 weight="bold"
                 className={`text-brand-accent transition-transform ${
-                  showImportSection ? "rotate-90" : ""
+                  showImportSection ? "" : "-rotate-90"
                 }`}
               />
             </button>
@@ -720,15 +723,17 @@ function MyMatchesPage() {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,1fr)_minmax(0,1.2fr)] lg:items-start">
             {/* Left Column - Match List */}
-            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 sm:p-6">
+            <div className="section-card">
               {/* Saved Matches Header */}
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Saved Matches</h2>
-                <span className="text-sm text-brand-text">
-                  {filteredMatches.length === allMatches.length
-                    ? `${allMatches.length} ${allMatches.length === 1 ? "match" : "matches"}`
-                    : `${filteredMatches.length} of ${allMatches.length}`}
-                </span>
+              <div className="flex items-center justify-between mb-5 pb-4 border-b border-brand-border">
+                <div>
+                  <h2 className="text-xl font-bold text-brand-main-text">Saved Matches</h2>
+                  <p className="text-xs text-brand-text mt-0.5">
+                    {filteredMatches.length === allMatches.length
+                      ? `${allMatches.length} total ${allMatches.length === 1 ? "match" : "matches"}`
+                      : `${filteredMatches.length} of ${allMatches.length} matches`}
+                  </p>
+                </div>
               </div>
 
               {/* Sync unsynced local matches */}
@@ -934,10 +939,10 @@ function MyMatchesPage() {
                                   setSelectedMatchId(m.id);
                                 }
                               }}
-                              className={`w-full text-left border-2 p-4 rounded-lg transition-all ${
+                              className={`w-full text-left border-2 p-4 rounded-xl transition-all cursor-pointer ${
                                 isSelected
-                                  ? "border-brand-accent bg-brand-accentBg shadow-sm"
-                                  : "border-brand-border bg-brand-bg hover:border-brand-accent hover:bg-brand-bg"
+                                  ? "border-brand-accent bg-brand-accentBg shadow-lg scale-[1.02]"
+                                  : "border-brand-border bg-brand-bg hover:border-brand-accent/50 hover:bg-brand-surface hover:shadow-md"
                               }`}
                             >
                               {/* Match Header */}
@@ -1090,13 +1095,13 @@ function MyMatchesPage() {
             </div>
 
             {/* Right Column - Match Preview */}
-            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 sm:p-6 min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
+            <div className="section-card min-h-[260px] sm:min-h-[320px] lg:min-h-[400px]">
               {selectedMatch ? (
                 <>
                   {/* Header with title and actions */}
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-                    <div>
-                      <h2 className="text-2xl font-bold text-brand-mainText">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 pb-5 border-b border-brand-border">
+                    <div className="flex-1">
+                      <h2 className="text-2xl font-bold text-brand-main-text">
                         {selectedMatch.title ||
                           (selectedMatch.teamNumber ? (
                             <>
@@ -1108,7 +1113,8 @@ function MyMatchesPage() {
                           ))}
                       </h2>
                       {selectedMatch.tournamentName && (
-                        <p className="text-brand-accent font-medium mt-1">
+                        <p className="text-brand-accent font-medium mt-1.5 flex items-center gap-2">
+                          <Users size={14} />
                           {selectedMatch.tournamentName}
                         </p>
                       )}
@@ -1117,15 +1123,15 @@ function MyMatchesPage() {
                       href={`/match?match=${encodeURIComponent(selectedMatch.id)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn !py-2 !px-3 text-sm flex items-center gap-2 flex-shrink-0"
+                      className="button button-sm flex items-center gap-2 flex-shrink-0"
                     >
                       <ArrowSquareOut size={16} weight="bold" />
-                      Full Details
+                      View Full Details
                     </a>
                   </div>
 
                   {selectedStats && selectedStats.cycles > 0 && (
-                    <div className="bg-brand-accent rounded-xl p-5 mb-6">
+                    <div className="bg-gradient-to-br from-brand-accent to-brand-accentStrong rounded-2xl p-6 mb-6 shadow-lg">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="text-center">
                           <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
@@ -1265,10 +1271,12 @@ function MyMatchesPage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-brand-text">
-                  <Target size={64} className="mb-4 opacity-20" />
-                  <p className="text-lg font-medium">No match selected</p>
-                  <p className="text-sm mt-1">
-                    Select a match from the list to view details
+                  <div className="w-20 h-20 rounded-2xl bg-brand-accentBg/30 flex items-center justify-center mb-4">
+                    <Target size={40} className="text-brand-accent/40" />
+                  </div>
+                  <p className="text-xl font-semibold text-brand-main-text">No Match Selected</p>
+                  <p className="text-sm mt-2 text-center max-w-xs">
+                    Choose a match from the list to view detailed statistics and edit information
                   </p>
                 </div>
               )}
