@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { HashIcon, PaletteIcon, Play, Target } from "@phosphor-icons/react";
+import { HashIcon, PaletteIcon, Play, Target, ArrowClockwise, Trash } from "@phosphor-icons/react";
 
 import MatchRecorderScreen from "./home/MatchRecorderScreen";
 import { matchRecorderConstants } from "../hooks/useMatchRecorder";
 import { useMatchRecorderContext } from "../data/MatchRecorderContext";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { getMatchForCurrentUser } from "../api/matchesApi.js";
+import { loadDraft, clearDraft } from "../utils/localMatchStorage.js";
 
 function MatchPage() {
   const recorder = useMatchRecorderContext();
@@ -14,8 +15,17 @@ function MatchPage() {
   const [initialMeta, setInitialMeta] = useState(null);
   const [loadingMatch, setLoadingMatch] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [pendingDraft, setPendingDraft] = useState(null);
 
   const loadedKeyRef = useRef(null);
+
+  // Check for unfinished draft on mount
+  useEffect(() => {
+    const draft = loadDraft();
+    if (draft && draft.events && draft.events.length > 0) {
+      setPendingDraft(draft);
+    }
+  }, []);
 
   const matchId = new URLSearchParams(window.location.search).get("match");
 
@@ -67,6 +77,45 @@ function MatchPage() {
       <div className="page">
         <div className="bg" aria-hidden="true" />
         <div className="content min-h-screen p-4 sm:p-8 max-w-5xl mx-auto flex flex-col items-center gap-6">
+          {pendingDraft && (
+            <div className="w-full bg-brand-surface border-2 border-brand-accent rounded-xl p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-brand-main-text mb-1">
+                    Unfinished match found
+                  </h3>
+                  <p className="text-sm text-brand-text">
+                    {pendingDraft.teamNumber ? `Team ${pendingDraft.teamNumber}` : "Unknown team"}
+                    {" \u2014 "}
+                    {pendingDraft.events.filter((e) => e.type === "cycle").length} cycle
+                    {pendingDraft.events.filter((e) => e.type === "cycle").length !== 1 ? "s" : ""} recorded
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      recorder.restoreFromDraft(pendingDraft);
+                      setPendingDraft(null);
+                    }}
+                    className="button flex items-center gap-2"
+                  >
+                    <ArrowClockwise size={18} weight="bold" />
+                    Resume
+                  </button>
+                  <button
+                    onClick={() => {
+                      clearDraft();
+                      setPendingDraft(null);
+                    }}
+                    className="error-btn flex items-center gap-2"
+                  >
+                    <Trash size={18} weight="bold" />
+                    Discard
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="w-full card p-6 sm:p-8">
             <div className="pill mb-4 w-36 text-center">Match Recording</div>
             <h1 className="text-2xl sm:text-3xl font-semibold mb-2">Start a new match session</h1>

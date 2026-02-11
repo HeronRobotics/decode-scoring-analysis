@@ -20,6 +20,7 @@ import {
   FloppyDisk,
   UserPlus,
   Play,
+  ShareNetwork,
 } from "@phosphor-icons/react";
 import { logEvent } from "firebase/analytics";
 import { usePostHog } from "posthog-js/react";
@@ -27,11 +28,13 @@ import { analytics } from "../../firebase";
 
 import Timeline from "../../components/Timeline";
 import Statistics from "../../components/Statistics";
-import CycleModal from "../../components/home/modals/CycleModal";
 import KeyboardEntryToast from "../../components/home/KeyboardEntryToast";
 import MatchDataPanel from "../../components/home/MatchDataPanel";
 import PatternInput from "../../components/home/PatternInput";
+import QuickCycleGrid from "../../components/home/QuickCycleGrid";
+import PostMatchComparison from "../../components/home/PostMatchComparison";
 import { calculateTotalPoints } from "../../utils/scoring";
+import { saveLocalMatch, getLocalMatches } from "../../utils/localMatchStorage";
 
 import useKeyboardCycleEntry from "../../hooks/useKeyboardCycleEntry";
 import { formatTime } from "../../utils/format";
@@ -52,8 +55,6 @@ function MatchRecorderScreen({
   initialTitle,
   initialTournamentName,
 }) {
-  const [showCycleModal, setShowCycleModal] = useState(false);
-  const [cycleData, setCycleData] = useState({ total: 1, scored: 0 });
   const [showQuickGuide, setShowQuickGuide] = useState(false);
 
   const beginMatchButtonRef = useRef(null);
@@ -73,11 +74,13 @@ function MatchRecorderScreen({
   const [tournamentName, setTournamentName] = useState("");
   const [knownTournaments, setKnownTournaments] = useState([]);
   const [matchDate, setMatchDate] = useState("");
+  const [previousMatches, setPreviousMatches] = useState(null);
 
   const posthog = usePostHog();
   const wasRecordingRef = useRef(false);
   const wasManualStopRef = useRef(false);
   const shareUrlCacheRef = useRef(new Map());
+  const localSaveRef = useRef(false);
   const { user } = useAuth();
 
   const {
@@ -134,17 +137,9 @@ function MatchRecorderScreen({
     };
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (startMatchToastTimeoutRef.current) {
-        clearTimeout(startMatchToastTimeoutRef.current);
-      }
-    };
-  }, []);
-
   const { keyEntry, keyEntryVisible } = useKeyboardCycleEntry({
     enabled: isRecording,
-    blocked: showCycleModal,
+    blocked: false,
     elapsedTime,
     mode,
     phase,
@@ -443,10 +438,11 @@ function MatchRecorderScreen({
     if (!isRecording && events.length === 0) {
       setHasSavedThisSession(false);
       autoSaveRef.current = false;
+      localSaveRef.current = false;
     }
   }, [isRecording, events.length]);
 
-  // Track match finish with PostHog and auto-save for logged-in users
+  // Track match finish, auto-save, local save, and load previous matches for comparison
   useEffect(() => {
     if (wasRecordingRef.current && !isRecording) {
       const totalCycles = events.filter((e) => e.type === "cycle").length;
@@ -470,11 +466,46 @@ function MatchRecorderScreen({
         autoSaveRef.current = true;
       }
 
+      // Save locally when not signed in
+      if (!user && events.length && !localSaveRef.current) {
+        saveLocalMatch(buildMatchPayload());
+        localSaveRef.current = true;
+      }
+
+      // Load previous matches for comparison
+      const loadPrevious = async () => {
+        try {
+          const sources = [];
+          if (user) {
+            const remote = await listMatchesForCurrentUser();
+            sources.push(...remote);
+          }
+          const local = getLocalMatches().filter((m) => !m.synced);
+          sources.push(...local);
+
+          // Exclude the match we just recorded (by checking events length/timestamp similarity)
+          const prev = sources.filter(
+            (m) =>
+              m.events &&
+              m.events.length > 0 &&
+              m.id !== loadedMatchId,
+          );
+          if (prev.length > 0) {
+            setPreviousMatches(prev);
+          }
+        } catch {
+          // ignore comparison load errors
+        }
+      };
+      loadPrevious();
+
       wasManualStopRef.current = false;
     }
 
     if (!wasRecordingRef.current && isRecording) {
       autoSaveRef.current = false;
+      localSaveRef.current = false;
+      setPreviousMatches(null);
     }
 
     wasRecordingRef.current = isRecording;
@@ -489,12 +520,6 @@ function MatchRecorderScreen({
     hasSavedThisSession,
     handleSaveToAccount,
   ]);
-
-  const confirmCycle = () => {
-    recorder.addCycle({ total: cycleData.total, scored: cycleData.scored });
-    setShowCycleModal(false);
-    setCycleData({ total: 1, scored: 0 });
-  };
 
   // Softer, on-brand phase colors with good contrast
   const getPhaseClass = () => {
@@ -634,40 +659,73 @@ function MatchRecorderScreen({
 
         {/* Action Buttons (Full width) */}
         {isRecording ? (
-          <div className="flex flex-row items-center justify-center space-x-2">
-            <button
-              onClick={() => setShowCycleModal(true)}
-              className="w-full py-4 px-4 text-base font-bold bg-brand-accent text-over-accent border-2 border-brand-accent hover: transition-all flex items-center justify-center gap-2 shadow-md"
-            >
-              <Record size={24} weight="fill" />
-              Record Cycle
-              <span className="hidden sm:flex items-center gap-1 text-xs font-normal opacity-70 ml-2">
-                <span className="kbd border-brand-border! shadow-none! text-over-accent! text-[12px]!">
-                  1-3
-                </span>
-              </span>
-            </button>
+          <div className="space-y-3">
+            {/* Quick Cycle Grid */}
+            <QuickCycleGrid
+              onAddCycle={({ total, scored }) =>
+                recorder.addCycle({ total, scored })
+              }
+              onUndo={recorder.undoLastEvent}
+              eventCount={events.length}
+            />
 
-            <button
-              onClick={() => recorder.addGate()}
-              className="btn w-full py-3! justify-center"
-            >
-              <DoorOpen size={20} weight="bold" />
-              Gate
-            </button>
+            {/* Gate and Stop row */}
+            <div className="flex flex-row items-center justify-center gap-2">
+              <button
+                onClick={() => recorder.addGate()}
+                className="btn w-full py-3! justify-center"
+              >
+                <DoorOpen size={20} weight="bold" />
+                Gate
+              </button>
 
-            <button
-              onClick={() => {
-                wasManualStopRef.current = true;
-                recorder.stopMatch();
-              }}
-              className="error-btn w-full py-3! justify-center"
-            >
-              <Stop size={18} weight="fill" />
-              Stop Match
-            </button>
+              <button
+                onClick={() => {
+                  wasManualStopRef.current = true;
+                  recorder.stopMatch();
+                }}
+                className="error-btn w-full py-3! justify-center"
+              >
+                <Stop size={18} weight="fill" />
+                Stop Match
+              </button>
+            </div>
           </div>
-        ) : (
+        ) : !isReady && events.length > 0 ? (
+          /* Post-match action buttons */
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => shareUrl(matchText, "Match data link")}
+                className="button flex-1 py-3 flex items-center justify-center gap-2 text-base font-semibold"
+              >
+                <ShareNetwork size={22} weight="bold" />
+                Share Match
+              </button>
+              {user && (
+                <button
+                  onClick={handleSaveToAccount}
+                  disabled={saveStatus === "saving"}
+                  className="btn flex-1 py-3! flex items-center justify-center gap-2"
+                >
+                  <FloppyDisk size={20} weight="bold" />
+                  {saveStatus === "saving"
+                    ? "Saving..."
+                    : saveStatus === "saved"
+                      ? "Saved"
+                      : "Save to Account"}
+                </button>
+              )}
+              <button
+                onClick={() => recorder.resetMatch()}
+                className="btn flex-1 py-3! flex items-center justify-center gap-2"
+              >
+                <ArrowClockwise size={20} weight="bold" />
+                New Match
+              </button>
+            </div>
+          </div>
+        ) : !isReady ? (
           <button
             onClick={() => recorder.resetMatch()}
             className="btn px-4 py-2 w-48 mx-auto text-sm "
@@ -675,11 +733,11 @@ function MatchRecorderScreen({
             <ArrowClockwise size={20} weight="bold" />
             Start New Match
           </button>
-        )}
+        ) : null}
 
-        {/* Quick Guide - Inline when recording */}
+        {/* Quick Guide - Inline when recording, hidden on mobile */}
         {isRecording && (
-          <div className=" border border-brand-border rounded-lg overflow-hidden">
+          <div className="hidden sm:block border border-brand-border rounded-lg overflow-hidden">
             <button
               onClick={() => setShowQuickGuide(!showQuickGuide)}
               className="w-full px-4 py-2.5 flex items-center justify-between hover: transition-colors text-sm"
@@ -892,7 +950,7 @@ function MatchRecorderScreen({
                   : "text-brand-text"
                 }`}
                 >
-                Artifact ({totalScored}×3)
+                Artifact ({totalScored}x3)
                 </div>
               </div>
               <div className="text-center p-2 rounded border-brand-border">
@@ -1059,6 +1117,14 @@ function MatchRecorderScreen({
         </div>
       </div>
 
+      {/* Post-match comparison */}
+      {!isRecording && events.length > 0 && previousMatches && (
+        <PostMatchComparison
+          currentMatch={buildMatchPayload()}
+          previousMatches={previousMatches}
+        />
+      )}
+
       {/* Statistics */}
       {events.length > 0 && (
         <Statistics
@@ -1131,13 +1197,6 @@ function MatchRecorderScreen({
 
       <KeyboardEntryToast visible={keyEntryVisible} keyEntry={keyEntry} />
       <StartMatchToBeginToast visible={startMatchToastVisible} />
-      <CycleModal
-        open={showCycleModal}
-        cycleData={cycleData}
-        setCycleData={setCycleData}
-        onConfirm={confirmCycle}
-        onClose={() => setShowCycleModal(false)}
-      />
     </div>
   );
 }

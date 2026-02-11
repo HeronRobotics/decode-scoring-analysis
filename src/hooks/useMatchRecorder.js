@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { saveDraft, clearDraft } from "../utils/localMatchStorage";
 
 const AUTO_DURATION = 30; // seconds
 const BUFFER_DURATION = 8; // seconds
@@ -32,6 +33,7 @@ export default function useMatchRecorder() {
   const [teleopPark, setTeleopPark] = useState("none"); // "none", "partial", or "full"
 
   const intervalRef = useRef(null);
+  const draftTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (isRecording) {
@@ -72,6 +74,38 @@ export default function useMatchRecorder() {
     };
   }, [isRecording, matchStartTime, timerDuration, mode]);
 
+  // Auto-save draft while recording (debounced 500ms)
+  useEffect(() => {
+    if (!isRecording) return;
+
+    if (draftTimeoutRef.current) {
+      clearTimeout(draftTimeoutRef.current);
+    }
+
+    draftTimeoutRef.current = setTimeout(() => {
+      saveDraft({
+        events,
+        teamNumber,
+        notes,
+        mode,
+        phase,
+        timerDuration,
+        elapsedTime,
+        motif,
+        autoPattern,
+        teleopPattern,
+        autoLeave,
+        teleopPark,
+      });
+    }, 500);
+
+    return () => {
+      if (draftTimeoutRef.current) {
+        clearTimeout(draftTimeoutRef.current);
+      }
+    };
+  }, [isRecording, events, teamNumber, notes, mode, phase, timerDuration, elapsedTime, motif, autoPattern, teleopPattern, autoLeave, teleopPark]);
+
   const startMatch = (duration, newMode = "free", initialMotif = null) => {
     // Set up the match but don't start the timer yet
     setTimerDuration(duration);
@@ -100,6 +134,7 @@ export default function useMatchRecorder() {
 
   const stopMatch = () => {
     setIsRecording(false);
+    clearDraft();
     if (mode === "match") {
       setPhase("finished");
     }
@@ -121,6 +156,7 @@ export default function useMatchRecorder() {
     setTeleopPattern("");
     setAutoLeave(false);
     setTeleopPark("none");
+    clearDraft();
   };
 
   const addCycle = ({ total, scored }) => {
@@ -144,6 +180,32 @@ export default function useMatchRecorder() {
     };
     setEvents((prev) => [...prev, event]);
   };
+
+  const undoLastEvent = useCallback(() => {
+    setEvents((prev) => prev.slice(0, -1));
+  }, []);
+
+  const restoreFromDraft = useCallback((draft) => {
+    if (!draft) return;
+    // Restore all state, adjust matchStartTime so timer picks up correctly
+    const adjustedStartTime = Date.now() - (draft.elapsedTime || 0);
+    setMatchStartTime(adjustedStartTime);
+    setTimerDuration(draft.timerDuration ?? null);
+    setElapsedTime(draft.elapsedTime || 0);
+    setEvents(draft.events || []);
+    setNotes(draft.notes || "");
+    setTeamNumber(draft.teamNumber || "");
+    setMode(draft.mode || "free");
+    setPhase(draft.phase || "idle");
+    setIsRecording(true);
+    setIsReady(false);
+    setMotif(draft.motif || null);
+    setAutoPattern(draft.autoPattern || "");
+    setTeleopPattern(draft.teleopPattern || "");
+    setAutoLeave(draft.autoLeave ?? false);
+    setTeleopPark(draft.teleopPark || "none");
+    clearDraft();
+  }, []);
 
   const applyParsedMatchData = useCallback((parsedData) => {
     if (!parsedData || !Array.isArray(parsedData.events)) return false;
@@ -207,6 +269,8 @@ export default function useMatchRecorder() {
     resetMatch,
     addCycle,
     addGate,
+    undoLastEvent,
+    restoreFromDraft,
     applyParsedMatchData,
   };
 }

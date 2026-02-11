@@ -30,3 +30,4 @@ src/firebase.js
 .claude/
 .env.local
 .playwright-mcp/**
+mobile-**

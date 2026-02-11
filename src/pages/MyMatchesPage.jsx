@@ -14,6 +14,8 @@ import {
   CaretDown,
   MagnifyingGlass,
   Funnel,
+  CloudArrowUp,
+  HardDrive,
 } from "@phosphor-icons/react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import {
@@ -29,6 +31,12 @@ import { calculateCycleTimes, calculateStats } from "../utils/stats.js";
 import { calculateTotalPoints } from "../utils/scoring.js";
 import { useTeamNames } from "../contexts/TeamNamesContext.jsx";
 import TeamName from "../components/TeamName.jsx";
+import {
+  getLocalMatches,
+  removeLocalMatch,
+  markLocalMatchSynced,
+  getUnsyncedLocalMatches,
+} from "../utils/localMatchStorage.js";
 
 // Helper to compute condensed stats for a match
 function getMatchStats(events) {
@@ -54,7 +62,9 @@ function MyMatchesPage() {
   const { user, authLoading } = useAuth();
   const { loadTeamNames, getTeamName } = useTeamNames();
   const [matches, setMatches] = useState([]);
+  const [localMatches, setLocalMatches] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
   const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [bulkTournamentName, setBulkTournamentName] = useState("");
@@ -79,6 +89,11 @@ function MyMatchesPage() {
   const [savingDetails, setSavingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState("");
 
+  // Load local matches
+  useEffect(() => {
+    setLocalMatches(getLocalMatches());
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
@@ -88,6 +103,8 @@ function MyMatchesPage() {
       try {
         const data = await listMatchesForCurrentUser();
         setMatches(data);
+        // Refresh local matches too (they may have been synced)
+        setLocalMatches(getLocalMatches());
         if (data.length > 0) {
           const params = new URLSearchParams(window.location.search);
           const matchId = params.get("match");
@@ -106,6 +123,58 @@ function MyMatchesPage() {
 
     load();
   }, [user]);
+
+  // Merge unsynced local matches into display list
+  const allMatches = useMemo(() => {
+    if (!user) return localMatches;
+    const unsyncedLocal = localMatches.filter((m) => !m.synced);
+    return [...unsyncedLocal, ...matches];
+  }, [user, matches, localMatches]);
+
+  const handleSyncMatch = async (localMatch) => {
+    if (!user) return;
+    try {
+      setSyncing(true);
+      const saved = await createMatchForUser(user.id, localMatch, "local_sync");
+      markLocalMatchSynced(localMatch.id);
+      setMatches((prev) => [saved, ...prev]);
+      setLocalMatches(getLocalMatches());
+    } catch (err) {
+      alert(err.message || "Failed to sync match");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleSyncAll = async () => {
+    if (!user) return;
+    const unsynced = getUnsyncedLocalMatches();
+    if (unsynced.length === 0) return;
+
+    setSyncing(true);
+    try {
+      for (const localMatch of unsynced) {
+        const saved = await createMatchForUser(user.id, localMatch, "local_sync");
+        markLocalMatchSynced(localMatch.id);
+        setMatches((prev) => [saved, ...prev]);
+      }
+      setLocalMatches(getLocalMatches());
+    } catch (err) {
+      alert(err.message || "Failed to sync matches");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleDeleteLocal = (id) => {
+    const confirmed = window.confirm("Delete this local match? This cannot be undone.");
+    if (!confirmed) return;
+    removeLocalMatch(id);
+    setLocalMatches(getLocalMatches());
+    if (selectedMatchId === id) {
+      setSelectedMatchId(null);
+    }
+  };
 
   useEffect(() => {
     if (!matches.length) return;
@@ -165,7 +234,7 @@ function MyMatchesPage() {
 
   // Filter matches based on search and filters
   const filteredMatches = useMemo(() => {
-    return matches.filter((m) => {
+    return allMatches.filter((m) => {
       // Search filter - check title, team number, tournament name, notes
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -258,7 +327,7 @@ function MyMatchesPage() {
     setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const selectedMatch = matches.find((m) => m.id === selectedMatchId) || null;
+  const selectedMatch = allMatches.find((m) => m.id === selectedMatchId) || null;
 
   useEffect(() => {
     if (!selectedMatch) {
@@ -461,15 +530,95 @@ function MyMatchesPage() {
       )}
 
       {!authLoading && !user && (
-        <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 text-center">
-          <p className="mb-4">
-            Sign in to view and manage matches saved to your account.
-          </p>
-          <p>
-            Use the <strong>Sign in / Sign up</strong> button in the top right
-            to get started.
-          </p>
-        </div>
+        <>
+          {localMatches.length > 0 ? (
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <HardDrive size={20} weight="bold" className="text-brand-accent" />
+                  <h2 className="text-xl font-bold">Local Matches</h2>
+                </div>
+                <span className="text-sm text-brand-text">
+                  {localMatches.length} match{localMatches.length !== 1 ? "es" : ""}
+                </span>
+              </div>
+              <p className="text-sm text-brand-text mb-4">
+                These matches are saved on this device. Sign in to sync them to your account.
+              </p>
+              <div className="space-y-2">
+                {localMatches.map((m) => {
+                  const date = m.startTime
+                    ? new Date(m.startTime)
+                    : m.createdAt
+                      ? new Date(m.createdAt)
+                      : null;
+                  const dateStr = date
+                    ? date.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Unknown date";
+                  const stats = getMatchStats(m.events);
+
+                  return (
+                    <div
+                      key={m.id}
+                      className="w-full text-left border-2 border-brand-border p-4 rounded-lg bg-brand-bg"
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-brand-mainText truncate">
+                            {m.title || (m.teamNumber ? `Team ${m.teamNumber} Match` : "Match")}
+                          </div>
+                          <div className="text-xs text-brand-text mt-0.5">{dateStr}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteLocal(m.id)}
+                          className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
+                          title="Delete local match"
+                        >
+                          <Trash size={16} weight="bold" />
+                        </button>
+                      </div>
+                      <div className="flex items-center flex-wrap gap-2 sm:gap-4 mt-2 pt-2 border-t border-brand-border">
+                        <div className="flex items-center gap-1.5">
+                          <Target size={16} className="text-brand-accent" />
+                          <span className="font-semibold text-brand-mainText">
+                            {stats.scored}/{stats.total}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <ListNumbers size={16} className="text-brand-accent" />
+                          <span className="font-semibold text-brand-mainText">
+                            {stats.cycles}
+                          </span>
+                          <span className="text-xs text-brand-text hidden sm:inline">cycles</span>
+                        </div>
+                        <div className="text-sm">
+                          <span className="font-semibold text-brand-mainText">
+                            {formatStat(stats.accuracy, 0)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 text-center">
+              <p className="mb-4">
+                Sign in to view and manage matches saved to your account.
+              </p>
+              <p>
+                Use the <strong>Sign in / Sign up</strong> button in the top right
+                to get started.
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {!authLoading && user && (
@@ -576,14 +725,34 @@ function MyMatchesPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Saved Matches</h2>
                 <span className="text-sm text-brand-text">
-                  {filteredMatches.length === matches.length
-                    ? `${matches.length} ${matches.length === 1 ? "match" : "matches"}`
-                    : `${filteredMatches.length} of ${matches.length}`}
+                  {filteredMatches.length === allMatches.length
+                    ? `${allMatches.length} ${allMatches.length === 1 ? "match" : "matches"}`
+                    : `${filteredMatches.length} of ${allMatches.length}`}
                 </span>
               </div>
 
+              {/* Sync unsynced local matches */}
+              {user && localMatches.filter((m) => !m.synced).length > 0 && (
+                <div className="mb-4 flex items-center justify-between bg-brand-accentBg border border-brand-border rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-sm text-brand-text">
+                    <HardDrive size={16} className="text-brand-accent" />
+                    {localMatches.filter((m) => !m.synced).length} local match
+                    {localMatches.filter((m) => !m.synced).length !== 1 ? "es" : ""} to sync
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSyncAll}
+                    disabled={syncing}
+                    className="btn !py-1.5 !px-3 !text-xs flex items-center gap-1.5"
+                  >
+                    <CloudArrowUp size={14} weight="bold" />
+                    {syncing ? "Syncing..." : "Sync all"}
+                  </button>
+                </div>
+              )}
+
               {/* Search and Filter Section */}
-              {matches.length > 0 && (
+              {allMatches.length > 0 && (
                 <div className="mb-4 space-y-3">
                   {/* Search Input */}
                   <div className="relative">
@@ -670,7 +839,7 @@ function MyMatchesPage() {
                 <p className="text-brand-accent text-sm mb-2">{error}</p>
               )}
 
-              {!loading && matches.length === 0 && !error && (
+              {!loading && allMatches.length === 0 && !error && (
                 <div className="text-center py-8 text-brand-text">
                   <Target size={48} className="mx-auto mb-3 opacity-30" />
                   <p className="text-sm">No saved matches yet.</p>
@@ -686,7 +855,7 @@ function MyMatchesPage() {
                 {/* No results message */}
                 {!loading &&
                   filteredMatches.length === 0 &&
-                  matches.length > 0 && (
+                  allMatches.length > 0 && (
                     <div className="text-center py-8 text-brand-text">
                       <MagnifyingGlass
                         size={48}
@@ -774,11 +943,18 @@ function MyMatchesPage() {
                               {/* Match Header */}
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="flex-1 min-w-0">
-                                  <div className="font-semibold text-brand-mainText truncate">
-                                    {m.title ||
-                                      (m.teamNumber
-                                        ? `${getTeamName(m.teamNumber)} Match`
-                                        : "Match")}
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-brand-mainText truncate">
+                                      {m.title ||
+                                        (m.teamNumber
+                                          ? `${getTeamName(m.teamNumber)} Match`
+                                          : "Match")}
+                                    </span>
+                                    {m.id?.startsWith("local_") && !m.synced && (
+                                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-brand-accentBg text-brand-accent shrink-0">
+                                        Local
+                                      </span>
+                                    )}
                                   </div>
                                   {m.tournamentName &&
                                     groupBy !== "tournament" && (
@@ -788,21 +964,41 @@ function MyMatchesPage() {
                                     )}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <a
-                                    href={`/match?match=${encodeURIComponent(m.id)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
-                                    title="Open in new tab"
-                                  >
-                                    <ArrowSquareOut size={16} weight="bold" />
-                                  </a>
+                                  {m.id?.startsWith("local_") && !m.synced && user && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSyncMatch(m);
+                                      }}
+                                      disabled={syncing}
+                                      className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
+                                      title="Sync to account"
+                                    >
+                                      <CloudArrowUp size={16} weight="bold" />
+                                    </button>
+                                  )}
+                                  {!m.id?.startsWith("local_") && (
+                                    <a
+                                      href={`/match?match=${encodeURIComponent(m.id)}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
+                                      title="Open in new tab"
+                                    >
+                                      <ArrowSquareOut size={16} weight="bold" />
+                                    </a>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDelete(m.id);
+                                      if (m.id?.startsWith("local_")) {
+                                        handleDeleteLocal(m.id);
+                                      } else {
+                                        handleDelete(m.id);
+                                      }
                                     }}
                                     className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
                                     title="Delete match"

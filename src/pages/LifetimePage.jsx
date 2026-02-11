@@ -555,27 +555,27 @@ function LifetimePage() {
             <div className="bg-brand-accent border border-brand-accent rounded-2xl p-4 sm:p-6 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
-                  <Star size={28} weight="fill" className="text-brand-mainText" />
-                  <h2 className="text-2xl font-bold text-brand-mainText">Match Points</h2>
+                  <Star size={28} weight="fill" className="text-over-accent" />
+                  <h2 className="text-2xl font-bold text-over-accent">Match Points</h2>
                 </div>
-                <span className="text-xs bg-brand-accentBg px-3 py-1.5 rounded text-brand-mainText w-fit">Full matches only (158s duration)</span>
+                <span className="text-xs bg-brand-accentBg px-3 py-1.5 rounded text-over-accent w-fit">Full matches only (158s duration)</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{totalPoints}</div>
-                  <div className="text-brand-mainText text-sm">Total Points</div>
+                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{totalPoints}</div>
+                  <div className="text-over-accent text-sm">Total Points</div>
                 </div>
                 <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{formatStat(avgPoints, 1)}</div>
-                  <div className="text-brand-mainText text-sm">Avg per Match</div>
+                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{formatStat(avgPoints, 1)}</div>
+                  <div className="text-over-accent text-sm">Avg per Match</div>
                 </div>
                 <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{bestMatchByPoints?.points || 0}</div>
-                  <div className="text-brand-mainText text-sm">Best Match</div>
+                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{bestMatchByPoints?.points || 0}</div>
+                  <div className="text-over-accent text-sm">Best Match</div>
                 </div>
                 <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-brand-mainText">{fullMatchStats.length}</div>
-                  <div className="text-brand-mainText text-sm">Full Matches</div>
+                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{fullMatchStats.length}</div>
+                  <div className="text-over-accent text-sm">Full Matches</div>
                 </div>
               </div>
             </div>
