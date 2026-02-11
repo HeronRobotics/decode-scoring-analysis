@@ -44,9 +44,8 @@ function NavigationBar({ currentPage, navigate }) {
   };
 
   return (
-    <div className="backdrop-blur-lg border-b border-brand-border z-20 sticky top-0">
+    <div className="bg-brand-bg md:bg-brand-bg/40 md:backdrop-blur-lg border-b border-brand-border z-20 sticky top-0">
       <div className="max-w-7xl mx-auto px-2 sm:px-5 py-2 sm:py-4 flex items-center gap-2 sm:gap-4 text-brand-text">
-        {/* Brand */}
         <button
           onClick={() => handleNavigate("home")}
           className="px-4 py-2 light bg-transparent text-brand-main-text"
@@ -54,8 +53,7 @@ function NavigationBar({ currentPage, navigate }) {
           Heron Scout
         </button>
 
-        {/* Desktop nav items */}
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.key}
@@ -63,7 +61,7 @@ function NavigationBar({ currentPage, navigate }) {
               className={`px-4 text-base! py-2 light ${
                 currentPage === item.key
                   ? "!bg-brand-accent !text-brand-bg !border-brand-accent"
-                  : "bg-transparent text-brand-text"
+                  : "md:bg-transparent text-brand-text"
               }`}
             >
               <item.icon size={20} />
@@ -72,7 +70,6 @@ function NavigationBar({ currentPage, navigate }) {
           ))}
         </div>
 
-        {/* Right side: auth + hamburger */}
         <div className="ml-auto flex items-center justify-center gap-2">
           {authLoading ? (
             <span className="text-xs text-brand-text ml-1">Loading...</span>
@@ -100,10 +97,9 @@ function NavigationBar({ currentPage, navigate }) {
             </button>
           )}
 
-          {/* Hamburger button (mobile only) */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="sm:hidden p-2 text-brand-text hover:text-brand-accent transition-colors"
+            className="md:hidden! p-2 text-brand-text hover:text-brand-accent transition-colors"
             aria-label="Open menu"
           >
             <List size={24} weight="bold" />

@@ -355,6 +355,7 @@ function MatchRecorderScreen({
 
     try {
       await navigator.clipboard.writeText(url);
+      alert("Share URL copied to clipboard!");
     } catch {
       window.open(url, "_blank", "noopener,noreferrer");
     }

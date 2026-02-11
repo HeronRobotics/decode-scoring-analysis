@@ -8,8 +8,8 @@ import {
 
 
 const motifColor = {
-  "P": "text-[#9b59b6] bg-[#f4ecf7] border-[#9b59b6]/20",
-  "G": "text-[#27ae60] bg-[#e6f4ea] border-[#27ae60]/20",
+  "P": "text-[#9b59b6] bg-[#380f47] border-[#9b59b6]/50",
+  "G": "text-[#27ae60] bg-[#0c2906] border-[#27ae60]/20",
 }
 
 function PatternInput({ label, value, onChange, motif, disabled }) {
@@ -43,12 +43,12 @@ function PatternInput({ label, value, onChange, motif, disabled }) {
                     ? isMatch
                       ? "border " + motifColor[char]
                       : "border border-brand-danger " + motifColor[inputChar]
-                    : "bg-brand-muted/30 text-brand-muted border border-brand-muted"
+                    : "bg-brand-muted/10 text-brand-muted/50 border border-brand-muted/50"
                 }`}
               >
                 {inputChar || char}
               </span>
-              <span className={`text-[10px] mt-0.5 ${hasInput ? "" : "italic"} ${hasInput ? (isMatch ? "text-brand-accent" : "text-brand-danger") : "text-brand-muted"}`}>
+              <span className={`text-[10px] mt-0.5 ${hasInput ? "" : "italic"} ${hasInput ? (isMatch ? "text-brand-accent" : "text-brand-danger") : "text-brand-muted/50"}`}>
                 {char}
               </span>
             </div>
