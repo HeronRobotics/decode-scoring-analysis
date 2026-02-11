@@ -107,7 +107,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
           <button
             type="button"
             onClick={handleGitHubSignIn}
-            className="btn w-fit !bg-brand-surface !text-black hover:!bg-brand-accentBg flex items-center justify-center gap-2 !border-2 !border-brand-border"
+            className="btn w-fit !bg-brand-white !text-white hover:!bg-brand-accentBg flex items-center justify-center gap-2 !border-1 !border-white"
             disabled={loading}
           >
             <GithubLogo weight="fill" size={18} />

@@ -78,7 +78,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                   <div className="w-full flex flex-col justify-end items-center relative" style={{ height: '160px' }}>
                     {cyclesWithCount > 0 && !showLabelInside && (
                       <div className="absolute bottom-1 z-10">
-                        <span className="bg-brand-accent font-bold text-sm text-brand-mainText flex justify-center items-center px-2 sm:px-6 py-0.5 rounded max-w-full">
+                        <span className="bg-brand-accent font-bold text-sm text-brand-invert-text flex justify-center items-center px-2 sm:px-6 py-0.5 rounded max-w-full">
                           {cyclesWithCount}
                         </span>
                       </div>
@@ -92,7 +92,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                         style={{ height: `${displayPercent}%`, minHeight: '6px' }}
                       >
                         {showLabelInside && (
-                          <span className="text-brand-mainText font-bold text-sm">{cyclesWithCount}</span>
+                          <span className="text-brand-invert-text font-bold text-sm">{cyclesWithCount}</span>
                         )}
                       </div>
                     )}
@@ -100,7 +100,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
 
                   <div className="text-center">
                     <p className="font-bold text-base sm:text-lg">{count} ball{count !== 1 ? 's' : ''}</p>
-                    <p className="text-sm text-brand-text">{percentage.toFixed(0)}%</p>
+                    <p className="text-sm text-brand-muted">{percentage.toFixed(0)}%</p>
                   </div>
                 </div>
               )
@@ -127,7 +127,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                   <div className="w-full flex flex-col justify-end items-center relative" style={{ height: '160px' }}>
                     {count > 0 && !showLabelInside && (
                       <div className="absolute bottom-1 z-10">
-                        <span className="bg-brand-accent font-bold text-sm text-brand-mainText flex justify-center items-center px-2 sm:px-6 py-0.5 rounded max-w-full">
+                        <span className="bg-brand-accent font-bold text-sm text-brand-invert-text flex justify-center items-center px-2 sm:px-6 py-0.5 rounded max-w-full">
                           {count}
                         </span>
                       </div>
@@ -141,14 +141,14 @@ function TournamentGraphs({ events, matches, numMatches }) {
                         style={{ height: `${displayPercent}%`, minHeight: '6px' }}
                       >
                         {showLabelInside && (
-                          <span className="text-brand-mainText font-bold text-sm">{count}</span>
+                          <span className="text-brand-invert-text font-bold text-sm">{count}</span>
                         )}
                       </div>
                     )}
                   </div>
                   <div className="text-center">
                     <p className="font-bold text-base sm:text-lg">{range}</p>
-                    <p className="text-sm text-brand-text">{percentage.toFixed(0)}%</p>
+                    <p className="text-sm text-brand-muted">{percentage.toFixed(0)}%</p>
                   </div>
                 </div>
               )
@@ -157,7 +157,6 @@ function TournamentGraphs({ events, matches, numMatches }) {
         </div>
       </div>
 
-      {/* Accuracy breakdown by ball count */}
       <div className="bg-brand-bg border border-brand-border rounded-xl p-6">
         <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
           <Target weight="bold" size={28} className="text-brand-accent" />
@@ -186,7 +185,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                     style={{ width: `${accuracy}%` }}
                   >
                     {accuracy > 15 && (
-                      <span className="text-brand-mainText font-bold text-sm">{accuracy.toFixed(1)}%</span>
+                      <span className="text-brand-invert-text font-bold text-sm">{accuracy.toFixed(1)}%</span>
                     )}
                   </div>
                   {accuracy <= 15 && accuracy > 0 && (
@@ -195,7 +194,7 @@ function TournamentGraphs({ events, matches, numMatches }) {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-brand-text mt-1">{scored}/{total} balls scored</p>
+                <p className="text-sm text-brand-muted mt-1">{scored}/{total} balls scored</p>
               </div>
             )
           })}

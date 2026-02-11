@@ -552,36 +552,35 @@ function LifetimePage() {
 
           {/* Points Overview - Full matches only */}
           {fullMatchStats.length > 0 && (
-            <div className="bg-brand-accent border border-brand-accent rounded-2xl p-4 sm:p-6 mb-8">
+            <div className="bg-brand-invert-bg border border-brand-invert-border rounded-2xl p-4 sm:p-6 mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
-                  <Star size={28} weight="fill" className="text-over-accent" />
-                  <h2 className="text-2xl font-bold text-over-accent">Match Points</h2>
+                  <Star size={28} weight="fill" className="text-brand-invert-text" />
+                  <h2 className="text-2xl font-bold text-brand-invert-text!">Match Points</h2>
                 </div>
-                <span className="text-xs bg-brand-accentBg px-3 py-1.5 rounded text-over-accent w-fit">Full matches only (158s duration)</span>
+                <span className="text-xs bg-brand-accentBg px-3 py-1.5 rounded text-brand-invert-text w-fit">Full matches only (158s duration)</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{totalPoints}</div>
-                  <div className="text-over-accent text-sm">Total Points</div>
+                <div className="rounded-lg p-4 text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-invert-text">{totalPoints}</div>
+                  <div className="text-brand-invert-text text-sm">Total Points</div>
                 </div>
-                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{formatStat(avgPoints, 1)}</div>
-                  <div className="text-over-accent text-sm">Avg per Match</div>
+                <div className="bg-brand-invert-surface rounded-lg p-4 text-center border border-brand-invert-border">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-invert-text">{bestMatchByPoints?.points || 0}</div>
+                  <div className="text-brand-invert-text text-sm">Best Match</div>
                 </div>
-                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{bestMatchByPoints?.points || 0}</div>
-                  <div className="text-over-accent text-sm">Best Match</div>
+                <div className="bg-brand-invert-surface rounded-lg p-4 text-center border border-brand-invert-border">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-invert-text">{formatStat(avgPoints, 1)}</div>
+                  <div className="text-brand-invert-text text-sm">Avg per Match</div>
                 </div>
-                <div className="bg-brand-accentBg rounded-lg p-4 text-center border border-brand-border">
-                  <div className="text-3xl sm:text-4xl font-bold text-over-accent">{fullMatchStats.length}</div>
-                  <div className="text-over-accent text-sm">Full Matches</div>
+                <div className="rounded-lg p-4 text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-brand-invert-text">{fullMatchStats.length}</div>
+                  <div className="text-brand-invert-text text-sm">Full Matches</div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Key Insights Section */}
           <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Trophy size={24} weight="bold" className="text-brand-accent" />
@@ -589,12 +588,11 @@ function LifetimePage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Best Performance */}
               {bestMatch && bestMatchByPoints && matchStats.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 text-brand-accent">Your Best</h3>
                   <div className="space-y-3">
-                    <div className="bg-brand-accentBg border border-brand-border rounded-lg p-3">
+                    <div className="bg-brand-accentBg border border-brand-accent/20 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-semibold text-brand-text">Highest Points</span>
                         <Star size={18} className="text-brand-accent" weight="fill" />
@@ -605,7 +603,7 @@ function LifetimePage() {
                       </div>
                     </div>
 
-                    <div className="bg-brand-accentBg border border-brand-border rounded-lg p-3">
+                    <div className="bg-brand-accentBg border border-brand-accent/20 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-semibold text-brand-text">Best Accuracy</span>
                         <Medal size={18} className="text-brand-accent" weight="fill" />
@@ -635,7 +633,6 @@ function LifetimePage() {
                       </div>
                     </div>
 
-                    {/* Actionable insight */}
                     <div className="bg-brand-bg border border-brand-border rounded-lg p-3">
                       <div className="text-sm font-semibold text-brand-text mb-2 flex items-center gap-1"><LightbulbIcon weight="duotone" /> To Improve</div>
                       <ul className="text-xs text-brand-text space-y-1.5">
@@ -650,7 +647,6 @@ function LifetimePage() {
             </div>
           </div>
 
-          {/* Recent Performance Trend */}
           {recentPerformance && (
             <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 mb-8">
               <div className="flex items-center gap-2 mb-4">
@@ -659,7 +655,7 @@ function LifetimePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="text-center p-4 bg-brand-accentBg rounded-lg">
+                <div className="text-center p-4 bg-brand-accentBg border border-brand-accent/20 rounded-lg">
                   <div className="text-sm text-brand-text mb-1">
                     Last {recentPerformance.recentMatches} matches
                   </div>
@@ -712,7 +708,6 @@ function LifetimePage() {
             </div>
           )}
 
-          {/* Tournament Breakdown */}
           {tournamentStats.length > 1 && (
             <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 sm:p-6 mb-8">
               <div className="flex items-center gap-2 mb-5">
@@ -723,7 +718,6 @@ function LifetimePage() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Tournament Bar Chart */}
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
@@ -770,7 +764,6 @@ function LifetimePage() {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Tournament Stats Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -824,11 +817,7 @@ function LifetimePage() {
                   {tournamentRanges.length > 0 && (
                     <button
                       onClick={() => setShowTournaments(!showTournaments)}
-                      className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${
-                        showTournaments
-                          ? "bg-brand-accent text-brand-mainText border-brand-accent"
-                          : "border-brand-accent text-brand-accent hover:bg-brand-accentBg"
-                      }`}
+                      className={`btn px-3! py-1.5! text-xs font-semibold border-2 transition-colors`}
                     >
                       {showTournaments ? "Hide" : "Show"} Tournaments
                     </button>
@@ -983,11 +972,7 @@ function LifetimePage() {
                   {tournamentRanges.length > 0 && (
                     <button
                       onClick={() => setShowTournaments(!showTournaments)}
-                      className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${
-                        showTournaments
-                          ? "bg-brand-accent text-brand-mainText border-brand-accent"
-                          : "border-brand-accent text-brand-accent hover:bg-brand-accentBg"
-                      }`}
+                      className={`btn px-3! py-1.5! text-xs font-semibold border-2 transition-colors`}
                     >
                       {showTournaments ? "Hide" : "Show"} Tournaments
                     </button>

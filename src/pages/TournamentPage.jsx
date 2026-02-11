@@ -336,17 +336,14 @@ function TournamentPage({ onBack }) {
   const currentMatch = filteredMatches[selectedMatch];
 
   const teamStats = teamStatsFromTournament(tournament);
-  const palette = [
-    "var(--color-brand-accent)",
-    "var(--color-brand-accentStrong)",
-    "var(--color-brand-text)",
-    "var(--color-brand-muted)",
-    "var(--color-brand-border)",
-    "var(--color-brand-outline)",
-    "var(--color-brand-surfaceStrong)",
-  ];
+  const getTeamColor = (teamNumber, index) => {
+    const seed = Number(teamNumber);
+    const hueBase = Number.isFinite(seed) ? seed : index;
+    const hue = (hueBase * 137.508) % 360;
+    return `hsl(${hue} 70% 62%)`;
+  };
   const teamColors = teamStats.reduce((acc, ts, i) => {
-    acc[ts.team] = palette[i % palette.length];
+    acc[ts.team] = getTeamColor(ts.team, i);
     return acc;
   }, {});
 
@@ -477,7 +474,7 @@ function TournamentPage({ onBack }) {
                   onClick={() => setSelectedMatch(index)}
                   className={`px-3 py-2 sm:px-6 sm:py-3 text-sm sm:text-base border-2 font-semibold transition-colors ${
                     selectedMatch === index
-                      ? "border-brand-accent bg-brand-accent text-brand-mainText"
+                      ? "border-brand-accent bg-brand-accent text-brand-invert-text"
                       : "border-brand-border bg-brand-bg hover:border-brand-accent"
                   }`}
                 >
