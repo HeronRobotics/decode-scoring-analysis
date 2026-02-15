@@ -430,7 +430,15 @@ function MatchRecorderScreen({
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (error) {
       console.error(error);
-      alert("Failed to save match. Please try again.");
+      posthog.capture("save_match_error", {
+        message: error?.message || "Unknown error",
+        hasUser: Boolean(user),
+        eventCount: events.length,
+        loadedMatchId: loadedMatchId || null,
+      });
+      alert(
+        "Failed to save match. Please try again. Hint: Are you on the robot wifi? Tip: Save as JSON just in case to avoid data loss.",
+      );
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 2000);
     }
@@ -487,10 +495,7 @@ function MatchRecorderScreen({
 
           // Exclude the match we just recorded (by checking events length/timestamp similarity)
           const prev = sources.filter(
-            (m) =>
-              m.events &&
-              m.events.length > 0 &&
-              m.id !== loadedMatchId,
+            (m) => m.events && m.events.length > 0 && m.id !== loadedMatchId,
           );
           if (prev.length > 0) {
             setPreviousMatches(prev);
@@ -610,7 +615,9 @@ function MatchRecorderScreen({
       <Timeline events={events} currentTime={elapsedTime} mode={mode} />
 
       {/* Timer Display - Prominent and centered */}
-      <div className={`${getPhaseClass()} relative overflow-hidden rounded-2xl shadow-lg`}>
+      <div
+        className={`${getPhaseClass()} relative overflow-hidden rounded-2xl shadow-lg`}
+      >
         {/* Gradient overlay for depth */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20 pointer-events-none" />
 
@@ -638,7 +645,9 @@ function MatchRecorderScreen({
                 <span className="font-mono font-bold text-lg">{accuracy}%</span>
               </div>
               <div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                <span className="text-sm font-semibold">{cycleCount} cycles</span>
+                <span className="text-sm font-semibold">
+                  {cycleCount} cycles
+                </span>
               </div>
             </div>
           </div>
@@ -657,8 +666,12 @@ function MatchRecorderScreen({
         {isReady && !isRecording && (
           <div className="section-card bg-gradient-to-br from-brand-accent/10 to-brand-accent/5 border-brand-accent">
             <div className="text-center mb-4">
-              <h3 className="text-xl font-bold text-brand-accent mb-2">Ready to Record</h3>
-              <p className="text-sm text-brand-text">Click below to start the match timer</p>
+              <h3 className="text-xl font-bold text-brand-accent mb-2">
+                Ready to Record
+              </h3>
+              <p className="text-sm text-brand-text">
+                Click below to start the match timer
+              </p>
             </div>
             <button
               ref={beginMatchButtonRef}
@@ -722,7 +735,9 @@ function MatchRecorderScreen({
                 <CheckCircle size={24} weight="fill" />
                 Match Complete!
               </h3>
-              <p className="text-sm text-brand-text">Share your results or start a new match</p>
+              <p className="text-sm text-brand-text">
+                Share your results or start a new match
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -846,9 +861,7 @@ function MatchRecorderScreen({
                 className="mx-auto inset-0 z-20 cursor-not-allowed bg-brand-bg/60 backdrop-blur-[2px] rounded-2xl flex items-center justify-center"
               >
                 <div className="bg-brand-dangerBg border-1 border-brand-danger px-6 py-3 text-brand-danger font-semibold flex flex-row items-center justify-center gap-2 rounded-xl shadow-lg">
-                  <p className="">
-                    Start the match first
-                  </p>
+                  <p className="">Start the match first</p>
                   <ArrowUpIcon weight="bold" />
                 </div>
               </button>
@@ -873,8 +886,12 @@ function MatchRecorderScreen({
                   />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-bold text-brand-main-text">Scoring Details</h3>
-                  <p className="text-xs text-brand-text">Motif patterns & bonus points</p>
+                  <h3 className="text-lg font-bold text-brand-main-text">
+                    Scoring Details
+                  </h3>
+                  <p className="text-xs text-brand-text">
+                    Motif patterns & bonus points
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -894,10 +911,7 @@ function MatchRecorderScreen({
                 {/* Motif Selector */}
                 <div className="bg-brand-bg/50 rounded-xl p-4 border border-brand-border">
                   <label className="flex items-center gap-2 text-sm font-bold mb-3 text-brand-accent">
-                    <Palette
-                      size={18}
-                      weight="bold"
-                    />
+                    <Palette size={18} weight="bold" />
                     Motif Pattern
                   </label>
                   <select
@@ -933,7 +947,11 @@ function MatchRecorderScreen({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="flex items-center gap-2 text-sm font-semibold mb-2">
-                      <Car size={16} weight="bold" className="text-brand-accent" />
+                      <Car
+                        size={16}
+                        weight="bold"
+                        className="text-brand-accent"
+                      />
                       Auto Leave
                     </label>
                     <label
@@ -980,103 +998,104 @@ function MatchRecorderScreen({
                   </div>
                 </div>
 
-
-            <div className=" border border-brand-border bg-brand-bg rounded-lg p-4">
-              <h4 className="font-semibold text-sm mb-3 text-brand-accent">
-              Points Breakdown
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div className="text-center p-2 rounded border-brand-border">
-                <div
-                className={`text-2xl font-bold ${
-                  pointsBreakdown.artifact === 0
-                  ? "text-brand-muted"
-                  : "text-brand-accent"
-                }`}
-                >
-                {pointsBreakdown.artifact}
-                </div>
-                <div
-                className={`text-xs ${
-                  pointsBreakdown.artifact === 0
-                  ? "text-brand-muted"
-                  : "text-brand-text"
-                }`}
-                >
-                Artifact ({totalScored}x3)
+                <div className=" border border-brand-border bg-brand-bg rounded-lg p-4">
+                  <h4 className="font-semibold text-sm mb-3 text-brand-accent">
+                    Points Breakdown
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                    <div className="text-center p-2 rounded border-brand-border">
+                      <div
+                        className={`text-2xl font-bold ${
+                          pointsBreakdown.artifact === 0
+                            ? "text-brand-muted"
+                            : "text-brand-accent"
+                        }`}
+                      >
+                        {pointsBreakdown.artifact}
+                      </div>
+                      <div
+                        className={`text-xs ${
+                          pointsBreakdown.artifact === 0
+                            ? "text-brand-muted"
+                            : "text-brand-text"
+                        }`}
+                      >
+                        Artifact ({totalScored}x3)
+                      </div>
+                    </div>
+                    <div className="text-center p-2 rounded border-brand-border">
+                      <div
+                        className={`text-2xl font-bold ${
+                          pointsBreakdown.motif.total === 0
+                            ? "text-brand-muted"
+                            : "text-brand-accent"
+                        }`}
+                      >
+                        {pointsBreakdown.motif.total}
+                      </div>
+                      <div
+                        className={`text-xs ${
+                          pointsBreakdown.motif.total === 0
+                            ? "text-brand-muted"
+                            : "text-brand-text"
+                        }`}
+                      >
+                        Motif ({pointsBreakdown.motif.auto}+
+                        {pointsBreakdown.motif.teleop})
+                      </div>
+                    </div>
+                    <div className="text-center p-2 rounded border-brand-border">
+                      <div
+                        className={`text-2xl font-bold ${
+                          pointsBreakdown.leave === 0
+                            ? "text-brand-muted"
+                            : "text-brand-accent"
+                        }`}
+                      >
+                        {pointsBreakdown.leave}
+                      </div>
+                      <div
+                        className={`text-xs ${
+                          pointsBreakdown.leave === 0
+                            ? "text-brand-muted"
+                            : "text-brand-text"
+                        }`}
+                      >
+                        Leave
+                      </div>
+                    </div>
+                    <div className="text-center p-2 rounded border-brand-border">
+                      <div
+                        className={`text-2xl font-bold ${
+                          pointsBreakdown.park === 0
+                            ? "text-brand-muted"
+                            : "text-brand-accent"
+                        }`}
+                      >
+                        {pointsBreakdown.park}
+                      </div>
+                      <div
+                        className={`text-xs ${
+                          pointsBreakdown.park === 0
+                            ? "text-brand-muted"
+                            : "text-brand-text"
+                        }`}
+                      >
+                        Park
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-brand-border text-center">
+                    <span className="text-sm text-brand-text">
+                      Total Points:
+                    </span>
+                    <span className="text-3xl font-bold text-brand-accent ml-2">
+                      {pointsBreakdown.total}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="text-center p-2 rounded border-brand-border">
-                <div
-                className={`text-2xl font-bold ${
-                  pointsBreakdown.motif.total === 0
-                  ? "text-brand-muted"
-                  : "text-brand-accent"
-                }`}
-                >
-                {pointsBreakdown.motif.total}
-                </div>
-                <div
-                className={`text-xs ${
-                  pointsBreakdown.motif.total === 0
-                  ? "text-brand-muted"
-                  : "text-brand-text"
-                }`}
-                >
-                Motif ({pointsBreakdown.motif.auto}+
-                {pointsBreakdown.motif.teleop})
-                </div>
-              </div>
-              <div className="text-center p-2 rounded border-brand-border">
-                <div
-                className={`text-2xl font-bold ${
-                  pointsBreakdown.leave === 0
-                  ? "text-brand-muted"
-                  : "text-brand-accent"
-                }`}
-                >
-                {pointsBreakdown.leave}
-                </div>
-                <div
-                className={`text-xs ${
-                  pointsBreakdown.leave === 0
-                  ? "text-brand-muted"
-                  : "text-brand-text"
-                }`}
-                >
-                Leave
-                </div>
-              </div>
-              <div className="text-center p-2 rounded border-brand-border">
-                <div
-                className={`text-2xl font-bold ${
-                  pointsBreakdown.park === 0
-                  ? "text-brand-muted"
-                  : "text-brand-accent"
-                }`}
-                >
-                {pointsBreakdown.park}
-                </div>
-                <div
-                className={`text-xs ${
-                  pointsBreakdown.park === 0
-                  ? "text-brand-muted"
-                  : "text-brand-text"
-                }`}
-                >
-                Park
-                </div>
-              </div>
-              </div>
-              <div className="mt-3 pt-3 border-t border-brand-border text-center">
-              <span className="text-sm text-brand-text">Total Points:</span>
-              <span className="text-3xl font-bold text-brand-accent ml-2">
-                {pointsBreakdown.total}
-              </span>
-              </div>
-            </div>
-            </div>
-          )}
+            )}
           </div>
         }
 
@@ -1087,14 +1106,20 @@ function MatchRecorderScreen({
               <Note size={20} weight="duotone" className="text-brand-accent" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-brand-main-text">Match Information</h3>
-              <p className="text-xs text-brand-text">Team, tournament, and notes</p>
+              <h3 className="text-lg font-bold text-brand-main-text">
+                Match Information
+              </h3>
+              <p className="text-xs text-brand-text">
+                Team, tournament, and notes
+              </p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-brand-accent mb-2">Match Title</label>
+              <label className="block text-sm font-semibold text-brand-accent mb-2">
+                Match Title
+              </label>
               <input
                 type="text"
                 value={title}
@@ -1134,7 +1159,10 @@ function MatchRecorderScreen({
 
             <div>
               <label className="block text-sm font-semibold text-brand-accent mb-2">
-                Tournament <span className="text-brand-text font-normal text-xs">(optional)</span>
+                Tournament{" "}
+                <span className="text-brand-text font-normal text-xs">
+                  (optional)
+                </span>
               </label>
               <input
                 type="text"
