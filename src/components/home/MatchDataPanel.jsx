@@ -10,27 +10,16 @@ import {
 
 function MatchDataPanel({
   mode,
-  matchText,
-  autoText,
-  teleopText,
-  onCopyFullText,
-  copiedFull,
   onShareFull,
-  onCopyFullUrl,
-  copiedFullUrl,
-  onCopyAutoText,
-  copiedAuto,
   onShareAuto,
-  onCopyAutoUrl,
-  copiedAutoUrl,
-  onCopyTeleopText,
-  copiedTeleop,
   onShareTeleop,
-  onCopyTeleopUrl,
-  copiedTeleopUrl,
   onExportJson,
   onSaveToAccount,
   saveStatus,
+  onCopyAutoText,
+  copiedAuto,
+  onCopyTeleopText,
+  copiedTeleop,
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 

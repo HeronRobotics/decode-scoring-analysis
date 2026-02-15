@@ -1,5 +1,7 @@
 const DRAFT_KEY = "heron_match_draft";
 const LOCAL_MATCHES_KEY = "heron_local_matches";
+const PENDING_MATCH_SYNC_KEY = "heron_pending_match_sync_id";
+const RECOVERY_MATCH_KEY = "heron_recovery_match";
 
 // --- Draft operations (in-progress match auto-save) ---
 
@@ -95,4 +97,63 @@ export function markLocalMatchSynced(id) {
 
 export function getUnsyncedLocalMatches() {
   return readLocalMatches().filter((m) => !m.synced);
+}
+
+// --- Pending "sync after signup" operations ---
+
+export function setPendingMatchSyncId(id) {
+  try {
+    if (!id) return;
+    localStorage.setItem(PENDING_MATCH_SYNC_KEY, String(id));
+  } catch {
+    // ignore
+  }
+}
+
+export function getPendingMatchSyncId() {
+  try {
+    return localStorage.getItem(PENDING_MATCH_SYNC_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function clearPendingMatchSyncId() {
+  try {
+    localStorage.removeItem(PENDING_MATCH_SYNC_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+// --- Recovery "last unsaved match" operations ---
+
+export function saveRecoveryMatch(payload) {
+  try {
+    if (!payload) return;
+    localStorage.setItem(
+      RECOVERY_MATCH_KEY,
+      JSON.stringify({ payload, savedAt: Date.now() }),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+export function loadRecoveryMatch() {
+  try {
+    const raw = localStorage.getItem(RECOVERY_MATCH_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export function clearRecoveryMatch() {
+  try {
+    localStorage.removeItem(RECOVERY_MATCH_KEY);
+  } catch {
+    // ignore
+  }
 }

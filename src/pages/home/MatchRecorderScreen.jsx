@@ -35,7 +35,17 @@ import PatternInput from "../../components/home/PatternInput";
 import QuickCycleGrid from "../../components/home/QuickCycleGrid";
 import PostMatchComparison from "../../components/home/PostMatchComparison";
 import { calculateTotalPoints } from "../../utils/scoring";
-import { saveLocalMatch, getLocalMatches } from "../../utils/localMatchStorage";
+import {
+  saveLocalMatch,
+  getLocalMatches,
+  markLocalMatchSynced,
+  setPendingMatchSyncId,
+  getPendingMatchSyncId,
+  clearPendingMatchSyncId,
+  saveRecoveryMatch,
+  loadRecoveryMatch,
+  clearRecoveryMatch,
+} from "../../utils/localMatchStorage";
 
 import useKeyboardCycleEntry from "../../hooks/useKeyboardCycleEntry";
 import { formatTime } from "../../utils/format";
@@ -82,6 +92,9 @@ function MatchRecorderScreen({
   const wasManualStopRef = useRef(false);
   const shareUrlCacheRef = useRef(new Map());
   const localSaveRef = useRef(false);
+  const lastLocalMatchIdRef = useRef(null);
+  const [recovery, setRecovery] = useState(null);
+  const [recoveryDismissed, setRecoveryDismissed] = useState(false);
   const { user } = useAuth();
 
   const {
@@ -307,10 +320,14 @@ function MatchRecorderScreen({
   );
 
   const copyWithFeedback = (text, setCopied) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    return navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        return true;
+      })
+      .catch(() => false);
   };
 
   const getShareUrl = async (text) => {
@@ -334,7 +351,8 @@ function MatchRecorderScreen({
 
   const copyUrlWithFeedback = async (text, setCopied) => {
     const url = await getShareUrl(text);
-    copyWithFeedback(url, setCopied);
+    const ok = await copyWithFeedback(url, setCopied);
+    if (ok) clearRecoveryMatch();
   };
 
   const shareUrl = async (text, label) => {
@@ -347,6 +365,7 @@ function MatchRecorderScreen({
           text: label,
           url,
         });
+        clearRecoveryMatch();
         return;
       } catch {
         // ignore and fall through
@@ -356,52 +375,72 @@ function MatchRecorderScreen({
     try {
       await navigator.clipboard.writeText(url);
       alert("Share URL copied to clipboard!");
+      clearRecoveryMatch();
     } catch {
       window.open(url, "_blank", "noopener,noreferrer");
+      clearRecoveryMatch();
     }
   };
 
-  const buildMatchPayload = () => ({
-    startTime: (() => {
-      if (matchDate) {
-        const dateOnly = new Date(matchDate);
-        if (!Number.isNaN(dateOnly.getTime())) {
-          if (matchStartTime) {
-            const existing = new Date(matchStartTime);
-            const combined = new Date(
-              dateOnly.getFullYear(),
-              dateOnly.getMonth(),
-              dateOnly.getDate(),
-              existing.getHours(),
-              existing.getMinutes(),
-              existing.getSeconds(),
-              existing.getMilliseconds(),
-            );
-            return combined.getTime();
+  const buildMatchPayload = useCallback(
+    () => ({
+      startTime: (() => {
+        if (matchDate) {
+          const dateOnly = new Date(matchDate);
+          if (!Number.isNaN(dateOnly.getTime())) {
+            if (matchStartTime) {
+              const existing = new Date(matchStartTime);
+              const combined = new Date(
+                dateOnly.getFullYear(),
+                dateOnly.getMonth(),
+                dateOnly.getDate(),
+                existing.getHours(),
+                existing.getMinutes(),
+                existing.getSeconds(),
+                existing.getMilliseconds(),
+              );
+              return combined.getTime();
+            }
+            return dateOnly.getTime();
           }
-          return dateOnly.getTime();
         }
-      }
-      return matchStartTime;
-    })(),
-    duration: timerDuration,
-    teamNumber,
-    events,
-    notes: notes || "",
-    title: title || "",
-    tournamentName: tournamentName || "",
-    // Scoring fields
-    motif: motif || null,
-    autoPattern: autoPattern || "",
-    teleopPattern: teleopPattern || "",
-    autoLeave: autoLeave ?? false,
-    teleopPark: teleopPark || "none",
-  });
+        return matchStartTime;
+      })(),
+      duration: timerDuration,
+      teamNumber,
+      events,
+      notes: notes || "",
+      title: title || "",
+      tournamentName: tournamentName || "",
+      // Scoring fields
+      motif: motif || null,
+      autoPattern: autoPattern || "",
+      teleopPattern: teleopPattern || "",
+      autoLeave: autoLeave ?? false,
+      teleopPark: teleopPark || "none",
+    }),
+    [
+      matchDate,
+      matchStartTime,
+      timerDuration,
+      teamNumber,
+      events,
+      notes,
+      title,
+      tournamentName,
+      motif,
+      autoPattern,
+      teleopPattern,
+      autoLeave,
+      teleopPark,
+    ],
+  );
 
   const exportMatchJson = () => {
     const data = buildMatchPayload();
 
     downloadJson(`match-${new Date().toISOString()}.json`, data);
+    clearRecoveryMatch();
 
     logEvent(analytics, "export_match_json", {
       numEvents: events.length,
@@ -427,7 +466,9 @@ function MatchRecorderScreen({
       }
       setSaveStatus("saved");
       setHasSavedThisSession(true);
+      clearRecoveryMatch();
       setTimeout(() => setSaveStatus("idle"), 2000);
+      return true;
     } catch (error) {
       console.error(error);
       posthog.capture("save_match_error", {
@@ -441,8 +482,64 @@ function MatchRecorderScreen({
       );
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 2000);
+      return false;
     }
-  }, [events, user, loadedMatchId, buildMatchPayload]);
+  }, [events, user, loadedMatchId, buildMatchPayload, posthog]);
+
+  useEffect(() => {
+    if (isRecording) return;
+    if (events.length > 0) return;
+    if (recoveryDismissed) return;
+    const rec = loadRecoveryMatch();
+    if (rec?.payload?.events?.length) {
+      setRecovery(rec);
+    }
+  }, [isRecording, events.length, recoveryDismissed]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const pendingId = getPendingMatchSyncId();
+    if (!pendingId) return;
+
+    const syncPending = async () => {
+      try {
+        setSaveStatus("saving");
+
+        let payload = null;
+        if (pendingId.startsWith("local_")) {
+          payload = getLocalMatches().find((m) => m.id === pendingId) || null;
+        }
+        if (!payload) {
+          payload = loadRecoveryMatch()?.payload || null;
+        }
+
+        if (!payload) {
+          clearPendingMatchSyncId();
+          setSaveStatus("idle");
+          return;
+        }
+
+        await createMatchForUser(user.id, payload, "pending_signup");
+
+        if (pendingId.startsWith("local_")) {
+          markLocalMatchSynced(pendingId);
+        }
+
+        clearPendingMatchSyncId();
+        clearRecoveryMatch();
+        setHasSavedThisSession(true);
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch (err) {
+        console.error(err);
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      }
+    };
+
+    syncPending();
+  }, [user]);
 
   useEffect(() => {
     if (!isRecording && events.length === 0) {
@@ -457,6 +554,10 @@ function MatchRecorderScreen({
     if (wasRecordingRef.current && !isRecording) {
       const totalCycles = events.filter((e) => e.type === "cycle").length;
       const finishReason = wasManualStopRef.current ? "manual_stop" : "timeout";
+
+      if (events.length) {
+        saveRecoveryMatch(buildMatchPayload());
+      }
 
       posthog.capture("finish_match", {
         finishReason,
@@ -478,8 +579,10 @@ function MatchRecorderScreen({
 
       // Save locally when not signed in
       if (!user && events.length && !localSaveRef.current) {
-        saveLocalMatch(buildMatchPayload());
+        const local = saveLocalMatch(buildMatchPayload());
+        lastLocalMatchIdRef.current = local?.id || null;
         localSaveRef.current = true;
+        clearRecoveryMatch();
       }
 
       // Load previous matches for comparison
@@ -526,6 +629,13 @@ function MatchRecorderScreen({
     user,
     hasSavedThisSession,
     handleSaveToAccount,
+    buildMatchPayload,
+    loadedMatchId,
+    saveRecoveryMatch,
+    saveLocalMatch,
+    clearRecoveryMatch,
+    getLocalMatches,
+    listMatchesForCurrentUser,
   ]);
 
   // Softer, on-brand phase colors with good contrast
@@ -1277,14 +1387,71 @@ function MatchRecorderScreen({
         !hasSavedThisSession && (
           <SignUpPromptToast
             onSign={() => {
+              if (lastLocalMatchIdRef.current) {
+                setPendingMatchSyncId(lastLocalMatchIdRef.current);
+              } else {
+                const payload = buildMatchPayload();
+                if (payload?.events?.length) {
+                  saveRecoveryMatch(payload);
+                  setPendingMatchSyncId("recovery");
+                }
+              }
               document.querySelector("[data-auth-modal-trigger]")?.click();
             }}
             onDismiss={() => setHasSavedThisSession(true)}
           />
         )}
 
+      {!isRecording &&
+        events.length === 0 &&
+        recovery &&
+        !recoveryDismissed && (
+          <RecoverUnsavedMatchToast
+            onRecover={() => {
+              const ok = recorder.applyParsedMatchData(recovery.payload);
+              if (ok) {
+                setRecovery(null);
+              }
+            }}
+            onDismiss={() => {
+              setRecoveryDismissed(true);
+            }}
+          />
+        )}
+
       <KeyboardEntryToast visible={keyEntryVisible} keyEntry={keyEntry} />
       <StartMatchToBeginToast visible={startMatchToastVisible} />
+    </div>
+  );
+}
+
+function RecoverUnsavedMatchToast({ onRecover, onDismiss }) {
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:bottom-4 sm:right-4 z-50 w-[min(24rem,calc(100vw-1.5rem))]">
+      <div className="bg-brand-surface border-2 border-brand-border shadow-lg p-4 w-full">
+        <div className="text-sm font-semibold text-brand-main-text mb-1">
+          Recover unsaved match?
+        </div>
+        <div className="text-xs text-brand-text mb-3">
+          We found a finished match that wasn&apos;t saved.
+        </div>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="text-xs px-3 py-1.5 border border-brand-border rounded hover: text-brand-text"
+          >
+            Not now
+          </button>
+          <button
+            type="button"
+            onClick={onRecover}
+            className="btn !py-2 !px-3 !text-xs flex items-center gap-2 bg-brand-surface!"
+          >
+            Recover
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
