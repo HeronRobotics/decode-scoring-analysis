@@ -57,7 +57,7 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
 
       if (mode === "signup") {
         alert(
-          "Check your email for a confirmation link to finish creating your account.",
+          "Check your email for a confirmation link to finish creating your account. (It might be in your spam folder!)",
         );
       }
 
