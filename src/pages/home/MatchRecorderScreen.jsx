@@ -95,7 +95,7 @@ function MatchRecorderScreen({
   const lastLocalMatchIdRef = useRef(null);
   const [recovery, setRecovery] = useState(null);
   const [recoveryDismissed, setRecoveryDismissed] = useState(false);
-  const { user } = useAuth();
+  const { user, session } = useAuth();
 
   const {
     matchStartTime,
@@ -226,7 +226,7 @@ function MatchRecorderScreen({
   }, [initialTournamentName]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !session) {
       setKnownTournaments([]);
       return;
     }
@@ -246,7 +246,7 @@ function MatchRecorderScreen({
     };
 
     load();
-  }, [user]);
+  }, [user, session]);
 
   useEffect(() => {
     if (loadedMatchId) {
@@ -456,6 +456,13 @@ function MatchRecorderScreen({
       return;
     }
 
+    if (!session) {
+      alert(
+        "Your email is not verified yet, so saving matches and other vital account features won't work. Please confirm your email (check spam) and sign in again.",
+      );
+      return;
+    }
+
     try {
       setSaveStatus("saving");
       const payload = buildMatchPayload();
@@ -484,7 +491,7 @@ function MatchRecorderScreen({
       setTimeout(() => setSaveStatus("idle"), 2000);
       return false;
     }
-  }, [events, user, loadedMatchId, buildMatchPayload, posthog]);
+  }, [events, user, session, loadedMatchId, buildMatchPayload, posthog]);
 
   useEffect(() => {
     if (isRecording) return;
@@ -497,7 +504,7 @@ function MatchRecorderScreen({
   }, [isRecording, events.length, recoveryDismissed]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !session) return;
 
     const pendingId = getPendingMatchSyncId();
     if (!pendingId) return;
@@ -539,7 +546,7 @@ function MatchRecorderScreen({
     };
 
     syncPending();
-  }, [user]);
+  }, [user, session]);
 
   useEffect(() => {
     if (!isRecording && events.length === 0) {
@@ -569,6 +576,7 @@ function MatchRecorderScreen({
 
       if (
         user &&
+        session &&
         events.length &&
         !autoSaveRef.current &&
         !hasSavedThisSession
@@ -589,7 +597,7 @@ function MatchRecorderScreen({
       const loadPrevious = async () => {
         try {
           const sources = [];
-          if (user) {
+          if (user && session) {
             const remote = await listMatchesForCurrentUser();
             sources.push(...remote);
           }
@@ -627,6 +635,7 @@ function MatchRecorderScreen({
     mode,
     posthog,
     user,
+    session,
     hasSavedThisSession,
     handleSaveToAccount,
     buildMatchPayload,
@@ -863,7 +872,7 @@ function MatchRecorderScreen({
               {user && (
                 <button
                   onClick={handleSaveToAccount}
-                  disabled={saveStatus === "saving"}
+                  disabled={saveStatus === "saving" || !session}
                   className="btn py-4 flex items-center justify-center gap-2"
                 >
                   <FloppyDisk size={20} weight="bold" />
@@ -871,7 +880,9 @@ function MatchRecorderScreen({
                     ? "Saving..."
                     : saveStatus === "saved"
                       ? "Saved"
-                      : "Save"}
+                      : !session
+                        ? "Verify Email"
+                        : "Save"}
                 </button>
               )}
 
@@ -1370,6 +1381,7 @@ function MatchRecorderScreen({
       )}
 
       {user &&
+        session &&
         !isRecording &&
         events.length > 0 &&
         !loadedMatchId &&

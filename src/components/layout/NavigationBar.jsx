@@ -13,6 +13,7 @@ import { analytics } from "../../firebase";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import AuthModal from "../auth/AuthModal.jsx";
+import EmailNotConfirmedToast from "../auth/EmailNotConfirmedToast.jsx";
 
 const NAV_ITEMS = [
   { key: "tournament", label: "Tournament Analysis", icon: Calendar },
@@ -21,7 +22,7 @@ const NAV_ITEMS = [
 ];
 
 function NavigationBar({ currentPage, navigate }) {
-  const { user, authLoading, signOut } = useAuth();
+  const { user, authLoading, signOut, needsEmailVerification, resendSignupConfirmation } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -45,6 +46,13 @@ function NavigationBar({ currentPage, navigate }) {
 
   return (
     <div className="bg-brand-bg md:bg-brand-bg/40 md:backdrop-blur-lg border-b border-brand-border z-20 sticky top-0">
+      <EmailNotConfirmedToast
+        email={needsEmailVerification ? user?.email : null}
+        onResend={async () => {
+          const { error } = await resendSignupConfirmation(window.location.origin)
+          return error
+        }}
+      />
       <div className="max-w-7xl mx-auto px-2 sm:px-5 py-2 sm:py-4 flex items-center gap-2 sm:gap-4 text-brand-text">
         <button
           onClick={() => handleNavigate("home")}

@@ -10,6 +10,8 @@ const AuthProviderInner = ({ children }) => {
   const [authLoading, setAuthLoading] = useState(true)
   const posthog = usePostHog()
 
+  const needsEmailVerification = Boolean(user?.email && !session)
+
   useEffect(() => {
     const init = async () => {
       const { data, error } = await supabase.auth.getSession()
@@ -51,6 +53,21 @@ const AuthProviderInner = ({ children }) => {
     user,
     session,
     authLoading,
+    needsEmailVerification,
+    async resendSignupConfirmation(emailRedirectTo = window.location.origin) {
+      const email = user?.email
+      if (!email) return { error: new Error('No email available') }
+
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo,
+        },
+      })
+
+      return { error }
+    },
     async signIn({ email, password }) {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
