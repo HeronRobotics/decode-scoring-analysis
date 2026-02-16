@@ -100,6 +100,19 @@ const AuthProviderInner = ({ children }) => {
       }
       return { data, error }
     },
+    async signInWithGoogle() {
+      const redirectTo = window.location.origin
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+        },
+      })
+      if (error) {
+        console.error('Error starting Google sign-in', error)
+      }
+      return { data, error }
+    },
     async signUp({ email, password }) {
       const { data, error } = await supabase.auth.signUp({
         email,
