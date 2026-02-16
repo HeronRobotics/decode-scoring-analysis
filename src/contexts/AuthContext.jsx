@@ -49,24 +49,32 @@ const AuthProviderInner = ({ children }) => {
     }
   }, [user, posthog])
 
+  const resendSignupConfirmationForEmail = async (
+    email,
+    emailRedirectTo = window.location.origin,
+  ) => {
+    if (!email) return { error: new Error('No email provided') }
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo,
+      },
+    })
+
+    return { error }
+  }
+
   const value = {
     user,
     session,
     authLoading,
     needsEmailVerification,
+    resendSignupConfirmationForEmail,
     async resendSignupConfirmation(emailRedirectTo = window.location.origin) {
       const email = user?.email
-      if (!email) return { error: new Error('No email available') }
-
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-        options: {
-          emailRedirectTo,
-        },
-      })
-
-      return { error }
+      return await resendSignupConfirmationForEmail(email, emailRedirectTo)
     },
     async signIn({ email, password }) {
       const { data, error } = await supabase.auth.signInWithPassword({

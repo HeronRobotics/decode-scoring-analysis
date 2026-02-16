@@ -32,12 +32,20 @@ function GoogleMark() {
 }
 
 function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
-  const { signIn, signUp, signInWithGitHub, signInWithGoogle } = useAuth();
+  const {
+    signIn,
+    signUp,
+    signInWithGitHub,
+    signInWithGoogle,
+    resendSignupConfirmationForEmail,
+  } = useAuth();
   const [mode, setMode] = useState(defaultMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showResend, setShowResend] = useState(false);
+  const [resendStatus, setResendStatus] = useState("idle");
 
   if (!open) return null;
 
@@ -45,12 +53,19 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setShowResend(false);
+    setResendStatus("idle");
 
     try {
       const fn = mode === "signin" ? signIn : signUp;
       const { error: authError } = await fn({ email, password });
       if (authError) {
-        setError(authError.message || "Authentication failed");
+        const msg = authError.message || "Authentication failed";
+        setError(msg);
+        const isUnverified =
+          mode === "signin" &&
+          /not confirmed|email not confirmed|confirm your email/i.test(msg);
+        setShowResend(isUnverified && Boolean(email));
         setLoading(false);
         return;
       }
@@ -74,6 +89,24 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
   const switchMode = (nextMode) => {
     setMode(nextMode);
     setError("");
+    setShowResend(false);
+    setResendStatus("idle");
+  };
+
+  const handleResend = async () => {
+    if (!email) return;
+    setResendStatus("sending");
+    const { error: resendError } = await resendSignupConfirmationForEmail(
+      email,
+      window.location.origin,
+    );
+    if (resendError) {
+      setError(resendError.message || "Failed to resend verification email");
+      setResendStatus("error");
+      return;
+    }
+
+    setResendStatus("sent");
   };
 
   const handleGitHubSignIn = async () => {
@@ -147,6 +180,26 @@ function AuthModal({ open, onClose, defaultMode = "signin", onAuthSuccess }) {
         </div>
 
         {error && <div className="mb-3 text-sm text-brand-accent">{error}</div>}
+
+        {showResend && (
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="text-xs text-brand-text">
+              Didn&apos;t get the email?
+            </div>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={loading || resendStatus === "sending" || resendStatus === "sent"}
+              className="btn !py-1.5 !px-3 !text-xs"
+            >
+              {resendStatus === "sending"
+                ? "Sending..."
+                : resendStatus === "sent"
+                  ? "Sent"
+                  : "Resend verification"}
+            </button>
+          </div>
+        )}
 
         <div className="flex flex-col gap-3 mb-4 items-center">
           <button
