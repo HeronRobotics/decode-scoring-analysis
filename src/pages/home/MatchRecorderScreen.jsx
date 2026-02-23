@@ -335,7 +335,7 @@ function MatchRecorderScreen({
       return shareUrlCacheRef.current.get(text);
     }
 
-    const encoded = btoa(text);
+    const encoded = btoa(encodeURIComponent(text));
 
     let url;
     try {

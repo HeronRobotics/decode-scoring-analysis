@@ -1,95 +1,112 @@
-import { useState } from 'react'
-import { ArrowLeft, UploadSimple, FloppyDisk, ClipboardTextIcon } from '@phosphor-icons/react'
-import { logEvent } from 'firebase/analytics'
-import { analytics } from '../firebase'
-import { parseMatchText } from '../utils/matchFormat'
-import { readPaste } from '../utils/pasteService'
-import { extractShareParams, splitLines, tryParseUrlish } from '../utils/shareImport'
+import { useState } from "react";
+import {
+  ArrowLeft,
+  UploadSimple,
+  FloppyDisk,
+  ClipboardTextIcon,
+} from "@phosphor-icons/react";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "../firebase";
+import { parseMatchText } from "../utils/matchFormat";
+import { readPaste } from "../utils/pasteService";
+import {
+  extractShareParams,
+  splitLines,
+  tryParseUrlish,
+} from "../utils/shareImport";
 
 function TournamentCreator({ onCancel, onTournamentCreated }) {
-  const [tournamentName, setTournamentName] = useState('')
-  const [tournamentDate, setTournamentDate] = useState('')
-  const [uploadedMatches, setUploadedMatches] = useState([])
-  const [showTextImport, setShowTextImport] = useState(false)
-  const [textInput, setTextInput] = useState('')
+  const [tournamentName, setTournamentName] = useState("");
+  const [tournamentDate, setTournamentDate] = useState("");
+  const [uploadedMatches, setUploadedMatches] = useState([]);
+  const [showTextImport, setShowTextImport] = useState(false);
+  const [textInput, setTextInput] = useState("");
 
   const importMatchFiles = (e) => {
-    const files = Array.from(e.target.files)
-    if (files.length === 0) return
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
-    let loadedMatches = []
-    let loadedCount = 0
+    let loadedMatches = [];
+    let loadedCount = 0;
 
-    files.forEach(file => {
-      const reader = new FileReader()
+    files.forEach((file) => {
+      const reader = new FileReader();
       reader.onload = (event) => {
         try {
-          const data = JSON.parse(event.target.result)
-          loadedMatches.push(data)
-          loadedCount++
+          const data = JSON.parse(event.target.result);
+          loadedMatches.push(data);
+          loadedCount++;
 
           if (loadedCount === files.length) {
-            setUploadedMatches(prev => [...prev, ...loadedMatches])
+            setUploadedMatches((prev) => [...prev, ...loadedMatches]);
           }
         } catch {
-          alert(`Error loading ${file.name}. Please ensure it is a valid JSON file.`)
-          loadedCount++
+          alert(
+            `Error loading ${file.name}. Please ensure it is a valid JSON file.`,
+          );
+          loadedCount++;
         }
-      }
-      reader.readAsText(file)
-    })
-  }
+      };
+      reader.readAsText(file);
+    });
+  };
 
   const importFromText = async () => {
     try {
       // Split by newlines to handle multiple match codes
-      const lines = splitLines(textInput)
-      
+      const lines = splitLines(textInput);
+
       if (lines.length === 0) {
-        alert("No valid match data found. Please check the format.")
-        return
+        alert("No valid match data found. Please check the format.");
+        return;
       }
 
-      const newMatches = []
+      const newMatches = [];
       for (const line of lines) {
-        let parsedData = null
+        let parsedData = null;
 
         // URLs (with or without scheme) and query-only strings like `?p=...`.
         if (tryParseUrlish(line)) {
-          const { pasteKey, mt } = extractShareParams(line)
+          const { pasteKey, mt } = extractShareParams(line);
           try {
             if (pasteKey) {
-              const b64Payload = await readPaste(pasteKey)
-              const decodedText = atob(b64Payload)
-              parsedData = parseMatchText(decodedText)
+              const b64Payload = await readPaste(pasteKey);
+              const decodedText = decodeURIComponent(atob(b64Payload));
+              parsedData = parseMatchText(decodedText);
             } else if (mt) {
-              const decodedText = atob(decodeURIComponent(mt))
-              parsedData = parseMatchText(decodedText)
+              const decodedText = decodeURIComponent(
+                atob(decodeURIComponent(mt)),
+              );
+              parsedData = parseMatchText(decodedText);
             }
           } catch (e) {
-            console.warn('Failed to import match from URL', e)
+            console.warn("Failed to import match from URL", e);
           }
         } else {
           // Non-URL lines: try raw match text first.
           try {
-            parsedData = parseMatchText(line)
+            parsedData = parseMatchText(line);
           } catch {
             // If it isn't match text, treat it as a bare paste key.
-            const { pasteKey } = extractShareParams(line)
+            const { pasteKey } = extractShareParams(line);
             if (pasteKey) {
               try {
-                const b64Payload = await readPaste(pasteKey)
-                const decodedText = atob(b64Payload)
-                parsedData = parseMatchText(decodedText)
+                const b64Payload = await readPaste(pasteKey);
+                const decodedText = decodeURIComponent(atob(b64Payload));
+                parsedData = parseMatchText(decodedText);
               } catch (e) {
-                console.warn('Failed to import match from paste key', e)
+                console.warn("Failed to import match from paste key", e);
               }
             }
           }
         }
 
-        if (!parsedData || !parsedData.events || parsedData.events.length === 0) {
-          continue
+        if (
+          !parsedData ||
+          !parsedData.events ||
+          parsedData.events.length === 0
+        ) {
+          continue;
         }
 
         const matchData = {
@@ -98,64 +115,67 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           teamNumber: parsedData.teamNumber,
           events: parsedData.events,
           notes: parsedData.notes || "",
-        }
+        };
 
-        newMatches.push(matchData)
+        newMatches.push(matchData);
       }
 
       if (newMatches.length === 0) {
-        alert("No valid match data found. Please check the format.")
-        return
+        alert("No valid match data found. Please check the format.");
+        return;
       }
 
-      setUploadedMatches(prev => [...prev, ...newMatches])
-      setShowTextImport(false)
-      setTextInput("")
-      
-      logEvent(analytics, 'import_matches_from_text', {
-        numMatches: newMatches.length
-      })
+      setUploadedMatches((prev) => [...prev, ...newMatches]);
+      setShowTextImport(false);
+      setTextInput("");
+
+      logEvent(analytics, "import_matches_from_text", {
+        numMatches: newMatches.length,
+      });
     } catch (e) {
-      alert("Error parsing match data. Please check the format: " + e.message)
+      alert("Error parsing match data. Please check the format: " + e.message);
     }
-  }
+  };
 
   const createTournament = () => {
     if (!tournamentName.trim()) {
-      alert('Please enter a tournament name')
-      return
+      alert("Please enter a tournament name");
+      return;
     }
     if (!tournamentDate) {
-      alert('Please select a tournament date')
-      return
+      alert("Please select a tournament date");
+      return;
     }
     if (uploadedMatches.length === 0) {
-      alert('Please upload at least one match')
-      return
+      alert("Please upload at least one match");
+      return;
     }
 
     const newTournament = {
       name: tournamentName,
       date: tournamentDate,
-      matches: uploadedMatches
-    }
+      matches: uploadedMatches,
+    };
 
-    onTournamentCreated(newTournament)
-    logEvent(analytics, 'create_tournament', {
+    onTournamentCreated(newTournament);
+    logEvent(analytics, "create_tournament", {
       tournamentName: tournamentName,
-      numMatches: uploadedMatches.length
-    })
-  }
+      numMatches: uploadedMatches.length,
+    });
+  };
 
   const removeMatch = (index) => {
-    setUploadedMatches(prev => prev.filter((_, i) => i !== index))
-  }
+    setUploadedMatches((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="min-h-screen p-3 sm:p-5 max-w-7xl mx-auto">
       <div className="my-6 sm:my-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-3xl sm:text-5xl font-bold">Create Tournament</h1>
-        <button onClick={onCancel} className="btn w-full sm:w-auto justify-center">
+        <button
+          onClick={onCancel}
+          className="btn w-full sm:w-auto justify-center"
+        >
           <ArrowLeft size={20} weight="bold" />
           Cancel
         </button>
@@ -185,7 +205,9 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-2">Upload Match Files ({uploadedMatches.length} uploaded)</label>
+            <label className="block font-semibold mb-2">
+              Upload Match Files ({uploadedMatches.length} uploaded)
+            </label>
             <div className="flex gap-3 flex-wrap">
               <label className="btn py-3! w-full sm:w-auto justify-center">
                 <UploadSimple weight="bold" size={20} />
@@ -198,7 +220,10 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                   className="hidden"
                 />
               </label>
-              <button onClick={() => setShowTextImport(true)} className="btn py-3! w-full sm:w-auto justify-center">
+              <button
+                onClick={() => setShowTextImport(true)}
+                className="btn py-3! w-full sm:w-auto justify-center"
+              >
                 <ClipboardTextIcon weight="bold" size={20} />
                 Paste Match Codes
               </button>
@@ -210,13 +235,26 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
               <h3 className="font-semibold mb-3">Uploaded Matches:</h3>
               <div className="space-y-2">
                 {uploadedMatches.map((match, index) => {
-                  const cycleEvents = match.events.filter(e => e.type === 'cycle')
-                  const scored = cycleEvents.reduce((sum, e) => sum + e.scored, 0)
-                  const total = cycleEvents.reduce((sum, e) => sum + e.total, 0)
+                  const cycleEvents = match.events.filter(
+                    (e) => e.type === "cycle",
+                  );
+                  const scored = cycleEvents.reduce(
+                    (sum, e) => sum + e.scored,
+                    0,
+                  );
+                  const total = cycleEvents.reduce(
+                    (sum, e) => sum + e.total,
+                    0,
+                  );
                   return (
-                    <div key={index} className="bg-brand-bg border border-brand-border rounded-lg p-3 flex justify-between items-center">
+                    <div
+                      key={index}
+                      className="bg-brand-bg border border-brand-border rounded-lg p-3 flex justify-between items-center"
+                    >
                       <div>
-                        <span className="font-semibold">Match {index + 1} ({match.teamNumber || 'No Team'})</span>
+                        <span className="font-semibold">
+                          Match {index + 1} ({match.teamNumber || "No Team"})
+                        </span>
                         <span className="text-sm text-brand-text ml-4">
                           {scored}/{total} balls scored
                         </span>
@@ -228,7 +266,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
                         Remove
                       </button>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -255,7 +293,9 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
           >
             <h3 className="text-2xl mb-5">Paste Match Codes</h3>
             <p className="text-sm mb-4 text-brand-text">
-              Paste one or more match codes below (one per line). Format: hmadv2/teamNum/...;; 0:00.000; 1/2 at 0:10.123; ... (hmadv1 also supported)
+              Paste one or more match codes below (one per line). Format:
+              hmadv2/teamNum/...;; 0:00.000; 1/2 at 0:10.123; ... (hmadv1 also
+              supported)
             </p>
             <textarea
               value={textInput}
@@ -269,8 +309,8 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
               </button>
               <button
                 onClick={() => {
-                  setShowTextImport(false)
-                  setTextInput("")
+                  setShowTextImport(false);
+                  setTextInput("");
                 }}
                 className="btn"
               >
@@ -281,7 +321,7 @@ function TournamentCreator({ onCancel, onTournamentCreated }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default TournamentCreator
+export default TournamentCreator;

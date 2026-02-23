@@ -34,7 +34,7 @@ export const formatMatchText = ({
 
   let notesEncoded = "";
   if (notes && notes.trim()) {
-    notesEncoded = `/${btoa(notes.trim())}`;
+    notesEncoded = `/${btoa(encodeURIComponent(notes.trim()))}`;
   } else {
     notesEncoded = `/${btoa(" ")}`;
   }
@@ -94,7 +94,7 @@ export const formatPhaseMatchText = ({
 
   let notesEncoded = "";
   if (notes && notes.trim()) {
-    notesEncoded = `/${btoa(notes.trim())}`;
+    notesEncoded = `/${btoa(encodeURIComponent(notes.trim()))}`;
   } else {
     notesEncoded = `/${btoa(" ")}`;
   }
@@ -159,7 +159,7 @@ export const parseMatchText = (text) => {
   if (version === HMAD_VERSION_V2 || version === HMAD_VERSION_V1) {
     if (parts.length >= 3) {
       try {
-        extractedNotes = atob(parts[2]);
+        extractedNotes = decodeURIComponent(atob(parts[2]));
       } catch (e) {
         console.warn("Failed to decode notes from text format", e);
       }

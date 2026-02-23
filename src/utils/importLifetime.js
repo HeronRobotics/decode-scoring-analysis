@@ -101,7 +101,7 @@ export async function parseLifetimeImportInput(raw) {
       if (pasteKey) {
         try {
           const b64Payload = await readPaste(pasteKey);
-          const decodedText = atob(b64Payload);
+          const decodedText = decodeURIComponent(atob(b64Payload));
           const parsed = parseMatchText(decodedText);
           if ((parsed.events || []).length) {
             results.push({
@@ -120,7 +120,7 @@ export async function parseLifetimeImportInput(raw) {
 
       if (mt) {
         try {
-          const decodedText = atob(decodeURIComponent(mt));
+          const decodedText = decodeURIComponent(atob(decodeURIComponent(mt)));
           const parsed = parseMatchText(decodedText);
           if ((parsed.events || []).length) {
             results.push({

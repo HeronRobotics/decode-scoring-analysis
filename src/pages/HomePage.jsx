@@ -75,10 +75,12 @@ function HomePage() {
 
       // Show loading splash
       setIsLoadingFromUrl(true);
-      setLoadingMessage(pasteKey ? "Fetching shared match..." : "Decoding match data...");
+      setLoadingMessage(
+        pasteKey ? "Fetching shared match..." : "Decoding match data...",
+      );
 
       // Add a minimum delay for the animation to be visible
-      const minDelay = new Promise(resolve => setTimeout(resolve, 1500));
+      const minDelay = new Promise((resolve) => setTimeout(resolve, 1500));
 
       try {
         let decoded;
@@ -86,9 +88,9 @@ function HomePage() {
         if (pasteKey) {
           setLoadingMessage("Fetching shared match...");
           const b64Payload = await readPaste(pasteKey);
-          decoded = atob(b64Payload);
+          decoded = decodeURIComponent(atob(b64Payload));
         } else {
-          decoded = atob(decodeURIComponent(encoded));
+          decoded = decodeURIComponent(atob(decodeURIComponent(encoded)));
         }
 
         if (cancelled) return;
@@ -105,7 +107,7 @@ function HomePage() {
         if (success) {
           logEvent(
             analytics,
-            pasteKey ? "import_match_text_paste" : "import_match_text_url"
+            pasteKey ? "import_match_text_paste" : "import_match_text_url",
           );
 
           // Switch to the match recorder page and clear query params.
@@ -143,14 +145,16 @@ function HomePage() {
             Over <span className="font-bold">750 matches</span> recorded!
           </div>
           <h1 className="title">
-            <span className="fancy text-brand-accent">
-              Data-Driven
-            </span>
+            <span className="fancy text-brand-accent">Data-Driven</span>
             &nbsp;Match Recording and Scouting
           </h1>
           <p className="subtitle mt-4 leading-relaxed">
-            Track robot performance, analyze cycle times, and compare teams for the FTC <span className="font-semibold italic text-brand-accent">DECODE</span> season.
-            Start recording matches instantly or import existing data!
+            Track robot performance, analyze cycle times, and compare teams for
+            the FTC{" "}
+            <span className="font-semibold italic text-brand-accent">
+              DECODE
+            </span>{" "}
+            season. Start recording matches instantly or import existing data!
           </p>
         </div>
 
