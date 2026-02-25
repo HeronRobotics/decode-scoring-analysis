@@ -154,7 +154,11 @@ function MyMatchesPage() {
     setSyncing(true);
     try {
       for (const localMatch of unsynced) {
-        const saved = await createMatchForUser(user.id, localMatch, "local_sync");
+        const saved = await createMatchForUser(
+          user.id,
+          localMatch,
+          "local_sync",
+        );
         markLocalMatchSynced(localMatch.id);
         setMatches((prev) => [saved, ...prev]);
       }
@@ -167,7 +171,9 @@ function MyMatchesPage() {
   };
 
   const handleDeleteLocal = (id) => {
-    const confirmed = window.confirm("Delete this local match? This cannot be undone.");
+    const confirmed = window.confirm(
+      "Delete this local match? This cannot be undone.",
+    );
     if (!confirmed) return;
     removeLocalMatch(id);
     setLocalMatches(getLocalMatches());
@@ -327,7 +333,8 @@ function MyMatchesPage() {
     setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const selectedMatch = allMatches.find((m) => m.id === selectedMatchId) || null;
+  const selectedMatch =
+    allMatches.find((m) => m.id === selectedMatchId) || null;
 
   useEffect(() => {
     if (!selectedMatch) {
@@ -535,15 +542,21 @@ function MyMatchesPage() {
             <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <HardDrive size={20} weight="bold" className="text-brand-accent" />
+                  <HardDrive
+                    size={20}
+                    weight="bold"
+                    className="text-brand-accent"
+                  />
                   <h2 className="text-xl font-bold">Local Matches</h2>
                 </div>
                 <span className="text-sm text-brand-text">
-                  {localMatches.length} match{localMatches.length !== 1 ? "es" : ""}
+                  {localMatches.length} match
+                  {localMatches.length !== 1 ? "es" : ""}
                 </span>
               </div>
               <p className="text-sm text-brand-text mb-4">
-                These matches are saved on this device. Sign in to sync them to your account.
+                These matches are saved on this device. Sign in to sync them to
+                your account.
               </p>
               <div className="space-y-2">
                 {localMatches.map((m) => {
@@ -569,9 +582,14 @@ function MyMatchesPage() {
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-brand-mainText truncate">
-                            {m.title || (m.teamNumber ? `Team ${m.teamNumber} Match` : "Match")}
+                            {m.title ||
+                              (m.teamNumber
+                                ? `Team ${m.teamNumber} Match`
+                                : "Match")}
                           </div>
-                          <div className="text-xs text-brand-text mt-0.5">{dateStr}</div>
+                          <div className="text-xs text-brand-text mt-0.5">
+                            {dateStr}
+                          </div>
                         </div>
                         <button
                           type="button"
@@ -590,11 +608,16 @@ function MyMatchesPage() {
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <ListNumbers size={16} className="text-brand-accent" />
+                          <ListNumbers
+                            size={16}
+                            className="text-brand-accent"
+                          />
                           <span className="font-semibold text-brand-mainText">
                             {stats.cycles}
                           </span>
-                          <span className="text-xs text-brand-text hidden sm:inline">cycles</span>
+                          <span className="text-xs text-brand-text hidden sm:inline">
+                            cycles
+                          </span>
                         </div>
                         <div className="text-sm">
                           <span className="font-semibold text-brand-mainText">
@@ -613,8 +636,8 @@ function MyMatchesPage() {
                 Sign in to view and manage matches saved to your account.
               </p>
               <p>
-                Use the <strong>Sign in / Sign up</strong> button in the top right
-                to get started.
+                Use the <strong>Sign in / Sign up</strong> button in the top
+                right to get started.
               </p>
             </div>
           )}
@@ -639,8 +662,12 @@ function MyMatchesPage() {
                   />
                 </div>
                 <div>
-                  <span className="font-bold text-brand-main-text block">Import Matches</span>
-                  <span className="text-xs text-brand-text">Upload JSON or paste links</span>
+                  <span className="font-bold text-brand-main-text block">
+                    Import Matches
+                  </span>
+                  <span className="text-xs text-brand-text">
+                    Upload JSON or paste links
+                  </span>
                 </div>
               </div>
               <CaretDown
@@ -727,7 +754,9 @@ function MyMatchesPage() {
               {/* Saved Matches Header */}
               <div className="flex items-center justify-between mb-5 pb-4 border-b border-brand-border">
                 <div>
-                  <h2 className="text-xl font-bold text-brand-main-text">Saved Matches</h2>
+                  <h2 className="text-xl font-bold text-brand-main-text">
+                    Saved Matches
+                  </h2>
                   <p className="text-xs text-brand-text mt-0.5">
                     {filteredMatches.length === allMatches.length
                       ? `${allMatches.length} total ${allMatches.length === 1 ? "match" : "matches"}`
@@ -742,7 +771,10 @@ function MyMatchesPage() {
                   <div className="flex items-center gap-2 text-sm text-brand-text">
                     <HardDrive size={16} className="text-brand-accent" />
                     {localMatches.filter((m) => !m.synced).length} local match
-                    {localMatches.filter((m) => !m.synced).length !== 1 ? "es" : ""} to sync
+                    {localMatches.filter((m) => !m.synced).length !== 1
+                      ? "es"
+                      : ""}{" "}
+                    to sync
                   </div>
                   <button
                     type="button"
@@ -955,11 +987,12 @@ function MyMatchesPage() {
                                           ? `${getTeamName(m.teamNumber)} Match`
                                           : "Match")}
                                     </span>
-                                    {m.id?.startsWith("local_") && !m.synced && (
-                                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-brand-accentBg text-brand-accent shrink-0">
-                                        Local
-                                      </span>
-                                    )}
+                                    {m.id?.startsWith("local_") &&
+                                      !m.synced && (
+                                        <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-brand-accentBg text-brand-accent shrink-0">
+                                          Local
+                                        </span>
+                                      )}
                                   </div>
                                   {m.tournamentName &&
                                     groupBy !== "tournament" && (
@@ -969,20 +1002,22 @@ function MyMatchesPage() {
                                     )}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  {m.id?.startsWith("local_") && !m.synced && user && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSyncMatch(m);
-                                      }}
-                                      disabled={syncing}
-                                      className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
-                                      title="Sync to account"
-                                    >
-                                      <CloudArrowUp size={16} weight="bold" />
-                                    </button>
-                                  )}
+                                  {m.id?.startsWith("local_") &&
+                                    !m.synced &&
+                                    user && (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSyncMatch(m);
+                                        }}
+                                        disabled={syncing}
+                                        className="p-1.5 text-brand-text hover:text-brand-accent hover:bg-brand-accentBg rounded transition-colors"
+                                        title="Sync to account"
+                                      >
+                                        <CloudArrowUp size={16} weight="bold" />
+                                      </button>
+                                    )}
                                   {!m.id?.startsWith("local_") && (
                                     <a
                                       href={`/match?match=${encodeURIComponent(m.id)}`}
@@ -1134,42 +1169,42 @@ function MyMatchesPage() {
                     <div className="bg-brand-invert-bg rounded-2xl p-6 mb-6 shadow-lg">
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-invert-text">
                             {selectedStats.cycles}
                           </div>
-                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="brand-invert-text  text-xs flex items-center justify-center gap-1 mt-1">
                             <ListNumbers size={14} />
                             Cycles
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-invert-text">
                             {selectedStats.scored}
-                            <span className="text-lg text-brand-surface">
+                            <span className="text-lg text-brand-invert-text">
                               /{selectedStats.total}
                             </span>
                           </div>
-                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-invert-text text-xs flex items-center justify-center gap-1 mt-1">
                             <Target size={14} />
                             Scored
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-invert-text">
                             {formatStat(selectedStats.accuracy, 0)}%
                           </div>
-                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-invert-text text-xs flex items-center justify-center gap-1 mt-1">
                             <Target size={14} weight="fill" />
                             Accuracy
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl sm:text-3xl font-bold text-brand-surface">
+                          <div className="text-2xl sm:text-3xl font-bold text-brand-invert-text">
                             {selectedStats.avgCycleTime
                               ? `${formatStat(selectedStats.avgCycleTime, 1)}s`
                               : "—"}
                           </div>
-                          <div className="text-brand-surface text-xs flex items-center justify-center gap-1 mt-1">
+                          <div className="text-brand-invert-text text-xs flex items-center justify-center gap-1 mt-1">
                             <Clock size={14} />
                             Avg Cycle
                           </div>
@@ -1274,9 +1309,12 @@ function MyMatchesPage() {
                   <div className="w-20 h-20 rounded-2xl bg-brand-accentBg/30 flex items-center justify-center mb-4">
                     <Target size={40} className="text-brand-accent/40" />
                   </div>
-                  <p className="text-xl font-semibold text-brand-main-text">No Match Selected</p>
+                  <p className="text-xl font-semibold text-brand-main-text">
+                    No Match Selected
+                  </p>
                   <p className="text-sm mt-2 text-center max-w-xs">
-                    Choose a match from the list to view detailed statistics and edit information
+                    Choose a match from the list to view detailed statistics and
+                    edit information
                   </p>
                 </div>
               )}

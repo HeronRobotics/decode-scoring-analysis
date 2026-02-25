@@ -1,29 +1,29 @@
-@import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Felipa&family=Roboto+Serif:wght@400;500;600;700&family=League+Spartan:wght@300;400;500;600;700&family=Manrope:wght@100;200;300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Felipa&family=Roboto+Serif:wght@400;500;600;700&family=League+Spartan:wght@300;400;500;600;700&family=Manrope:wght@100;200;300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap");
 
 @theme {
-  --color-brand-bg: #18181B;
-  --color-brand-surface: #1B1B1E;
+  --color-brand-bg: #18181b;
+  --color-brand-surface: #1b1b1e;
   --color-brand-surfaceStrong: #202024;
   --color-brand-inputbg: #202024;
 
   --color-brand-outline: #303032;
-  --color-brand-border: #27272A;
+  --color-brand-border: #27272a;
 
-  --color-brand-text: #C4C4CA;
-  --color-brand-main-text: #FFFFFF;
+  --color-brand-text: #c4c4ca;
+  --color-brand-main-text: #ffffff;
   --color-over-accent: #000;
   --color-brand-muted: #949aa6;
 
-  --color-brand-invert-text: #1f1300;
-  --color-brand-invert-bg: #fff2e8;
-  --color-brand-invert-border: #c9b4a3;
-  --color-brand-invert-muted: #6b7280;
-  --color-brand-invert-surface: #c9b4a350;
+  --color-brand-invert-text: #ffffff;
+  --color-brand-invert-bg: #372921;
+  --color-brand-invert-border: #f58a2230;
+  --color-brand-invert-muted: #8a7a6a;
+  --color-brand-invert-surface: #f58a2212;
 
-  --color-brand-accent: #F58A22;
-  --color-brand-accentBg: #F58A2220;
-  --color-brand-accentStrong: #D97706;
+  --color-brand-accent: #f58a22;
+  --color-brand-accentBg: #f58a2220;
+  --color-brand-accentStrong: #d97706;
   --color-brand-shadow: #24160b;
 
   --color-brand-success: #22c55e;
@@ -39,10 +39,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background-color: var(--color-brand-bg);
-  font-family: 'Manrope', 'League Spartan', sans-serif;
+  font-family: "Manrope", "League Spartan", sans-serif;
   color: var(--color-brand-text);
   /* background-color: #6887bc; */
-  letter-spacing: 0.00em;
+  letter-spacing: 0em;
   font-weight: 200;
   width: 100vw;
   overflow-x: hidden;
@@ -69,21 +69,41 @@ h6 {
   inset: -20% -10% auto -10%;
   height: 65vh;
   background:
-    radial-gradient(360px 260px at 20% 20%, var(--color-brand-accent) 0%, transparent 70%),
-    radial-gradient(460px 300px at 65% 30%, var(--color-brand-accent) 0%, transparent 70%),
-    radial-gradient(520px 360px at 85% 10%, var(--color-brand-accent) 0%, transparent 65%);
+    radial-gradient(
+      360px 260px at 20% 20%,
+      var(--color-brand-accent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      460px 300px at 65% 30%,
+      var(--color-brand-accent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      520px 360px at 85% 10%,
+      var(--color-brand-accent) 0%,
+      transparent 65%
+    );
   filter: blur(40px);
   opacity: 0.25;
   pointer-events: none;
 }
 
 .bg::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 55% 5% -40% 5%;
   background:
-    radial-gradient(500px 320px at 15% 20%, var(--color-brand-bg) 0%, transparent 70%),
-    radial-gradient(600px 360px at 80% 40%, var(--color-brand-bg) 0%, transparent 70%);
+    radial-gradient(
+      500px 320px at 15% 20%,
+      var(--color-brand-bg) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      600px 360px at 80% 40%,
+      var(--color-brand-bg) 0%,
+      transparent 70%
+    );
   filter: blur(50px);
   opacity: 0.55;
 }
@@ -94,7 +114,7 @@ h6 {
 }
 
 .btn {
-  font-family: 'Manrope', 'League Spartan', sans-serif;
+  font-family: "Manrope", "League Spartan", sans-serif;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -155,7 +175,7 @@ h6 {
 }
 
 .fancy {
-  font-family: 'Roboto Serif', serif;
+  font-family: "Roboto Serif", serif;
   font-weight: 500;
   font-size: 1.125em;
   font-style: italic;
@@ -172,7 +192,7 @@ h6 {
 }
 
 .button {
-  font-family: 'Manrope', 'League Spartan', sans-serif;
+  font-family: "Manrope", "League Spartan", sans-serif;
   letter-spacing: 0.02em;
   padding: 0.875rem 1.75rem;
   border-radius: 12px;
@@ -236,31 +256,38 @@ h6 {
   box-shadow: none;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   background: var(--color-brand-inputbg);
   border: 1.5px solid var(--color-brand-border);
   color: var(--color-brand-main-text);
   border-radius: 12px;
   padding: 0.75rem 1rem;
-  font-family: 'Manrope', 'League Spartan', sans-serif;
+  font-family: "Manrope", "League Spartan", sans-serif;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--color-brand-accent);
   box-shadow: 0 0 0 3px var(--color-brand-accentBg);
   background: var(--color-brand-surface);
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--color-brand-muted);
 }
 
 /* Better mobile input styling */
 @media (max-width: 640px) {
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     font-size: 16px; /* Prevents iOS zoom */
   }
 }
@@ -340,7 +367,7 @@ input::placeholder, textarea::placeholder {
 }
 
 button {
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -371,38 +398,76 @@ button {
 
 /* Loading Splash Animations */
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse-scale {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 0.8; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes bounce-dot {
-  0%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-8px); }
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .animate-spin-slow {
@@ -440,7 +505,12 @@ button {
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, var(--color-brand-main-text), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-brand-main-text),
+    transparent
+  );
   opacity: 0.4;
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -474,7 +544,7 @@ button {
   min-width: 1.5rem;
   height: 1.5rem;
   padding: 0 0.375rem;
-  font-family: 'League Spartan', sans-serif;
+  font-family: "League Spartan", sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
   border: 1px solid var(--color-brand-border);
@@ -572,7 +642,7 @@ button {
 }
 
 .phase-buffer {
-  background: #431C1F;
+  background: #431c1f;
 }
 
 .phase-teleop {
@@ -616,8 +686,13 @@ button {
 
 /* Playhead animation */
 @keyframes playhead-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--color-brand-accent); }
-  50% { box-shadow: 0 0 0 6px var(--color-brand-bg); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--color-brand-accent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--color-brand-bg);
+  }
 }
 
 .playhead {
@@ -625,11 +700,21 @@ button {
 }
 
 /* Staggered animation helper */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+.stagger-5 {
+  animation-delay: 0.25s;
+}
 
 /* Loading skeleton */
 .skeleton {
@@ -653,5 +738,7 @@ button {
 .page-transition-enter-active {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
