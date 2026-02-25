@@ -48,6 +48,17 @@ body {
   overflow-x: hidden;
 }
 
+/* Recharts: ensure tooltips never fall back to default serif fonts */
+.recharts-tooltip-wrapper,
+.recharts-default-tooltip,
+.recharts-tooltip-label,
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+  font-family: "League Spartan", "Manrope", sans-serif !important;
+  color: var(--color-brand-text);
+}
+
 h1,
 h2 {
   font-weight: 500;

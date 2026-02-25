@@ -746,17 +746,28 @@ function LifetimePage() {
                           `${formatStat(value)}%`,
                           "Accuracy",
                         ]}
+                        cursor={false}
                         contentStyle={{
                           backgroundColor: "var(--color-brand-bg)",
                           border: "2px solid var(--color-brand-border)",
+                          color: "var(--color-brand-text)",
+                          fontFamily: "League Spartan",
+                        }}
+                        labelStyle={{
+                          color: "var(--color-brand-text)",
+                          fontFamily: "League Spartan",
+                          fontWeight: 600,
+                        }}
+                        itemStyle={{
+                          color: "var(--color-brand-text)",
                           fontFamily: "League Spartan",
                         }}
                       />
-                      <Bar dataKey="accuracy" radius={[0, 4, 4, 0]}>
+                      <Bar dataKey="accuracy" radius={[0, 4, 4, 0]} activeBar={false}>
                         {tournamentStats.slice(0, 8).map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
-                            fill={index === 0 ? "var(--color-brand-text)" : "var(--color-brand-accent)"}
+                            fill="var(--color-brand-accent)"
                           />
                         ))}
                       </Bar>
@@ -851,7 +862,17 @@ function LifetimePage() {
                         contentStyle={{
                           backgroundColor: 'var(--color-brand-bg)',
                           border: '2px solid var(--color-brand-border)',
+                          color: 'var(--color-brand-text)',
                           fontFamily: 'League Spartan'
+                        }}
+                        labelStyle={{
+                          color: 'var(--color-brand-text)',
+                          fontFamily: 'League Spartan',
+                          fontWeight: 600,
+                        }}
+                        itemStyle={{
+                          color: 'var(--color-brand-text)',
+                          fontFamily: 'League Spartan',
                         }}
                         formatter={(value, name, props) => {
                           const point = props.payload
@@ -1007,7 +1028,17 @@ function LifetimePage() {
                         contentStyle={{
                           backgroundColor: 'var(--color-brand-bg)',
                           border: '2px solid var(--color-brand-border)',
+                          color: 'var(--color-brand-text)',
                           fontFamily: 'League Spartan'
+                        }}
+                        labelStyle={{
+                          color: 'var(--color-brand-text)',
+                          fontFamily: 'League Spartan',
+                          fontWeight: 600,
+                        }}
+                        itemStyle={{
+                          color: 'var(--color-brand-text)',
+                          fontFamily: 'League Spartan',
                         }}
                         formatter={(value, _name, props) => {
                           const point = props.payload

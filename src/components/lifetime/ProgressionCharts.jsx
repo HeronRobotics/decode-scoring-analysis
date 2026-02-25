@@ -83,6 +83,16 @@ function ProgressionCharts({ matchStats }) {
                 contentStyle={{
                   backgroundColor: "var(--color-brand-bg)",
                   border: "2px solid var(--color-brand-border)",
+                  color: "var(--color-brand-text)",
+                  fontFamily: "League Spartan",
+                }}
+                labelStyle={{
+                  color: "var(--color-brand-text)",
+                  fontFamily: "League Spartan",
+                  fontWeight: 600,
+                }}
+                itemStyle={{
+                  color: "var(--color-brand-text)",
                   fontFamily: "League Spartan",
                 }}
                 formatter={(value) => [`${value.toFixed(1)}%`, "Accuracy"]}
@@ -137,6 +147,16 @@ function ProgressionCharts({ matchStats }) {
                 contentStyle={{
                   backgroundColor: "var(--color-brand-bg)",
                   border: "2px solid var(--color-brand-border)",
+                  color: "var(--color-brand-text)",
+                  fontFamily: "League Spartan",
+                }}
+                labelStyle={{
+                  color: "var(--color-brand-text)",
+                  fontFamily: "League Spartan",
+                  fontWeight: 600,
+                }}
+                itemStyle={{
+                  color: "var(--color-brand-text)",
                   fontFamily: "League Spartan",
                 }}
                 formatter={(value) => [`${value.toFixed(1)}s`, "Avg Cycle Time"]}
@@ -190,6 +210,16 @@ function ProgressionCharts({ matchStats }) {
                 contentStyle={{
                   backgroundColor: "var(--color-brand-bg)",
                   border: "2px solid var(--color-brand-border)",
+                  color: "var(--color-brand-text)",
+                  fontFamily: "League Spartan",
+                }}
+                labelStyle={{
+                  color: "var(--color-brand-text)",
+                  fontFamily: "League Spartan",
+                  fontWeight: 600,
+                }}
+                itemStyle={{
+                  color: "var(--color-brand-text)",
                   fontFamily: "League Spartan",
                 }}
                 formatter={(value) => [

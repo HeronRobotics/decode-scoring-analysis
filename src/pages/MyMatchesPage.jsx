@@ -973,7 +973,7 @@ function MyMatchesPage() {
                               }}
                               className={`w-full text-left border-2 p-4 rounded-xl transition-all cursor-pointer ${
                                 isSelected
-                                  ? "border-brand-accent bg-brand-accentBg shadow-lg scale-[1.02]"
+                                  ? "border-brand-accent bg-brand-accentBg shadow-lg"
                                   : "border-brand-border bg-brand-bg hover:border-brand-accent/50 hover:bg-brand-surface hover:shadow-md"
                               }`}
                             >
