@@ -142,7 +142,7 @@ function HomePage() {
         <div className="w-full text-center sm:text-left max-w-4xl">
           <div className="inline-flex items-center gap-1 px-4 py-2 bg-brand-accentBg border-1 border-brand-accent rounded-full mb-6 font-light text-brand-accent text-sm">
             <span className="w-2 h-2 bg-brand-accent rounded-full animate-pulse" />
-            Over <span className="font-bold">750 matches</span> recorded!
+            Over <span className="font-bold">1000 matches</span> recorded!
           </div>
           <h1 className="title">
             <span className="fancy text-brand-accent">Data-Driven</span>
