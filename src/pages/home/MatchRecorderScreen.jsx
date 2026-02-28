@@ -196,6 +196,7 @@ function MatchRecorderScreen({
   const [showPointsEntry, setShowPointsEntry] = useState(true);
 
   const autoSaveRef = useRef(false);
+  const autosavedMatchIdRef = useRef(null);
 
   useEffect(() => {
     if (!matchStartTime) {
@@ -451,6 +452,7 @@ function MatchRecorderScreen({
 
   const handleSaveToAccount = useCallback(async () => {
     if (!events.length) return;
+
     if (!user) {
       alert("Sign in (top right) to save matches to your account.");
       return;
@@ -466,16 +468,27 @@ function MatchRecorderScreen({
     try {
       setSaveStatus("saving");
       const payload = buildMatchPayload();
-      if (loadedMatchId) {
-        await saveMatchEdits(loadedMatchId, payload);
+      let matchData;
+
+      // Update existing match if autosave created one
+      if (autosavedMatchIdRef.current) {
+        matchData = await saveMatchEdits(autosavedMatchIdRef.current, payload);
+      } else if (loadedMatchId) {
+        matchData = await saveMatchEdits(loadedMatchId, payload);
       } else {
-        await createMatchForUser(user.id, payload, "recorder");
+        matchData = await createMatchForUser(user.id, payload, "recorder");
       }
+
+      // Store the match ID for subsequent manual saves
+      if (matchData?.id) {
+        autosavedMatchIdRef.current = matchData.id;
+      }
+
       setSaveStatus("saved");
       setHasSavedThisSession(true);
       clearRecoveryMatch();
       setTimeout(() => setSaveStatus("idle"), 2000);
-      return true;
+      return matchData;
     } catch (error) {
       console.error(error);
       posthog.capture("save_match_error", {
@@ -489,7 +502,7 @@ function MatchRecorderScreen({
       );
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 2000);
-      return false;
+      return null;
     }
   }, [events, user, session, loadedMatchId, buildMatchPayload, posthog]);
 
@@ -553,6 +566,7 @@ function MatchRecorderScreen({
       setHasSavedThisSession(false);
       autoSaveRef.current = false;
       localSaveRef.current = false;
+      autosavedMatchIdRef.current = null;
     }
   }, [isRecording, events.length]);
 
@@ -623,6 +637,7 @@ function MatchRecorderScreen({
     if (!wasRecordingRef.current && isRecording) {
       autoSaveRef.current = false;
       localSaveRef.current = false;
+      autosavedMatchIdRef.current = null;
       setPreviousMatches(null);
     }
 
