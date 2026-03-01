@@ -127,22 +127,26 @@ function TournamentPage({ onBack }) {
   };
 
   const saveTournament = () => {
-    const blob = new Blob([JSON.stringify(tournament, null, 2)], {
-      type: "application/json",
+    if (!tournament) return;
+    const filename = `tournament-${safeFilenamePart(tournament.name)}-${
+      tournament.date
+    }.json`;
+    downloadJson(filename, tournament);
+  };
+
+  const downloadJson = (filename, data) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json;charset=utf-8",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `tournament-${tournament.name.replace(/\s+/g, "-")}-${
-      tournament.date
-    }.json`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  const exportMatchesCsv = () => {
-    if (!tournament || !tournament.matches) return;
-
+  const buildMatchExportRows = () => {
     const round = (n, digits = 3) => {
       const num = Number(n);
       if (!Number.isFinite(num)) return 0;
@@ -150,7 +154,7 @@ function TournamentPage({ onBack }) {
       return Math.round(num * m) / m;
     };
 
-    const rows = filteredMatches.map((match) => {
+    return filteredMatches.map((match) => {
       const matchIndex = tournament.matches.indexOf(match);
       const events = match?.events || [];
       const cycleEvents = events.filter((e) => e.type === "cycle");
@@ -203,20 +207,45 @@ function TournamentPage({ onBack }) {
         accuracy_per_cycle_max_percent: round(accuracyStats.max, 3),
       };
     });
+  };
 
-    const safe = (s) =>
-      (s || "")
-        .toString()
-        .trim()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-zA-Z0-9\-_.]/g, "");
-    const suffix = selectedTeam ? `team-${safe(selectedTeam)}` : "all-teams";
-    const filename = `tournament-${safe(tournament.name)}-${
+  const safeFilenamePart = (s) =>
+    (s || "")
+      .toString()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9\-_.]/g, "");
+
+  const exportMatchesCsv = () => {
+    if (!tournament || !tournament.matches) return;
+
+    const rows = buildMatchExportRows();
+    const suffix = selectedTeam
+      ? `team-${safeFilenamePart(selectedTeam)}`
+      : "all-teams";
+    const filename = `tournament-${safeFilenamePart(tournament.name)}-${
       tournament.date
     }-${suffix}-matches.csv`;
 
     const csv = toCsv(rows);
     downloadCsv(filename, csv);
+  };
+
+  const exportMatchesJson = () => {
+    if (!tournament || !tournament.matches) return;
+
+    const suffix = selectedTeam
+      ? `team-${safeFilenamePart(selectedTeam)}`
+      : "all-teams";
+    const filename = `tournament-${safeFilenamePart(tournament.name)}-${
+      tournament.date
+    }-${suffix}.json`;
+
+    downloadJson(filename, {
+      name: tournament.name,
+      date: tournament.date,
+      matches: filteredMatches,
+    });
   };
 
   if (isCreating) {
@@ -370,6 +399,13 @@ function TournamentPage({ onBack }) {
           >
             <DownloadSimple size={20} weight="bold" />
             Export CSV
+          </button>
+          <button
+            onClick={exportMatchesJson}
+            className="btn w-full sm:w-auto justify-center"
+          >
+            <DownloadSimple size={20} weight="bold" />
+            Download JSON
           </button>
           <button
             onClick={handleBackFromTournament}
